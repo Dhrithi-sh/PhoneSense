@@ -1,0 +1,10 @@
+# Core dependencies: everyone installs these (Python 3.11).
+# No BM25 / PageRank libraries: the course requires our own implementations.
+numpy>=1.26,<3
+pandas>=2.1,<3
+scipy>=1.11
+pyyaml>=6.0
+tqdm>=4.66
+matplotlib>=3.8
+pytest>=8.0
+ruff>=0.6

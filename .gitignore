@@ -1,0 +1,37 @@
+# Data (never commit datasets or derived data)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Generated outputs
+runs/*
+!runs/.gitkeep
+results/*
+!results/.gitkeep
+
+# Secrets
+.env
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Models / embeddings caches
+*.faiss
+*.npy
+.cache/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

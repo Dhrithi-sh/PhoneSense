@@ -1,0 +1,3 @@
+{"qid":"q01","text":"phone under $300 with good battery and 5G","split":"dev","filters":{"and":[{"field":"price","op":"<","value":300},{"field":"has_5g","op":"==","value":true}]},"intent_notes":"Battery >= 4500 mAh counts as good."}
+{"qid":"q02","text":"compact phone with great camera","split":"dev","filters":null,"intent_notes":null}
+{"qid":"q03","text":"android phone with lots of storage, not too expensive","split":"test","filters":{"and":[{"field":"os","op":"in","value":["android"]},{"or":[{"field":"storage_gb","op":">=","value":256},{"not":{"field":"price","op":">","value":500}}]}]}}

@@ -1,0 +1,30 @@
+# PhoneSense global configuration. All paths are relative to the repo root.
+# Read it through phonesense.config, never by hard-coding paths or constants.
+
+seed: 42
+
+dataset:
+  name: amazon_reviews_2023          # McAuley Lab, Amazon Reviews 2023
+  source: McAuley-Lab/Amazon-Reviews-2023
+  category: Cell_Phones_and_Accessories
+  raw_meta: data/raw/meta_Cell_Phones_and_Accessories.jsonl.gz
+  raw_reviews: data/raw/Cell_Phones_and_Accessories.jsonl.gz
+  default_currency: USD
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  phones: data/processed/phones.jsonl
+  reviews: data/processed/reviews.jsonl
+  graph_edges: data/processed/graph_edges.tsv
+  reviewer_trust: data/processed/reviewer_trust.tsv
+  queries: queries/queries.jsonl
+  qrels: qrels/qrels.txt
+  qrels_llm: qrels/llm.txt
+  qrels_human: qrels/human.txt
+  runs_dir: runs
+  results_dir: results
+  figures_dir: report/figures
+
+retrieval:
+  default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)

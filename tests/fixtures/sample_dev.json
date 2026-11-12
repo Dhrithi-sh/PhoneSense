@@ -1,0 +1,11 @@
+{
+  "run": "sample_dev",
+  "qrels": "tests/fixtures/sample_qrels.txt",
+  "split": "dev",
+  "metrics": {"P@10": 0.15, "nDCG@10": 0.875, "MAP": 1.0},
+  "per_query": {
+    "q01": {"P@10": 0.1, "nDCG@10": 0.75, "MAP": 1.0},
+    "q02": {"P@10": 0.2, "nDCG@10": 1.0, "MAP": 1.0}
+  },
+  "meta": {"note": "hand-written fixture; values are illustrative only"}
+}

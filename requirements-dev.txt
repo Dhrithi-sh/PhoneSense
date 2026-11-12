@@ -1,0 +1,3 @@
+# Test-only extras. networkx is ONLY for cross-checking our own PageRank in tests,
+# never imported from phonesense/ code.
+networkx>=3.2

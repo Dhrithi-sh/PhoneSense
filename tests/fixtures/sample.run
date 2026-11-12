@@ -1,0 +1,5 @@
+q01 Q0 B0TEST0001 1 12.5 sample_dev
+q01 Q0 B0TEST0003 2 7.25 sample_dev
+q01 Q0 B0TEST0002 3 7.25 sample_dev
+q02 Q0 B0TEST0002 1 0.91 sample_dev
+q02 Q0 B0TEST0001 2 0.42 sample_dev
