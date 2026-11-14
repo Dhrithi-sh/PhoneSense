@@ -10,12 +10,34 @@ dataset:
   raw_meta: data/raw/meta_Cell_Phones_and_Accessories.jsonl.gz
   raw_reviews: data/raw/Cell_Phones_and_Accessories.jsonl.gz
   default_currency: USD
+  # Download sources (T02). The UCSD mirror serves .jsonl.gz; the Hugging Face fallback
+  # serves plain .jsonl, which the downloader gzips on the fly into raw_meta / raw_reviews.
+  urls:
+    meta: https://datarepo.eng.ucsd.edu/mcauley_group/data/amazon_2023/raw/meta_categories/meta_Cell_Phones_and_Accessories.jsonl.gz
+    reviews: https://datarepo.eng.ucsd.edu/mcauley_group/data/amazon_2023/raw/review_categories/Cell_Phones_and_Accessories.jsonl.gz
+  fallback_urls:
+    meta: https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023/resolve/main/raw/meta_categories/meta_Cell_Phones_and_Accessories.jsonl
+    reviews: https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023/resolve/main/raw/review_categories/Cell_Phones_and_Accessories.jsonl
+
+# T02 data pipeline settings (phonesense/data/, scripts/build_data.py).
+pipeline:
+  filter_threshold: 4.0     # keep a raw item as a phone if its rule score >= this
+  min_reviews: 5            # phones need at least this many kept reviews
+  sample_size: 500          # phones in data/processed/sample/ (stratified by brand)
+  handcheck_phones: 50      # kept phones in results/handcheck_specs.csv
+  handcheck_rejects: 20     # near-threshold rejects in results/handcheck_filter.csv
+  handcheck_margin: 3.0     # "near threshold" = threshold - margin <= score < threshold
 
 paths:
   raw_dir: data/raw
   processed_dir: data/processed
   phones: data/processed/phones.jsonl
   reviews: data/processed/reviews.jsonl
+  phone_meta: data/processed/phone_meta.jsonl     # T02 sidecar: spec sources, flags, raw details
+  filter_log: data/processed/filter_log.jsonl
+  dedupe_log: data/processed/dedupe_log.jsonl
+  interim_dir: data/processed/interim
+  sample_dir: data/processed/sample
   graph_edges: data/processed/graph_edges.tsv
   reviewer_trust: data/processed/reviewer_trust.tsv
   queries: queries/queries.jsonl
@@ -24,7 +46,21 @@ paths:
   qrels_human: qrels/human.txt
   runs_dir: runs
   results_dir: results
+  index_dir: data/index                         # T03 inverted index (gitignored); sample -> data/index/sample
+  index_stats: results/index_stats.json
   figures_dir: report/figures
+  data_stats: results/data_stats.json
+  handcheck_specs: results/handcheck_specs.csv
+  handcheck_filter: results/handcheck_filter.csv
+  handcheck_summary: results/handcheck_summary.json
+
+# T03 text analysis (phonesense/index/analyzer.py). Used for documents AND queries; changing
+# any of these makes saved indexes stale (rebuild with scripts/build_index.py --force).
+analyzer:
+  stopwords: true     # built-in English list; 5g/4g/pro/max/plus/mini/ultra/lite are never removed
+  stem: true          # tokens containing digits are never stemmed
+  stemmer: porter     # porter (NLTK algorithm, no download) | light (plural-only S-stemmer)
 
 retrieval:
   default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)
+  tfidf_field: text  # T04 TF-IDF lnc.ltc field: text | title | features | description

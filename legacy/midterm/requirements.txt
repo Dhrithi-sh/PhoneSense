@@ -1,0 +1,25 @@
+# Dhvani: everything the team's code imports.
+# Install with: pip install -r requirements.txt
+
+# Text processing (tokenizer pattern [\p{L}\p{M}\p{Nd}]+): everyone
+regex
+
+# Crawler: Riya
+httpx
+requests
+beautifulsoup4
+
+# App: Rishit
+streamlit
+
+# Tests: everyone
+pytest
+
+# Plots (Zipf, idf histogram, PR curves, edit-cost heatmap). Optional; the
+# code skips plots if it's missing.
+matplotlib
+
+# Downloading Aksharantar to retrain edit costs (Viraja) and building a dev
+# corpus (Dhrithi). Optional; not needed to run the search engine.
+huggingface_hub
+datasets

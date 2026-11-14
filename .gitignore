@@ -3,12 +3,20 @@ data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+# Built indexes (T03)
+data/index/
+# Midterm sample corpus holds copyrighted article text: keep it out of git
+legacy/midterm/data/
 
 # Generated outputs
 runs/*
 !runs/.gitkeep
 results/*
 !results/.gitkeep
+# Hand-check labels are human input (not reproducible by a script): commit them once filled.
+!results/handcheck_specs.csv
+!results/handcheck_filter.csv
+!results/handcheck_summary.json
 
 # Secrets
 .env

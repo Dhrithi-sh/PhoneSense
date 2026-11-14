@@ -1,0 +1,52 @@
+User-agent: *
+Allow: /
+Allow: /staticsitemap/nbt/news/sitemap-48hours.xml
+
+User-agent: AmazonAdBot
+Allow: /
+
+Disallow: */apna-bazaar/health-and-fitness/*
+Disallow: */top-rated-products/*
+Disallow: /?back=1
+Disallow: */xml/
+Disallow: */7176/*
+Disallow: */23037861279/*
+Disallow: */citizen-reporter/
+Disallow: */dmp_orion.cms?
+Disallow: */videoplayer.cms?
+Disallow: */undefined/
+Disallow: */navbharatgold/
+Disallow: *?utm_source=TR
+Disallow: *?_gl=
+Disallow: *?frmapp=yes
+Disallow: */login.cms?
+Disallow: */feeds/vod_player.cms?
+Disallow: */search?query=
+Disallow: /requestallslides/
+Disallow: /*satta*
+Disallow: /*matka*
+Disallow: /external/
+Disallow: */photoalbum/
+Disallow: */desktop/
+Disallow: */spiritual-blogs/
+Disallow: */discussion/
+Disallow: */allslides/
+Disallow: */videoplayer.cms?
+Disallow: *?trc
+Disallow: */_next/
+Disallow: */campaignhub/minifyjs/*
+Disallow: */lgads_v2/*
+Disallow: */end_article_worker.cms? 
+Disallow: */cube_worker.cms?
+Disallow: */web-stories/*/videoshow/*
+Disallow: */lifestyle/health/*
+Disallow: */lifestyle/experts-column/*
+Disallow: */photomazza/health-relationship/*
+Disallow: */readersreviews/*
+
+User-agent: meta-externalagent
+Disallow:/
+
+Sitemap: https://navbharattimes.indiatimes.com/staticsitemap/nbt/news/sitemap-48hours.xml
+Sitemap: https://navbharattimes.indiatimes.com/speakingtree/staticsitemap/speakingtree/48hours/sitemap-48hours.xml
+Sitemap: https://navbharattimes.indiatimes.com/sitemapxml.cms

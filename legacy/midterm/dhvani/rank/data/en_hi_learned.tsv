@@ -1,0 +1,547 @@
+# English to Hindi pairs learned from Jagran's bilingual headlines (dhvani/rank/learn_dict.py).
+# Same format as en_hi_news.tsv. The comment above each entry gives its Dice score
+# and how many headline pairs had both words.
+# dice 0.60, 3 pairs
+aaj	बर्फबारी
+# dice 0.85, 11 pairs
+agra	आगरा
+# dice 0.50, 4 pairs
+air	एयर
+# dice 0.67, 3 pairs
+airport	एयरपोर्ट
+# dice 0.92, 11 pairs
+alert	अलर्ट
+# dice 0.80, 4 pairs
+aligarh	अलीगढ़
+# dice 1.00, 7 pairs
+allahabad	इलाहाबाद
+# dice 0.93, 7 pairs
+amit	अमित
+# dice 1.00, 3 pairs
+anant	अनंत
+# dice 0.50, 3 pairs
+announced	एलान
+# dice 0.55, 3 pairs
+app	एप
+# dice 0.74, 7 pairs
+apply	अप्लाई
+# dice 0.67, 3 pairs
+ardh	हरिद्वार
+# dice 0.55, 3 pairs
+areas	इलाकों
+# dice 0.74, 27 pairs
+arrested	गिरफ्तार
+# dice 1.00, 3 pairs
+ashutosh	आशुतोष
+# dice 0.57, 4 pairs
+asi	एएसआई
+# dice 1.00, 3 pairs
+atal	अटल
+# dice 0.50, 3 pairs
+attack	हमले
+# dice 0.73, 4 pairs
+baba	बाबा
+# dice 0.75, 3 pairs
+bangladeshi	बांग्लादेशी
+# dice 0.67, 3 pairs
+bank	बैंक
+# dice 1.00, 3 pairs
+barat	बरात
+# dice 0.77, 5 pairs
+bareilly	बरेली
+# dice 0.67, 3 pairs
+bengal	बंगाल
+# dice 1.00, 5 pairs
+bengaluru	बेंगलुरु
+# dice 0.67, 5 pairs
+bhagalpur	भागलपुर
+# dice 0.86, 3 pairs
+bhagat	भगत
+# dice 0.73, 4 pairs
+bhagwant	मान
+# dice 1.00, 4 pairs
+bhojpur	भोजपुर
+# dice 0.73, 29 pairs
+bihar	बिहार
+# dice 0.61, 11 pairs
+bjp	भाजपा
+# dice 0.57, 4 pairs
+board	बोर्ड
+# dice 0.86, 3 pairs
+bombay	बॉम्बे
+# dice 0.60, 3 pairs
+border	सीमा
+# dice 0.56, 5 pairs
+bridge	ब्रिज
+# dice 0.82, 9 pairs
+bus	बस
+# dice 0.67, 4 pairs
+buses	बसों
+# dice 0.58, 7 pairs
+can	पदों
+# dice 0.60, 3 pairs
+captain	स्मित
+# dice 0.70, 8 pairs
+car	कार
+# dice 0.55, 3 pairs
+cctv	कैद
+# dice 0.57, 4 pairs
+center	सेंटर
+# dice 0.67, 3 pairs
+challan	चालान
+# dice 0.67, 3 pairs
+challans	चालान
+# dice 0.50, 3 pairs
+challenges	चुनौती
+# dice 0.80, 10 pairs
+chandigarh	चंडीगढ़
+# dice 0.56, 5 pairs
+check	चेक
+# dice 0.67, 3 pairs
+chhattisgarh	छत्तीसगढ़
+# dice 0.83, 5 pairs
+college	कॉलेज
+# dice 0.75, 6 pairs
+commission	आयोग
+# dice 1.00, 4 pairs
+compensation	मुआवजा
+# dice 1.00, 3 pairs
+competition	प्रतियोगिता
+# dice 0.83, 19 pairs
+congress	कांग्रेस
+# dice 0.75, 3 pairs
+corridor	कॉरिडोर
+# dice 0.70, 23 pairs
+court	कोर्ट
+# dice 0.75, 3 pairs
+crop	फसल
+# dice 0.60, 17 pairs
+crore	करोड़
+# dice 0.75, 3 pairs
+cyber	साइबर
+# dice 0.86, 3 pairs
+cylinder	सिलेंडर
+# dice 1.00, 6 pairs
+darbhanga	दरभंगा
+# dice 0.67, 5 pairs
+date	डेट
+# dice 0.80, 4 pairs
+daughter	बेटी
+# dice 0.78, 9 pairs
+dehradun	देहरादून
+# dice 0.73, 4 pairs
+deoria	देवरिया
+# dice 0.62, 4 pairs
+details	डिटेल
+# dice 0.67, 4 pairs
+detention	हिरासत
+# dice 0.73, 4 pairs
+devi	देवी
+# dice 0.67, 4 pairs
+digital	डिजिटल
+# dice 0.57, 6 pairs
+districts	जिलों
+# dice 0.86, 3 pairs
+durga	दुर्गा
+# dice 0.86, 3 pairs
+eligibility	पात्रता
+# dice 0.67, 3 pairs
+employees	कर्मचारियों
+# dice 1.00, 4 pairs
+encounter	मुठभेड़
+# dice 1.00, 3 pairs
+engine	इंजन
+# dice 0.55, 3 pairs
+event	कार्यक्रम
+# dice 0.50, 3 pairs
+exam	परीक्षाएं
+# dice 0.86, 3 pairs
+exams	परीक्षाएं
+# dice 0.62, 4 pairs
+express	एक्सप्रेस
+# dice 0.71, 5 pairs
+expressway	एक्सप्रेसवे
+# dice 0.50, 5 pairs
+fake	नकली
+# dice 0.67, 3 pairs
+farmer	किसान
+# dice 0.76, 14 pairs
+farmers	किसानों
+# dice 0.53, 5 pairs
+father	पिता
+# dice 0.67, 3 pairs
+field	खेत
+# dice 0.67, 7 pairs
+fire	आग
+# dice 0.80, 4 pairs
+firozabad	फिरोजाबाद
+# dice 0.75, 6 pairs
+flood	बाढ़
+# dice 0.57, 4 pairs
+form	फॉर्म
+# dice 0.50, 3 pairs
+former	पूर्व
+# dice 0.71, 10 pairs
+gandhi	गांधी
+# dice 0.50, 4 pairs
+ganga	गंगा
+# dice 0.86, 3 pairs
+gas	गुरुकुल
+# dice 0.50, 3 pairs
+ghat	गंगा
+# dice 0.94, 15 pairs
+ghaziabad	गाजियाबाद
+# dice 0.97, 15 pairs
+gorakhpur	गोरखपुर
+# dice 1.00, 3 pairs
+graduate	स्नातक
+# dice 0.62, 5 pairs
+greater	ग्रेटर
+# dice 0.77, 5 pairs
+gujarat	गुजरात
+# dice 0.94, 8 pairs
+gurugram	गुरुग्राम
+# dice 0.89, 4 pairs
+gurukul	वृंदावन
+# dice 0.71, 5 pairs
+hapur	हापुड़
+# dice 0.92, 6 pairs
+haridwar	हरिद्वार
+# dice 0.86, 3 pairs
+harish	हरीश
+# dice 0.81, 13 pairs
+haryana	हरियाणा
+# dice 0.86, 3 pairs
+hazaribagh	हजारीबाग
+# dice 0.67, 3 pairs
+here	यहां
+# dice 0.60, 12 pairs
+high	हाई
+# dice 0.70, 8 pairs
+himachal	हिमाचल
+# dice 0.50, 5 pairs
+hospital	अस्पताल
+# dice 0.67, 3 pairs
+hotel	होटल
+# dice 0.78, 7 pairs
+illegal	अवैध
+# dice 0.55, 3 pairs
+immediately	लें
+# dice 0.71, 5 pairs
+indies	वेस्टइंडीज
+# dice 1.00, 3 pairs
+indore	इंदौर
+# dice 1.00, 3 pairs
+isi	आतंकी
+# dice 0.91, 5 pairs
+jail	जेल
+# dice 0.50, 5 pairs
+jam	जाम
+# dice 0.83, 5 pairs
+jantar	जंतर
+# dice 1.00, 3 pairs
+jdu	नीरज
+# dice 0.69, 12 pairs
+jharkhand	झारखंड
+# dice 0.80, 8 pairs
+jyoti	ज्योति
+# dice 1.00, 3 pairs
+kainchi	कैंची
+# dice 0.82, 7 pairs
+kanpur	कानपुर
+# dice 0.73, 4 pairs
+kashi	काशी
+# dice 0.79, 11 pairs
+kashmir	कश्मीर
+# dice 0.86, 3 pairs
+kashyap	कश्यप
+# dice 1.00, 4 pairs
+katihar	कटिहार
+# dice 0.62, 4 pairs
+killed	उतारा
+# dice 0.55, 8 pairs
+kumar	कुमार
+# dice 0.67, 3 pairs
+kumbh	हरिद्वार
+# dice 0.65, 23 pairs
+lakh	लाख
+# dice 0.69, 10 pairs
+land	जमीन
+# dice 0.50, 3 pairs
+last	फॉर्म
+# dice 0.50, 3 pairs
+life	जीवन
+# dice 0.55, 3 pairs
+liquor	शराब
+# dice 0.83, 5 pairs
+lover	प्रेमी
+# dice 0.69, 12 pairs
+lucknow	लखनऊ
+# dice 1.00, 3 pairs
+machhar	स्मित
+# dice 1.00, 3 pairs
+madhubani	मधुबनी
+# dice 0.67, 3 pairs
+madhya	मध्य
+# dice 0.86, 3 pairs
+maharajganj	महराजगंज
+# dice 0.83, 5 pairs
+mann	मान
+# dice 0.83, 5 pairs
+mantar	जंतर
+# dice 0.59, 5 pairs
+marriage	शादी
+# dice 0.50, 3 pairs
+match	वेस्टइंडीज
+# dice 0.55, 3 pairs
+mathura	मथुरा
+# dice 0.60, 3 pairs
+mausam	बर्फबारी
+# dice 0.83, 5 pairs
+medical	मेडिकल
+# dice 0.86, 3 pairs
+medicines	दवाएं
+# dice 0.60, 6 pairs
+meerut	मेरठ
+# dice 0.83, 5 pairs
+mining	खनन
+# dice 1.00, 4 pairs
+minor	नाबालिग
+# dice 1.00, 3 pairs
+mirzapur	मीरजापुर
+# dice 0.57, 4 pairs
+missing	लापता
+# dice 0.60, 3 pairs
+mla	विधायक
+# dice 0.55, 3 pairs
+mlc	एमएलसी
+# dice 0.73, 12 pairs
+modi	मोदी
+# dice 0.91, 5 pairs
+mohan	मोहन
+# dice 0.89, 4 pairs
+molestation	छेड़छाड़
+# dice 0.75, 3 pairs
+monsoon	मानसून
+# dice 0.57, 6 pairs
+mother	मां
+# dice 1.00, 4 pairs
+mumbai	मुंबई
+# dice 0.80, 4 pairs
+munger	मुंगेर
+# dice 0.86, 3 pairs
+murmu	राष्ट्रपति
+# dice 0.86, 6 pairs
+muzaffarpur	मुजफ्फरपुर
+# dice 0.80, 4 pairs
+navratri	नवरात्र
+# dice 1.00, 3 pairs
+navy	नौसेना
+# dice 1.00, 3 pairs
+neeraj	नीरज
+# dice 0.50, 3 pairs
+nhai	हाईवे
+# dice 0.88, 11 pairs
+noida	नोएडा
+# dice 0.50, 3 pairs
+nomination	नामांकन
+# dice 0.75, 3 pairs
+november	नवंबर
+# dice 0.86, 3 pairs
+odisha	ओडिशा
+# dice 0.62, 4 pairs
+office	ऑफिस
+# dice 0.67, 3 pairs
+opposition	विपक्ष
+# dice 0.89, 4 pairs
+paddy	धान
+# dice 0.86, 3 pairs
+pakistan	पाकिस्तान
+# dice 0.75, 3 pairs
+panchayats	पंचायतों
+# dice 0.86, 3 pairs
+panchkula	पंचकूला
+# dice 1.00, 4 pairs
+pargat	परगट
+# dice 1.00, 3 pairs
+parked	खड़ी
+# dice 0.71, 11 pairs
+patna	पटना
+# dice 0.75, 3 pairs
+pilot	पायलट
+# dice 0.50, 9 pairs
+pradesh	प्रदेश
+# dice 0.62, 5 pairs
+prayagraj	प्रयागराज
+# dice 1.00, 4 pairs
+premanand	प्रेमानंद
+# dice 0.73, 4 pairs
+president	राष्ट्रपति
+# dice 0.86, 6 pairs
+priyanka	प्रियंका
+# dice 0.67, 4 pairs
+puja	पूजा
+# dice 0.86, 24 pairs
+punjab	पंजाब
+# dice 0.91, 5 pairs
+purvanchal	पूर्वांचल
+# dice 0.57, 8 pairs
+questions	सवाल
+# dice 0.83, 15 pairs
+rahul	राहुल
+# dice 0.55, 3 pairs
+raids	मान
+# dice 0.55, 6 pairs
+railway	रेलवे
+# dice 0.91, 21 pairs
+rain	बारिश
+# dice 1.00, 11 pairs
+rajya	राज्यसभा
+# dice 0.57, 4 pairs
+ram	राम
+# dice 1.00, 3 pairs
+ramesh	रमेश
+# dice 0.75, 3 pairs
+ramlila	रामलीला
+# dice 0.83, 15 pairs
+ranchi	रांची
+# dice 1.00, 4 pairs
+rare	दुर्लभ
+# dice 0.60, 13 pairs
+recruitment	भर्ती
+# dice 0.55, 3 pairs
+report	रिपोर्ट
+# dice 0.86, 3 pairs
+ring	रिंग
+# dice 0.57, 4 pairs
+river	नदी
+# dice 0.86, 3 pairs
+roadways	रोडवेज
+# dice 0.75, 3 pairs
+rpf	आरपीएफ
+# dice 0.92, 11 pairs
+sabha	राज्यसभा
+# dice 0.55, 3 pairs
+schools	स्कूलों
+# dice 0.71, 5 pairs
+seats	सीटों
+# dice 0.64, 7 pairs
+security	सुरक्षा
+# dice 0.60, 3 pairs
+seeks	मांगा
+# dice 0.60, 3 pairs
+sentenced	सजा
+# dice 0.89, 4 pairs
+setu	सेतु
+# dice 0.55, 6 pairs
+seva	ज्योति
+# dice 0.89, 4 pairs
+shah	शाह
+# dice 1.00, 3 pairs
+shops	दुकानें
+# dice 0.70, 7 pairs
+shot	गोली
+# dice 0.75, 3 pairs
+show	शो
+# dice 0.75, 3 pairs
+silver	चांदी
+# dice 0.71, 16 pairs
+singh	सिंह
+# dice 1.00, 3 pairs
+smit	स्मित
+# dice 0.73, 4 pairs
+snake	सांप
+# dice 0.77, 5 pairs
+snowfall	बर्फबारी
+# dice 0.60, 3 pairs
+solar	सोलर
+# dice 0.67, 5 pairs
+son	बेटे
+# dice 1.00, 4 pairs
+sonbhadra	सोनभद्र
+# dice 0.80, 4 pairs
+sonipat	सोनीपत
+# dice 0.67, 6 pairs
+special	स्पेशल
+# dice 0.70, 8 pairs
+station	स्टेशन
+# dice 0.80, 4 pairs
+subsidy	सब्सिडी
+# dice 0.73, 8 pairs
+supreme	सुप्रीम
+# dice 0.91, 5 pairs
+survey	सर्वे
+# dice 0.73, 4 pairs
+suspended	निलंबित
+# dice 0.53, 4 pairs
+teacher	शिक्षक
+# dice 0.55, 8 pairs
+team	टीम
+# dice 0.55, 3 pairs
+teen	किशोरी
+# dice 0.89, 4 pairs
+telangana	तेलंगाना
+# dice 0.67, 5 pairs
+temple	मंदिर
+# dice 0.77, 5 pairs
+theft	चोरी
+# dice 0.86, 3 pairs
+third	तीसरी
+# dice 0.73, 4 pairs
+ticket	टिकट
+# dice 1.00, 3 pairs
+toxic	गुरुकुल
+# dice 0.52, 8 pairs
+traffic	ट्रैफिक
+# dice 0.71, 11 pairs
+train	ट्रेन
+# dice 0.75, 3 pairs
+triple	ट्रिपल
+# dice 0.63, 6 pairs
+truck	ट्रक
+# dice 0.86, 3 pairs
+tunnel	टनल
+# dice 0.51, 15 pairs
+two	दो
+# dice 0.71, 5 pairs
+university	विश्वविद्यालय
+# dice 0.80, 10 pairs
+uttarakhand	उत्तराखंड
+# dice 1.00, 4 pairs
+vaishno	देवी
+# dice 0.87, 10 pairs
+varanasi	वाराणसी
+# dice 0.52, 6 pairs
+video	वीडियो
+# dice 0.75, 3 pairs
+vikramshila	विक्रमशिला
+# dice 0.67, 7 pairs
+viral	वायरल
+# dice 0.50, 3 pairs
+vote	वोट
+# dice 0.75, 3 pairs
+voters	मतदाताओं
+# dice 1.00, 3 pairs
+voting	वोटिंग
+# dice 0.67, 3 pairs
+vrindavan	वृंदावन
+# dice 0.82, 14 pairs
+weather	मौसम
+# dice 0.59, 5 pairs
+west	वेस्टइंडीज
+# dice 0.73, 8 pairs
+wife	पत्नी
+# dice 0.53, 12 pairs
+woman	महिला
+# dice 0.50, 3 pairs
+women	महिलाएं
+# dice 0.67, 7 pairs
+yadav	यादव
+# dice 0.53, 4 pairs
+yellow	अलर्ट
+# dice 0.72, 9 pairs
+yogi	योगी
+# dice 0.63, 6 pairs
+yojana	योजना
+# dice 0.55, 3 pairs
+youngest	सबसे
