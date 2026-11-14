@@ -3,6 +3,10 @@ data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+# Built indexes (T03)
+data/index/
+# Midterm sample corpus holds copyrighted article text: keep it out of git
+legacy/midterm/data/
 
 # Generated outputs
 runs/*

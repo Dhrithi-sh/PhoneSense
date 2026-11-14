@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "PhoneSense: smartphone search with classic IR, neural IR and trust-aware graph ranking"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["pyyaml>=6.0"]
+dependencies = ["pyyaml>=6.0", "numpy>=1.26", "nltk>=3.8"]
 
 [project.optional-dependencies]
 dense = ["sentence-transformers>=3.0", "faiss-cpu>=1.8"]
@@ -20,11 +20,13 @@ include = ["phonesense*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# legacy/ holds the midterm project with its own conftest.py and tests: never collect it.
+norecursedirs = ["legacy", "data", ".venv", "*.egg-info", ".git"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = ["data", "runs", "results"]
+extend-exclude = ["data", "runs", "results", "legacy"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]

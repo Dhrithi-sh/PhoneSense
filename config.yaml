@@ -46,11 +46,21 @@ paths:
   qrels_human: qrels/human.txt
   runs_dir: runs
   results_dir: results
+  index_dir: data/index                         # T03 inverted index (gitignored); sample -> data/index/sample
+  index_stats: results/index_stats.json
   figures_dir: report/figures
   data_stats: results/data_stats.json
   handcheck_specs: results/handcheck_specs.csv
   handcheck_filter: results/handcheck_filter.csv
   handcheck_summary: results/handcheck_summary.json
 
+# T03 text analysis (phonesense/index/analyzer.py). Used for documents AND queries; changing
+# any of these makes saved indexes stale (rebuild with scripts/build_index.py --force).
+analyzer:
+  stopwords: true     # built-in English list; 5g/4g/pro/max/plus/mini/ultra/lite are never removed
+  stem: true          # tokens containing digits are never stemmed
+  stemmer: porter     # porter (NLTK algorithm, no download) | light (plural-only S-stemmer)
+
 retrieval:
   default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)
+  tfidf_field: text  # T04 TF-IDF lnc.ltc field: text | title | features | description

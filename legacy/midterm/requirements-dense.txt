@@ -1,0 +1,3 @@
+# Optional: dense re-ranking with a multilingual embedding model.
+# The main requirements.txt is enough for everything else.
+sentence-transformers

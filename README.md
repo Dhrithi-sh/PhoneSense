@@ -42,6 +42,8 @@ pip install -r requirements.txt
 pytest
 ruff check .
 python scripts/build_data.py                   # = make data (T02, see "Data pipeline")
+python scripts/build_index.py                  # = make index (T03, see "Index & TF-IDF")
+python scripts/run_tfidf.py --split dev        # TF-IDF run (T04)
 python scripts/run_eval.py                     # = make eval (TODO, T11)
 ```
 
@@ -112,6 +114,57 @@ python scripts/score_handcheck.py     # = make handcheck-score -> results/handch
 `make_handcheck.py` refuses to overwrite existing CSVs (they may be filled in) unless `--force`.
 The filled CSVs and the summary are exempt from `.gitignore`: commit them.
 
+## Index & TF-IDF (T03, T04)
+
+Our own positional inverted index (`phonesense/index/`) and an lnc.ltc TF-IDF retriever
+(`phonesense/retrieval/tfidf.py`). No IR libraries: NLTK supplies only the Porter stemmer
+algorithm (no corpus download). Index and weighting logic are adapted from our midterm project
+(see [`legacy/PORTING.md`](legacy/PORTING.md)).
+
+```bash
+python scripts/build_index.py --sample                 # 500 phones -> data/index/sample/  (= make index-sample)
+python scripts/build_index.py                          # full phones.jsonl -> data/index/  (= make index)
+python scripts/run_tfidf.py --query "samsung 5g 128 gb"    # top 10 (doc_id, score, title)
+python scripts/run_tfidf.py --split dev                # runs/tfidf_lnc.ltc_dev.run + latency (needs queries/queries.jsonl)
+```
+
+`build_index.py` skips the build when the saved index is up to date (`--force` rebuilds) and
+writes `results/index_stats.json` (`index_stats_sample.json` for `--sample`): N, vocabulary,
+postings and average length per field, build/load time, size with VB compression vs plain
+uint32. `run_tfidf.py` prints mean/p95 query latency and writes
+`results/latency_<run_name>.json`. Indexes live in `data/index/` (gitignored).
+
+**Analyzer** (`analyzer:` in config.yaml, same for documents and queries): NFKC + lowercase;
+units joined (`128 GB`/`128GB` -> `128gb`, `5,000 mAh` -> `5000mah`, `6.1"` -> `6.1in`,
+`48 megapixel` -> `48mp`); model codes kept (`a54`, `13c`, `5g`); built-in stopword list
+(never removes `5g 4g pro max plus mini ultra lite`); Porter stemming except for tokens with
+digits. Positions keep gaps where stopwords were removed. Changing the analyzer config makes a
+saved index stale: `load()` refuses it and prints the rebuild command.
+
+**API for teammates** (`from phonesense.index import Analyzer, InvertedIndex, load_index`):
+
+| Call | Returns |
+|------|---------|
+| `InvertedIndex.build(phones, analyzer, fields=FIELDS)` / `load_index(sample=False)` / `idx.save(path)` | index over fields `title`, `features`, `description`, `text` |
+| `idx.N`, `idx.vocab_size(field)`, `idx.vocabulary(field)` | doc count, vocabulary |
+| `idx.df(term, field="text")`, `idx.cf(term, field)` | document / collection frequency |
+| `idx.postings(term, field)` | `[Posting(doc, tf, positions), ...]` sorted by internal doc id |
+| `idx.doc_len(doc, field)`, `idx.avg_doc_len(field)` | lengths in indexed terms (for BM25) |
+| `idx.doc_id(doc)`, `idx.doc_index(doc_id)` | internal int id <-> contract `doc_id` |
+| `idx.term_vector(doc, field)` | `{term: tf}` forward index (Rocchio) |
+| `idx.skip_pointers(term, field)`, `phonesense.index.intersect(p1, p2)` | sqrt(n) skips, AND of two postings lists (T07) |
+| `idx.analyzer.analyze(text)` | query terms analysed exactly like the documents |
+
+**lnc.ltc** (Manning et al., IIR ch. 6), term-at-a-time over postings, top k by heap, ties
+by `doc_id`:
+
+* document: `w(t,d) = 1 + log10 tf(t,d)`, cosine-normalized (no idf)
+* query: `w(t,q) = (1 + log10 tf(t,q)) * log10(N / df_t)`, cosine-normalized; OOV terms skipped
+* `score(q,d) = sum_t w(t,q) * w(t,d)`
+
+`TfidfRetriever(field="text", index=idx)` reuses a loaded index; `TfidfRetriever().fit(phones)`
+builds its own. The run name is `tfidf_lnc.ltc` (`tfidf_lnc.ltc.<field>` for other fields).
+
 ## Repo map
 
 ```
@@ -130,7 +183,8 @@ data/raw, data/processed dataset files (gitignored)
 queries/ qrels/          B: queries.jsonl, llm.txt, human.txt, qrels.txt
 runs/ results/           generated run files and metrics (gitignored)
 report/figures/          generated figures
-scripts/                 entry-point scripts (build_data.py, run_eval.py, ...)
+scripts/                 entry-point scripts (build_data.py, build_index.py, run_tfidf.py, ...)
+legacy/midterm/          our midterm project (reference only; not linted or tested), see legacy/PORTING.md
 tests/ (+ fixtures/)     contract tests and one tiny example per file format
 ```
 

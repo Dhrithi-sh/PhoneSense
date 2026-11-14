@@ -1,0 +1,14 @@
+cat > .gitignore <<'EOF'
+# environments
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# crawled articles, indexes and downloaded datasets stay local
+data/
+*.pkl
+
+# os junk
+.DS_Store
+EOF
