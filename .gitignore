@@ -9,6 +9,10 @@ runs/*
 !runs/.gitkeep
 results/*
 !results/.gitkeep
+# Hand-check labels are human input (not reproducible by a script): commit them once filled.
+!results/handcheck_specs.csv
+!results/handcheck_filter.csv
+!results/handcheck_summary.json
 
 # Secrets
 .env

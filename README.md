@@ -41,7 +41,7 @@ pip install -e .
 pip install -r requirements.txt
 pytest
 ruff check .
-python scripts/build_data.py                   # = make data (TODO, T02)
+python scripts/build_data.py                   # = make data (T02, see "Data pipeline")
 python scripts/run_eval.py                     # = make eval (TODO, T11)
 ```
 
@@ -57,6 +57,60 @@ python -m phonesense.eval.cli --run tests/fixtures/sample.run --qrels tests/fixt
 
 Reproduce everything: `make all` (test → data → eval). This becomes the single reproducible
 command as tasks land.
+
+## Data pipeline (T02)
+
+Turns the raw Amazon Reviews 2023 `Cell_Phones_and_Accessories` files into the contract files
+`data/processed/phones.jsonl` and `reviews.jsonl`. Code: `phonesense/data/`, settings and
+URLs: `config.yaml` (`dataset.urls`, `dataset.fallback_urls`, `pipeline.*`).
+
+```bash
+python scripts/build_data.py                  # full run (= make data)
+python scripts/build_data.py --limit 200000   # quick test on the first N raw lines (= make data-quick)
+python scripts/build_data.py --force          # rebuild every stage instead of using the cache
+python scripts/build_sample.py                # (re)write the 500-phone sample (= make sample)
+python scripts/build_sample.py --limit 2000000  # sample from a partial run if the full run is slow
+```
+
+Stages (each `python -m phonesense.data.<stage>` also works on its own):
+
+| Stage | What it does | Output |
+|-------|--------------|--------|
+| `download` | Fetches both raw files into `data/raw/`; skips files already there. UCSD mirror first, then Hugging Face (`McAuley-Lab/Amazon-Reviews-2023`, served as plain `.jsonl`, gzipped on the fly). If both fail it prints where to put a manually downloaded file (`.jsonl.gz` or `.jsonl`). | `data/raw/*.jsonl.gz` |
+| `filter_phones` | Rule-based phone score: phone categories, phone-only `details` keys, brand+model / "smartphone" / "unlocked" / GB in the title (+); "case for", "compatible with <brand>", accessory words, tablet, watch, hotspot, lots (−). Keep if score ≥ `pipeline.filter_threshold`, then drop items with `rating_number` < `min_reviews`. | `filter_log.jsonl` (`parent_asin, kept, score, reasons`) |
+| `parse_specs` | One regex function per spec field, priority `details` → title → features; units normalized, impossible values → null; source recorded. | `interim/specs.jsonl` |
+| `dedupe` | Merges listings with the same (brand, model name, storage, refurbished); keeps the most-rated one. | `dedupe_log.jsonl` |
+| `build_reviews` | Streams the reviews once, keeps reviews of candidate phones, remaps merged listings, drops empty texts and duplicates. | `interim/reviews_candidates.jsonl` |
+| `build_phones` | Final phones (≥ `min_reviews` kept reviews), `rating_count`/`avg_rating` from kept reviews, `text = build_text(fields)`; writes the final reviews of those phones only. | `phones.jsonl`, `reviews.jsonl`, `phone_meta.jsonl` |
+| `stats` | Counts, coverage, reviewer overlap (for the graph task), brands, prices. | `results/data_stats.json` |
+
+* **Caching:** a stage is skipped if its outputs exist, are newer than its inputs, and were
+  built with the same settings (`interim/manifest.json`). `--force` rebuilds everything.
+* **`--limit N`** writes to `data/processed/partial_<N>/` (own stats and sample), so a test run
+  never overwrites the full build.
+* **Sidecar `phone_meta.jsonl`** (not a contract file): `refurbished` flag, filter score, the
+  source of each parsed spec, merged listings, raw `details`. Same `doc_id`s as `phones.jsonl`.
+* **Sample for teammates:** `data/processed/sample/{phones,reviews}.jsonl` = 500 phones
+  stratified by brand (seed from config) + all their reviews. Data files are gitignored; share
+  the sample folder directly.
+* **Memory/runtime:** everything streams from the `.gz` files; the largest in-memory sets are
+  the review-dedupe hashes and the per-reviewer map (a few hundred MB), so 8 GB RAM is
+  enough. Measured on a laptop: download ~5 min (meta, 0.9 GB gz) + 15–60 min (reviews,
+  depends on bandwidth); filter ~3 min; reviews pass ~10–15 min; `--limit 200000` ~1 min.
+
+**Hand check (quality numbers for the report):**
+
+```bash
+python scripts/make_handcheck.py      # = make handcheck
+#   fill results/handcheck_specs.csv:  correct = y/n on every row (for a null: y if the listing
+#                                      really doesn't state it, n if we missed it);
+#                                      is_phone = y/n once per phone
+#   fill results/handcheck_filter.csv: is_phone = y/n (y = false rejection)
+python scripts/score_handcheck.py     # = make handcheck-score -> results/handcheck_summary.json
+```
+
+`make_handcheck.py` refuses to overwrite existing CSVs (they may be filled in) unless `--force`.
+The filled CSVs and the summary are exempt from `.gitignore`: commit them.
 
 ## Repo map
 

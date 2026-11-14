@@ -140,6 +140,50 @@ def write_reviews(path: PathLike, reviews: Sequence[Review]) -> Path:
     return _write_records(path, reviews, Review, "review_id")
 
 
+def iter_reviews(path: PathLike, *, allow_synthetic: bool = False) -> Iterator[Review]:
+    """Stream-validate a reviews file one record at a time (for files too large to hold in
+    memory, e.g. the full reviews.jsonl). Same checks as ``read_reviews``."""
+    seen: set[str] = set()
+    for i, line in _iter_lines(path):
+        where = f"{path}:{i}"
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError as e:
+            raise SchemaError(f"{where}: invalid JSON: {e}") from None
+        rec = Review.from_dict(obj, where)
+        if rec.review_id in seen:
+            raise SchemaError(f"{where}: duplicate review_id {rec.review_id!r}")
+        if rec.is_synthetic and not allow_synthetic:
+            raise SchemaError(f"{where}: synthetic review in a file read with "
+                              "allow_synthetic=False")
+        seen.add(rec.review_id)
+        yield rec
+
+
+def write_reviews_stream(path: PathLike, reviews: Iterable[Review]) -> int:
+    """Streaming twin of ``write_reviews`` for millions of reviews: validates each record
+    and rejects duplicate ids, writing to ``<path>.tmp`` and renaming only on success (so a
+    bad record still never leaves a half-written file). Returns the number written."""
+    path = Path(path)
+    _ensure_parent(path)
+    tmp = path.with_name(path.name + ".tmp")
+    seen: set[str] = set()
+    n = 0
+    try:
+        with tmp.open("w", encoding="utf-8", newline="\n") as fh:
+            for n, rec in enumerate(reviews, start=1):
+                d = rec.to_dict()
+                Review.from_dict(d, f"record[{n - 1}]")
+                if d["review_id"] in seen:
+                    raise SchemaError(f"record[{n - 1}]: duplicate review_id {d['review_id']!r}")
+                seen.add(d["review_id"])
+                fh.write(json.dumps(d, ensure_ascii=False, separators=(",", ":")) + "\n")
+        tmp.replace(path)
+    finally:
+        tmp.unlink(missing_ok=True)
+    return n
+
+
 def read_queries(path: PathLike, split: str | None = None) -> list[Query]:
     """Read queries, optionally keeping only one split ('dev' or 'test')."""
     queries = _read_records(path, Query, "qid")

@@ -25,7 +25,7 @@ General rules for every file:
 | § | What | Path [config key] | Format | Owner | Schema / IO |
 |---|------|-------------------|--------|-------|-------------|
 | 4.1 | Phones | `data/processed/phones.jsonl` [`phones`] | JSONL | A | `Phone` / `read_phones`, `write_phones` |
-| 4.2 | Reviews | `data/processed/reviews.jsonl` [`reviews`] | JSONL | A | `Review` / `read_reviews`, `write_reviews` |
+| 4.2 | Reviews | `data/processed/reviews.jsonl` [`reviews`] | JSONL | A | `Review` / `read_reviews`, `write_reviews`, `iter_reviews`, `write_reviews_stream` |
 | 4.3 | Queries | `queries/queries.jsonl` [`queries`] | JSONL | B | `Query` / `read_queries`, `write_queries` |
 | 4.4 | Boolean filters | inside queries | JSON | A (T06) | `validate_filter` |
 | 4.5 | Qrels | `qrels/{qrels,llm,human}.txt` [`qrels`, `qrels_llm`, `qrels_human`] | TREC | B | `Qrel` / `read_qrels`, `write_qrels` |
@@ -99,6 +99,10 @@ with `\n`, skipping empty parts. T02 must write `text = build_text(fields)` (the
 | `helpful_votes` | int | ≥ 0 (dataset `helpful_vote`). |
 | `verified` | bool | Dataset `verified_purchase`. |
 | `is_synthetic` | bool | Optional, default `false`. **Only the attack simulator sets `true`.** |
+
+The full `reviews.jsonl` holds millions of reviews: use `io.iter_reviews(path)` to stream and
+validate it record by record, and `io.write_reviews_stream(path, iterable)` to write it
+(same checks as `read_reviews` / `write_reviews`, without holding the file in memory).
 
 `read_reviews(path)` **rejects** any synthetic review unless called with
 `allow_synthetic=True`, so injected reviews can never leak into the real data file. Attack
