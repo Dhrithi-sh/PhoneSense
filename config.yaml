@@ -25,6 +25,13 @@ paths:
   runs_dir: runs
   results_dir: results
   figures_dir: report/figures
+  dense_cache: .cache/dense
 
 retrieval:
   default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)
+
+# ---- B: dense retrieval (T12) ----
+dense:
+  model: sentence-transformers/all-MiniLM-L6-v2
+  batch_size: 64
+  cache_dir: .cache/dense     # git-ignored (.cache/); keyed by model + collection hash
