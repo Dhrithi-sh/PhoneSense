@@ -25,3 +25,35 @@ Documents and queries pass through the same analyzer, in this order:
 
 Each kept term also records its position before stop-word removal, so phrase and proximity
 search treat documents and queries alike.
+
+## 7.2 Lexical retrieval
+
+### TF-IDF, SMART lnc.ltc (T04, `phonesense/retrieval/tfidf.py`)
+
+Document weights use log term frequency and cosine normalisation, with no idf (lnc):
+
+$$w_{t,d} = \frac{1 + \log_{10}\mathrm{tf}_{t,d}}{\sqrt{\sum_{t'}\left(1 + \log_{10}\mathrm{tf}_{t',d}\right)^2}}$$
+
+Query weights add idf before normalising (ltc):
+
+$$w_{t,q} \propto \left(1 + \log_{10}\mathrm{tf}_{t,q}\right)\log_{10}\frac{N}{\mathrm{df}_t},
+\qquad \mathrm{score}(q,d) = \sum_t w_{t,q}\,w_{t,d}$$
+
+Scores are accumulated term-at-a-time over the postings lists, so only phones that share a
+term with the query are scored. A three-document worked example is checked in
+`tests/test_tfidf.py`.
+
+### BM25 (T05) **[to confirm]**
+
+$$\mathrm{BM25}(q,d) = \sum_{t \in q} \log\frac{N - \mathrm{df}_t + 0.5}{\mathrm{df}_t + 0.5}
+\cdot \frac{\mathrm{tf}_{t,d}\,(k_1 + 1)}{\mathrm{tf}_{t,d} + k_1\left(1 - b + b\,\frac{|d|}{\mathrm{avgdl}}\right)}$$
+
+$k_1$ controls how quickly repeated terms stop adding score, and $b$ how strongly long
+listings are penalised. Both are tuned on the dev queries only. The owner confirms the idf
+variant used.
+
+### Boolean specification filters (T06) **[to confirm]**
+
+Queries may carry structured constraints such as `battery_mah >= 5000` and `price < 300`
+(CONTRACT.md 4.4). Phones that fail a constraint are removed before ranking. The owner states
+how a phone with an unknown (`null`) value for a constrained field is handled.
