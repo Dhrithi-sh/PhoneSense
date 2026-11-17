@@ -155,3 +155,61 @@ repeat
 until err < tol
 return pi
 ```
+
+## 7.7 Reputation scores (T19, `phonesense/trust/`)
+
+### Baselines
+
+With $m$ the global mean rating and $n_d = |R_d|$:
+
+| Method | Phone score |
+|---|---|
+| Raw average | $\frac{1}{n_d}\sum_{u \in R_d} r_{u,d}$ |
+| Bayesian average | $\dfrac{C\,m + \sum_{u \in R_d} r_{u,d}}{C + n_d}$, with $C = 10$ |
+| Helpful-vote weighted | weighted mean of $r_{u,d}$ with weight $1 + \ln(1 + h_{u,d})$, $h$ = helpful votes |
+| Median | median of $\{r_{u,d}\}$ |
+
+### Reviewer-trust score (our design, inspired by HITS)
+
+HITS scores hubs by the authorities they point to and authorities by the hubs pointing to
+them. We apply the same mutual reinforcement to the reviewer-phone bipartite graph: a phone's
+quality depends on how reliable its reviewers are, and a reviewer's reliability depends on
+how well their ratings agree with the quality of the phones they rated.
+
+$$q_d = \frac{C\,m + \sum_{u \in R_d} \rho_u\,r_{u,d}}{C + \sum_{u \in R_d} \rho_u}$$
+
+$$a_u = 1 - \frac{1}{n_u}\sum_{d \in P_u}\frac{|r_{u,d} - q_d|}{4}, \qquad
+\rho_u = \frac{n_u\,a_u + c\,\rho_0}{n_u + c}$$
+
+$q_d$ is the phone's quality in stars, $a_u \in [0, 1]$ the reviewer's agreement (4 is the
+largest possible star difference) and $\rho_u \in [0, 1]$ their reliability. Two priors keep
+the scores stable:
+
+* $C = 10$ pulls phones with few reviews toward the global mean, exactly as in the Bayesian
+  average.
+* $c = 3$ and $\rho_0 = 0.5$ pull reviewers with few reviews toward a neutral reliability. A
+  brand-new account with one review therefore lands near 0.5, never at 0 or 1; without this
+  prior a fake account with a single review that happens to match the consensus would look
+  perfectly reliable.
+
+Differences from HITS: we use weighted averages and agreement instead of sums, and the priors
+replace HITS's per-round normalisation (both scores are already bounded). Starting from
+$\rho_u = 1$, the first $q_d$ equals the Bayesian average, so the method can only depart from
+that baseline where reviewers disagree. We iterate until
+$\max_d |q_d^{(i+1)} - q_d^{(i)}| < 10^{-6}$, capped at 50 rounds. Convergence is observed
+(6 rounds on synthetic data), not proven; the iteration count is reported with every run.
+
+For ranking, the prior is $(q_d - 1)/4 \in [0, 1]$. The reviewer reliabilities $\rho_u$ are
+written to `reviewer_trust.tsv`.
+
+**Algorithm 2: reviewer trust**
+```
+input:  reviews (u, d, r), priors C, c, rho0, tolerance tol, max_rounds
+m       <- mean of all r;  rho[u] <- 1 for every reviewer
+repeat up to max_rounds
+    q[d]    <- (C*m + sum of rho[u]*r over reviews of d) / (C + sum of rho[u] over reviews of d)
+    a[u]    <- 1 - mean over reviews of u of |r - q[d]| / 4
+    rho[u]  <- (n[u]*a[u] + c*rho0) / (n[u] + c)
+until the largest change in q is below tol
+return q, rho
+```
