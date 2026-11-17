@@ -87,3 +87,13 @@ $\sum_t q'_t\,w_{t,d}$ with the lnc document weights.
 An LLM writes a short hypothetical product description for the query (Gao et al., 2022), and
 its terms are weighted Rocchio-style instead of being concatenated (Jedidi and Lin, 2025).
 The owner records the model, prompt and temperature.
+
+## 7.4 Rank fusion (T13) **[to confirm]**
+
+Reciprocal Rank Fusion (Cormack et al., 2009) combines systems using ranks only:
+
+$$\mathrm{RRF}(d) = \sum_{s \in S} \frac{1}{k + \mathrm{rank}_s(d)}, \qquad k = 60$$
+
+A phone missing from a system's list contributes nothing for that system. Weighted linear
+fusion min-max normalises each system's scores per query and takes
+$\sum_s \lambda_s\,\hat x_s(d)$, with the weights tuned on dev queries.
