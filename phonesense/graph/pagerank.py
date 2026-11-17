@@ -14,8 +14,13 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
+
+from phonesense import io
+from phonesense.config import get_path
+from phonesense.schemas import GraphEdge
 
 
 @dataclass
@@ -50,6 +55,25 @@ class Graph:
             dst=np.array([k[1] for k in keys], dtype=np.int64),
             w=np.array([merged[k] for k in keys], dtype=float),
         )
+
+    @classmethod
+    def from_graph_edges(cls, edges: Iterable[GraphEdge],
+                         doc_ids: Iterable[str] | None = None) -> Graph:
+        """Nodes are ``doc_ids`` (pass every phone so isolated phones get a score too) plus
+        every edge endpoint, sorted."""
+        edges = list(edges)
+        nodes = set(doc_ids or ())
+        nodes |= {e.src_doc_id for e in edges} | {e.dst_doc_id for e in edges}
+        return cls.from_edges(sorted(nodes), [(e.src_doc_id, e.dst_doc_id, e.weight)
+                                              for e in edges])
+
+
+def load_graph(path: str | Path | None = None, doc_ids: Iterable[str] | None = None) -> Graph:
+    """Read graph_edges.tsv (CONTRACT.md 4.8) into a Graph."""
+    path = get_path("graph_edges") if path is None else Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"{path} not found. Run scripts/build_graph.py first.")
+    return Graph.from_graph_edges(io.read_graph_edges(path), doc_ids)
 
 
 def power_iteration(n, src, dst, w=None, damping=0.85, teleport=None, tol=1e-8, max_iter=500):
@@ -117,3 +141,11 @@ def scale_unit(scores: dict[str, float], method: str = "percentile") -> dict[str
     else:
         raise ValueError(f"unknown scaling method: {method!r}")
     return dict(zip(doc_ids, y.tolist(), strict=True))
+
+
+def pagerank_scores(doc_ids: Iterable[str] | None = None, damping: float = 0.85,
+                    tol: float = 1e-8, scale: str = "percentile",
+                    path: str | Path | None = None) -> dict[str, float]:
+    """Global PageRank of the phone graph in graph_edges.tsv, scaled to [0, 1].
+    Rerankers use this as a prior: ``score * (1 + lambda * pagerank)``."""
+    return scale_unit(pagerank(load_graph(path, doc_ids), damping=damping, tol=tol), method=scale)
