@@ -25,17 +25,23 @@ def app(monkeypatch, tmp_path):
     config.get_config.cache_clear()
 
 
+def page_text(app) -> str:
+    return "\n".join(m.value for m in app.markdown)
+
+
 def test_page_renders_on_toy_data(app):
     assert not app.exception
-    assert "Toy data" in app.warning[0].value
-    assert len(app.metric) == 5
+    text = page_text(app)
+    assert "Toy data" in text
+    assert text.count('class="ps-row') == 5  # one row per reputation method
+    assert "Reviewer trust absorbed" in text or "did not help" in text
 
 
 def test_controls_update_the_result(app):
     app.slider[0].set_value(0).run()
     assert not app.exception
-    assert all(m.delta == "no change" for m in app.metric)
-    app.radio[0].set_value("ballot_stuff")
+    assert "Move the attack size slider" in page_text(app)
+    app.button_group[0].set_value("ballot_stuff")
     app.slider[0].set_value(50).run()
     assert not app.exception
-    assert any(m.delta.startswith("rose") for m in app.metric)
+    assert "lifted it" in page_text(app)

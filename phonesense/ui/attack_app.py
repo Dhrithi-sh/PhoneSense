@@ -29,7 +29,6 @@ def load_demo_data():
     return reviews, titles, "toy", True
 
 
-st.set_page_config(page_title="PhoneSense attack demo", layout="wide")
-st.title("PhoneSense")
+st.set_page_config(page_title="PhoneSense · Fake-review attack", layout="centered")
 reviews, titles, data_key, is_toy = load_demo_data()
 render_attack_tab(reviews, titles, data_key=data_key, is_toy=is_toy)
