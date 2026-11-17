@@ -3,6 +3,15 @@
 
 seed: 42
 
+# C: reviewer trust (T19, phonesense/trust/trust.py). Kept near the top so that blocks other
+# members append at the end of this file merge without conflicts.
+trust:
+  bayesian_prior_weight: 10   # C: phone prior weight, also used by the Bayesian baseline
+  prior_strength: 3.0         # c: reviews it takes to outweigh the reviewer prior
+  prior_reliability: 0.5      # r0: reliability of a brand-new account
+  max_iterations: 50
+  tol: 1.0e-6
+
 dataset:
   name: amazon_reviews_2023          # McAuley Lab, Amazon Reviews 2023
   source: McAuley-Lab/Amazon-Reviews-2023
