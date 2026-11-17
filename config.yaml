@@ -19,6 +19,13 @@ graph:
   knn_k: 8                    # kNN edges per phone (needs dense embeddings)
   co_review_min_shared: 2     # reviewers who must have rated both phones
 
+# C: attack experiments (T20, T21; phonesense/attacks/, scripts/run_attacks.py).
+attacks:
+  sizes_percent: [0, 1, 5, 10, 20, 50, 100]   # fake reviews as % of the target's reviews
+  seeds: [1, 2, 3, 4, 5]
+  targets_per_kind: 15        # targets per attack kind and seed
+  min_target_reviews: 20      # phones with fewer reviews are never targets
+
 dataset:
   name: amazon_reviews_2023          # McAuley Lab, Amazon Reviews 2023
   source: McAuley-Lab/Amazon-Reviews-2023
