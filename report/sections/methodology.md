@@ -232,3 +232,39 @@ queries once.
 We mix rather than multiply ($s \cdot (1 + \lambda p)$) because retrieval scores can be
 negative (cosine similarity) and a multiplicative prior can never lift the lowest-scored
 phone.
+
+## 7.9 Review-attack simulation (T20, `phonesense/attacks/simulator.py`)
+
+Following the attacks on reputation systems from Lecture 9, an attacker creates new accounts
+(sybils) and posts fake reviews on one target phone:
+
+* **Bad-mouthing:** one-star reviews on a good phone, as a competitor would. Targets are
+  sampled from the top quarter of phones by raw average.
+* **Ballot stuffing:** five-star reviews on a weak phone, as its seller would. Targets are
+  sampled from the bottom quarter.
+
+Only phones with at least 20 reviews are targets. Each sybil posts exactly one attack review,
+marked unverified with no helpful votes. The attack size is the number of fake reviews as a
+percentage of the target's real review count, from $\{0, 1, 5, 10, 20, 50, 100\}\%$
+(rounded up), with 15 targets per attack type and 5 random seeds.
+
+**Camouflaged attacker.** In a second setting each sybil first posts $k = 5$ cover reviews on
+random other phones, each equal to that phone's rounded average rating, so that it agrees
+with the consensus and gains reliability before it attacks. This is the attacker the trust
+score is expected to struggle against.
+
+For each reputation method we record the target's score and its rank among all phones
+before and after the attack. The rank shift is signed so that a positive value always means
+the attacker gained. Fake reviews are flagged `is_synthetic` and use `SYN_` account ids, and
+the data loader refuses them in the real data file, so they cannot leak into other results.
+
+**Algorithm 3: attack experiment**
+```
+for kind in {bad_mouth, ballot_stuff}, seed in seeds:
+    for target in pick_targets(kind, seed):
+        for pct in sizes:
+            n        <- ceil(pct/100 * reviews(target))
+            attacked <- reviews + n sybil reviews (rating 1 or 5) [+ cover reviews if camouflaged]
+            for method in {raw, Bayesian, helpful, median, trust}:
+                record rank and score of target, before and after
+```
