@@ -12,6 +12,13 @@ trust:
   max_iterations: 50
   tol: 1.0e-6
 
+# C: phone graph and PageRank (T16, T17; phonesense/graph/).
+graph:
+  damping: 0.85               # d = 1 - epsilon
+  tol: 1.0e-8                 # stop when the L1 change is below this
+  knn_k: 8                    # kNN edges per phone (needs dense embeddings)
+  co_review_min_shared: 2     # reviewers who must have rated both phones
+
 dataset:
   name: amazon_reviews_2023          # McAuley Lab, Amazon Reviews 2023
   source: McAuley-Lab/Amazon-Reviews-2023
