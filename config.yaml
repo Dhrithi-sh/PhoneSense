@@ -26,6 +26,11 @@ attacks:
   targets_per_kind: 15        # targets per attack kind and seed
   min_target_reviews: 20      # phones with fewer reviews are never targets
 
+# C: prior reranking (T18; phonesense/graph/rerank.py, scripts/run_rerank.py).
+rerank:
+  lambdas: [0.1, 0.2, 0.3, 0.5]   # weight of the prior; tune on dev runs only
+  ppr_seeds: 10                    # top results that seed personalized PageRank
+
 dataset:
   name: amazon_reviews_2023          # McAuley Lab, Amazon Reviews 2023
   source: McAuley-Lab/Amazon-Reviews-2023
