@@ -1,7 +1,7 @@
 # PhoneSense Makefile. Windows users without make: see README "Plain commands".
 PYTHON ?= python
 
-.PHONY: setup test lint data data-quick sample handcheck handcheck-score index index-sample tfidf eval all
+.PHONY: setup test lint data data-quick sample handcheck handcheck-score index index-sample tfidf tune baselines eval all
 
 setup:
 	$(PYTHON) -m pip install -e .
@@ -36,6 +36,12 @@ index-sample:
 
 tfidf: index
 	$(PYTHON) scripts/run_tfidf.py --split all
+
+tune: index
+	$(PYTHON) scripts/tune_bm25.py
+
+baselines: index
+	$(PYTHON) scripts/run_baselines.py --split dev
 
 eval:
 	$(PYTHON) scripts/run_eval.py

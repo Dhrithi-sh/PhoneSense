@@ -278,7 +278,9 @@ fixtures in the same PR. The paths stay the same.
 * `per_query` is **required** (paired significance tests need it): one entry per evaluated
   qid, each with **exactly the same metric names** as `metrics`. Under the `"MAP"` key a
   per-query entry holds that query's AP.
-* Metric names: `P@k`, `R@k`, `F1@k`, `MAP`, `nDCG@k` (e.g. `P@10`, `nDCG@5`).
+* Metric names: `P@k`, `R@k`, `F1@k`, `MAP`, `nDCG@k` (e.g. `P@10`, `nDCG@5`), plus `RR`
+  (reciprocal rank), `R-prec` (R-precision) and `judged@k` (fraction of the top k with any
+  judgment: pooling coverage, always reported next to the other metrics).
 * `meta` is optional and free-form (parameters, timestamps, …).
 
 ## 4.10 Conventions

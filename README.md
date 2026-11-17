@@ -44,17 +44,19 @@ ruff check .
 python scripts/build_data.py                   # = make data (T02, see "Data pipeline")
 python scripts/build_index.py                  # = make index (T03, see "Index & TF-IDF")
 python scripts/run_tfidf.py --split dev        # TF-IDF run (T04)
-python scripts/run_eval.py                     # = make eval (TODO, T11)
+python scripts/tune_bm25.py                    # = make tune (T05, dev only)
+python scripts/run_baselines.py --split dev    # = make baselines (T05)
+python scripts/run_eval.py                     # = make eval (T11)
 ```
 
 Optional extras: `pip install -r requirements-dense.txt` (B, dense retrieval),
 `pip install -r requirements-ui.txt` (demo UI), `pip install -r requirements-dev.txt`
 (networkx, only to cross-check PageRank in tests). LLM keys: copy `.env.example` to `.env`.
 
-Validate a run against qrels (metrics arrive in T11):
+Evaluate your own run in one command (see "Evaluation" below):
 
 ```bash
-python -m phonesense.eval.cli --run tests/fixtures/sample.run --qrels tests/fixtures/sample_qrels.txt
+python -m phonesense.eval.cli eval --run runs/<your_run>_dev.run    # -> results/<your_run>_dev.json
 ```
 
 Reproduce everything: `make all` (test → data → eval). This becomes the single reproducible
@@ -165,6 +167,84 @@ by `doc_id`:
 `TfidfRetriever(field="text", index=idx)` reuses a loaded index; `TfidfRetriever().fit(phones)`
 builds its own. The run name is `tfidf_lnc.ltc` (`tfidf_lnc.ltc.<field>` for other fields).
 
+## Evaluation (T11)
+
+Our own metric code in `phonesense/eval/` (no pytrec_eval / ranx in shipped code).
+
+```bash
+# one or more runs -> results/<run_name>.json (contract 4.9), summary printed
+python -m phonesense.eval.cli eval --run runs/bm25_tuned_dev.run runs/dense_dev.run
+# significance vs. a baseline (randomization + t-test, Holm over the systems)
+python -m phonesense.eval.cli compare --baseline runs/bm25_tuned_test.run --runs runs/dense_test.run runs/rrf_bm25+dense_test.run --metric ndcg@10
+# Markdown + LaTeX table (globs work in PowerShell too); dagger = significant vs. baseline
+python -m phonesense.eval.cli table --results "results/*_dev.json" --metrics P@10 MAP nDCG@10 judged@10 --baseline tfidf_lnc.ltc --out results/table_dev.md
+python -m phonesense.eval.cli agree --a qrels/human.txt --b qrels/llm.txt   # kappa (T09b)
+python scripts/run_eval.py      # = make eval: every run in runs/ -> results/*.json + results/table_<split>.md
+```
+
+`--qrels` defaults to `qrels/qrels.txt` and falls back to `qrels/llm.txt` with a warning; the
+split comes from the run name (`_dev` -> the dev queries in `queries/queries.jsonl`).
+
+**Metrics** (per query, then the mean over queries):
+
+| Name | Definition |
+|------|------------|
+| `P@k`, `R@k`, `F1@k` (k = 5, 10, 20) | relevant in top k / k; / all relevant; harmonic mean |
+| `MAP` | mean of AP; AP = (1/\|rel\|) Σ P@r over the ranks r of relevant docs (per-query value = AP) |
+| `nDCG@k` (k = 5, 10, 20) | DCG = Σ (2^grade − 1) / log2(rank + 1); ideal DCG from **all judged docs** of the query |
+| `RR`, `R-prec` | 1 / rank of the first relevant doc; precision at rank R = \|rel\| |
+| `judged@10` | fraction of the top 10 that has any judgment |
+
+Conventions:
+
+* **Relevant = grade ≥ 2** (`eval.relevance_threshold`, = `schemas.RELEVANCE_THRESHOLD`) for
+  every binary metric; nDCG uses the graded values.
+* **Unjudged documents count as non-relevant.**
+* **Queries with no relevant document are excluded** from the averages and listed in the
+  results `meta.excluded_qids` (queries with no judgments at all: `meta.unjudged_qids`). A
+  scored query missing from the run gets zeros.
+* **Always report judged@10.** Our qrels come from pooling: a run that was not in the pool
+  has low judged@10, and its scores underestimate it.
+* Significance: paired randomization test (10,000 permutations, two-sided, seed from config)
+  and paired t-test; Holm–Bonferroni when one baseline is compared with several systems.
+  Tables mark p_Holm < 0.05 with †.
+* `phonesense.eval.plots.pr_curve` draws 11-point interpolated P–R curves into
+  `report/figures/` (PNG + PDF).
+
+## BM25 (T05)
+
+`phonesense/retrieval/bm25.py`, on the shared inverted index:
+
+* **BM25**: score = Σ_t w_q(t) · idf(t) · tf·(k1+1) / (tf + k1·(1 − b + b·dl/avgdl)), with
+  idf(t) = ln(1 + (N − df + 0.5)/(df + 0.5)) (never negative). Each distinct query term
+  counts once (`bm25.query_tf: once`), or (k3+1)·qtf/(k3+qtf) with k3 = 8 (`query_tf: k3`).
+* **BM25F-lite**: Σ_f w_f · BM25_f, per-field BM25 with that field's lengths (default
+  weights title 3, features 1.5, description 1). Separate run name `bm25f_...`.
+
+```python
+from phonesense.index import load_index
+from phonesense.retrieval.bm25 import BM25Retriever, BM25FRetriever
+idx = load_index()
+BM25Retriever(k1=1.2, b=0.75, index=idx).score_text("samsung 5g 128 gb", k=10)
+```
+
+**Tuning protocol (dev only):**
+
+```bash
+python scripts/tune_bm25.py                   # = make tune
+python scripts/run_baselines.py --split dev   # = make baselines: tfidf, bm25_default, bm25_tuned, bm25f_tuned
+python scripts/run_baselines.py --split test  # ONCE, at the end, with the dev-chosen params
+```
+
+`tune_bm25.py` grids k1 ∈ {0.4, 0.6, …, 2.0} × b ∈ {0.0, 0.1, …, 1.0} on the dev queries
+(objective `bm25.tuning.objective`, default nDCG@10), then the BM25F weights title ∈
+{1, 2, 3, 5} × features ∈ {1, 1.5, 2} at the best k1/b. It writes `results/bm25_tuning.json`,
+`report/figures/bm25_tuning_heatmap.{png,pdf}` and `bm25f_tuning_heatmap.{png,pdf}`, and the
+best parameters into **`config.yaml` under `bm25.tuned`** (only the block between the
+`BEGIN/END bm25.tuned` comments is rewritten; commit it). It refuses `--split test`, because
+tuning on test would invalidate the test results. `run_baselines.py --split test` refuses to
+overwrite existing test runs without `--force`.
+
 ## Repo map
 
 ```
@@ -213,6 +293,7 @@ tests/ (+ fixtures/)     contract tests and one tiny example per file format
 3. Load inputs through the contract: `io.read_phones(get_path("phones"))`,
    `io.read_queries(get_path("queries"), split="dev")`.
 4. Write the run with `run_retriever(retriever, queries)`, which creates `runs/tfidf_lnc.ltc_dev.run`.
-   Check it with `python -m phonesense.eval.cli --run runs/tfidf_lnc.ltc_dev.run --qrels qrels/qrels.txt`.
+   Score it with `python -m phonesense.eval.cli eval --run runs/tfidf_lnc.ltc_dev.run`
+   (writes `results/tfidf_lnc.ltc_dev.json`; compare against BM25 with the `compare` command).
 5. Add a test on the fixtures (`tests/fixtures/phones.jsonl`), run `make test && make lint`,
    and open a PR to `main`.
