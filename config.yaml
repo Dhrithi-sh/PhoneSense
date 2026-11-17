@@ -53,6 +53,7 @@ paths:
   handcheck_specs: results/handcheck_specs.csv
   handcheck_filter: results/handcheck_filter.csv
   handcheck_summary: results/handcheck_summary.json
+  llm_logs: runs/llm_logs         # committed: every LLM call is logged here (GUIDE 7)
 
 # T03 text analysis (phonesense/index/analyzer.py). Used for documents AND queries; changing
 # any of these makes saved indexes stale (rebuild with scripts/build_index.py --force).
@@ -60,6 +61,15 @@ analyzer:
   stopwords: true     # built-in English list; 5g/4g/pro/max/plus/mini/ultra/lite are never removed
   stem: true          # tokens containing digits are never stemmed
   stemmer: porter     # porter (NLTK algorithm, no download) | light (plural-only S-stemmer)
+
+# ---- B: LLM (T09, T15). Keys live in .env (see .env.example), never here. ----
+llm:
+  provider: gemini                # gemini | openai
+  models:                         # check the names against the provider before the first run
+    gemini: gemini-2.0-flash
+    openai: gpt-4o-mini
+  temperature: 0.0                # deterministic; identical calls are replayed from the logs
+  max_retries: 3
 
 retrieval:
   default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)

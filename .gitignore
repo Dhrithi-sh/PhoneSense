@@ -11,6 +11,7 @@ legacy/midterm/data/
 # Generated outputs
 runs/*
 !runs/.gitkeep
+!runs/llm_logs/
 results/*
 !results/.gitkeep
 # Hand-check labels are human input (not reproducible by a script): commit them once filled.
