@@ -268,3 +268,33 @@ for kind in {bad_mouth, ballot_stuff}, seed in seeds:
             for method in {raw, Bayesian, helpful, median, trust}:
                 record rank and score of target, before and after
 ```
+
+## 7.10 Evaluation (T09, T11) **[to confirm]**
+
+**Relevance labels.** Phones are judged on a 0-3 scale (0 not relevant to 3 perfect). The
+pool for each query is the union of the top results of every system; LLM judgments are
+validated against a hand-labelled sample with Cohen's kappa. The owner of T09 records the pool
+depth, the judge model and its prompt. Unjudged phones count as non-relevant, which favours
+the systems that contributed to the pool; this is listed as a limitation.
+
+**Metrics.** For binary metrics a phone is relevant when its grade is at least 2
+(`schemas.RELEVANCE_THRESHOLD`). With $\mathrm{Rel}_q$ the relevant phones for query $q$ and
+$\mathrm{Ret}_k$ the top $k$ retrieved:
+
+$$P@k = \frac{|\mathrm{Rel}_q \cap \mathrm{Ret}_k|}{k}, \qquad
+R@k = \frac{|\mathrm{Rel}_q \cap \mathrm{Ret}_k|}{|\mathrm{Rel}_q|}, \qquad
+F_1 = \frac{2PR}{P + R}$$
+
+$$\mathrm{AP}(q) = \frac{1}{|\mathrm{Rel}_q|}\sum_{k:\ d_k \in \mathrm{Rel}_q} P@k, \qquad
+\mathrm{MAP} = \frac{1}{|Q|}\sum_{q \in Q}\mathrm{AP}(q)$$
+
+$$\mathrm{DCG}@k = \sum_{i=1}^{k}\frac{g_i}{\log_2(i + 1)}, \qquad
+\mathrm{nDCG}@k = \frac{\mathrm{DCG}@k}{\mathrm{IDCG}@k}$$
+
+where $g_i$ is the graded relevance of the phone at rank $i$ and IDCG is the DCG of the ideal
+ordering. nDCG@10 is the headline metric because it uses the graded labels and rewards
+putting the best phones first. Accuracy is not reported: almost every phone is irrelevant to
+almost every query, so a system that returns nothing would score close to 100%.
+
+Differences between systems are tested with a paired test over per-query scores. With the
+small test set many differences will not be significant, and the results say so.
