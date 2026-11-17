@@ -57,3 +57,33 @@ variant used.
 Queries may carry structured constraints such as `battery_mah >= 5000` and `price < 300`
 (CONTRACT.md 4.4). Phones that fail a constraint are removed before ranking. The owner states
 how a phone with an unknown (`null`) value for a constrained field is handled.
+
+## 7.3 Dense retrieval and query expansion
+
+### Dense retrieval (T12, `phonesense/retrieval/dense.py`)
+
+Each phone's text is embedded once with the sentence encoder
+`sentence-transformers/all-MiniLM-L6-v2`, and the unit-length vectors are cached on disk.
+A query is embedded the same way and phones are ranked by exact cosine similarity
+$\mathrm{score}(q,d) = \mathbf{e}_q \cdot \mathbf{e}_d$; no approximate index is needed for a
+collection of a few thousand phones.
+
+### Rocchio pseudo-relevance feedback (T14, `phonesense/retrieval/rocchio.py`)
+
+The query vector moves toward the centroid of phones assumed relevant and away from those
+assumed non-relevant:
+
+$$\vec q\,' = \alpha\,\vec q + \beta\,\frac{1}{|D_r|}\sum_{d \in D_r}\vec d
+- \gamma\,\frac{1}{|D_{nr}|}\sum_{d \in D_{nr}}\vec d$$
+
+$D_r$ is the top $m = 10$ phones of a first TF-IDF pass. With the default $\gamma = 0$ no
+non-relevant set is used; for $\gamma > 0$ the phones ranked $m+1$ to $2m$ form $D_{nr}$.
+Defaults are $\alpha = 1$, $\beta = 0.75$. Negative components are dropped and only the 20
+heaviest terms of $\vec q\,'$ are kept, to limit topic drift. Phones are then re-scored as
+$\sum_t q'_t\,w_{t,d}$ with the lnc document weights.
+
+### HyDE-style LLM expansion (T15) **[to confirm]**
+
+An LLM writes a short hypothetical product description for the query (Gao et al., 2022), and
+its terms are weighted Rocchio-style instead of being concatenated (Jedidi and Lin, 2025).
+The owner records the model, prompt and temperature.
