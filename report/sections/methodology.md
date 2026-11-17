@@ -213,3 +213,22 @@ repeat up to max_rounds
 until the largest change in q is below tol
 return q, rho
 ```
+
+## 7.8 Reranking with a prior (T18, `phonesense/graph/rerank.py`)
+
+Any run (TF-IDF, BM25, dense, fused) can be reranked with a prior $p(d) \in [0, 1]$:
+global PageRank (7.6), personalized PageRank (7.6) or reviewer trust (7.7). Within each query
+the run's scores are min-max normalised to $\hat s(d) \in [0, 1]$ and mixed:
+
+$$s'(d) = (1 - \lambda)\,\hat s(d) + \lambda\,p(d)$$
+
+$\lambda = 0$ keeps the original ranking and $\lambda = 1$ ranks by the prior alone. Only
+phones already in the run are reordered. A phone the prior does not cover gets the prior's
+median, so it is neither pushed up nor down. For personalized PageRank the prior is computed
+per query and scaled by its largest value among that query's candidates. $\lambda$ is tuned
+on dev queries from $\{0.1, 0.2, 0.3, 0.5\}$ and the chosen value is applied to the test
+queries once.
+
+We mix rather than multiply ($s \cdot (1 + \lambda p)$) because retrieval scores can be
+negative (cosine similarity) and a multiplicative prior can never lift the lowest-scored
+phone.
