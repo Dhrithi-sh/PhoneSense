@@ -5,7 +5,10 @@ centroid of documents believed relevant and away from the centroid of non-releva
 
     q' = alpha * q  +  beta * mean(D_rel)  -  gamma * mean(D_nonrel)
 
-Negative components are dropped (a term cannot count against a document). There is no user to
+Negative components are dropped (a term cannot count against a document). An optional HyDE term
+``+ delta * h`` adds the vector ``h`` of an LLM-written hypothetical listing (see
+:mod:`phonesense.retrieval.hyde`); with ``delta = 0`` (the default) this is plain Rocchio.
+There is no user to
 judge documents, so we use *pseudo*-relevance feedback: the top ``m`` documents of the first
 TF-IDF pass are assumed relevant. With the default ``gamma = 0`` no non-relevant set is used;
 for ``gamma > 0`` the documents ranked ``m+1 .. m+m_nonrel`` stand in for it.
@@ -23,7 +26,7 @@ from __future__ import annotations
 
 import heapq
 import math
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
 
 from phonesense.io import Ranking
@@ -53,15 +56,24 @@ def rocchio_update(
     alpha: float = 1.0,
     beta: float = 0.75,
     gamma: float = 0.15,
+    hypothetical: Mapping[str, float] | None = None,
+    delta: float = 0.0,
 ) -> Vector:
-    """Return ``alpha*q + beta*centroid(relevant) - gamma*centroid(nonrelevant)``.
+    """Return ``alpha*q + beta*centroid(relevant) - gamma*centroid(nonrelevant) + delta*h``.
 
-    Components that end up <= 0 are removed. The result is not re-normalized.
+    ``h`` is the optional ``hypothetical`` vector (HyDE). Components that end up <= 0 are
+    removed. The result is not re-normalized.
     """
     rel, non = centroid(relevant), centroid(nonrelevant)
+    hyp = hypothetical or {}
     out: Vector = {}
-    for term in set(query) | set(rel) | set(non):
-        w = alpha * query.get(term, 0.0) + beta * rel.get(term, 0.0) - gamma * non.get(term, 0.0)
+    for term in set(query) | set(rel) | set(non) | set(hyp):
+        w = (
+            alpha * query.get(term, 0.0)
+            + beta * rel.get(term, 0.0)
+            - gamma * non.get(term, 0.0)
+            + delta * hyp.get(term, 0.0)
+        )
         if w > 0.0:
             out[term] = w
     return out
@@ -91,16 +103,19 @@ class RocchioRetriever(Retriever):
         gamma: float = 0.0,
         n_terms: int = 20,
         m_nonrel: int | None = None,
+        delta: float = 0.0,
     ) -> None:
         if m < 1:
             raise ValueError(f"m must be >= 1, got {m}")
-        if min(alpha, beta, gamma) < 0:
-            raise ValueError("alpha, beta and gamma must be non-negative")
+        if min(alpha, beta, gamma, delta) < 0:
+            raise ValueError("alpha, beta, gamma and delta must be non-negative")
         self.base = base if base is not None else TfidfRetriever()
         self.m, self.alpha, self.beta, self.gamma = m, alpha, beta, gamma
+        self.delta = delta
         self.n_terms = n_terms
         self.m_nonrel = m if m_nonrel is None else m_nonrel
-        self.name = f"rocchio_{self.base.name}_m{m}_b{beta:g}_g{gamma:g}_t{n_terms}"
+        suffix = f"_d{delta:g}" if delta > 0 else ""
+        self.name = f"rocchio_{self.base.name}_m{m}_b{beta:g}_g{gamma:g}_t{n_terms}{suffix}"
 
     # ------------------------------------------------------------------ fitting
 
@@ -118,22 +133,37 @@ class RocchioRetriever(Retriever):
         tv = index.term_vector(doc, self.base.field)
         return {t: _log_tf(tf) / norm for t, tf in tv.items()}
 
+    def text_vector(self, text: str) -> Vector:
+        """lnc-style vector of free text: ``1 + log10 tf``, cosine-normalized, terms not in the
+        index dropped. This is the same space as :meth:`doc_vector`."""
+        index = self.base._require_index()
+        counts = Counter(self.base._analyzer.analyze(text))
+        raw = {t: _log_tf(tf) for t, tf in counts.items() if index.df(t, self.base.field) > 0}
+        norm = math.sqrt(sum(w * w for w in raw.values()))
+        return {t: w / norm for t, w in raw.items()} if norm > 0 else {}
+
     def _first_pass(self, text: str, depth: int) -> list[int]:
         index = self.base._require_index()
         acc = self.base.score_all(text)
         top = heapq.nsmallest(depth, acc.items(), key=lambda kv: (-kv[1], index.doc_id(kv[0])))
         return [d for d, _ in top]
 
-    def expanded_query(self, text: str) -> Vector:
-        """The Rocchio-updated query vector for ``text`` (original weights if nothing matches)."""
+    def expanded_query(self, text: str, hypothetical: str | None = None) -> Vector:
+        """The Rocchio-updated query vector for ``text`` (original weights if nothing matches).
+
+        ``hypothetical`` is an LLM-written listing; with ``delta > 0`` its vector is added.
+        """
         q0 = self.base.query_weights(text)
         depth = self.m + (self.m_nonrel if self.gamma > 0 else 0)
         ranked = self._first_pass(text, depth)
         rel = [self.doc_vector(d) for d in ranked[: self.m]]
         non = [self.doc_vector(d) for d in ranked[self.m : self.m + self.m_nonrel]]
-        if not rel:
+        hyp = self.text_vector(hypothetical) if hypothetical and self.delta > 0 else None
+        if not rel and not hyp:
             return q0
-        updated = rocchio_update(q0, rel, non, self.alpha, self.beta, self.gamma)
+        updated = rocchio_update(
+            q0, rel, non, self.alpha, self.beta, self.gamma, hypothetical=hyp, delta=self.delta
+        )
         return top_terms(updated, self.n_terms)
 
     # ------------------------------------------------------------------ searching

@@ -21,7 +21,10 @@ from __future__ import annotations
 
 import re
 
+from phonesense.io import Ranking
 from phonesense.llm.client import LLMClient
+from phonesense.retrieval.rocchio import RocchioRetriever
+from phonesense.retrieval.tfidf import TfidfRetriever
 
 PURPOSE = "hyde"
 
@@ -68,3 +71,34 @@ class HydeGenerator:
         """Return the cleaned hypothetical listing (empty string if the model said nothing)."""
         raw = self.client.complete(build_prompt(query_text), purpose=PURPOSE)
         return clean_listing(raw, self.max_chars)
+
+
+class HydeRetriever(RocchioRetriever):
+    """TF-IDF + Rocchio + HyDE: ``q' = alpha*q + beta*centroid(top m) + delta*h``.
+
+    ``h`` is the lnc vector of the hypothetical listing for the query. The first pass that picks
+    the pseudo-relevant documents still uses the original query only, so a bad hypothetical
+    listing can shift the weights but cannot choose the feedback set. If the generator returns
+    nothing the result equals plain Rocchio.
+    """
+
+    def __init__(
+        self,
+        generator: HydeGenerator,
+        base: TfidfRetriever | None = None,
+        m: int = 10,
+        alpha: float = 1.0,
+        beta: float = 0.75,
+        gamma: float = 0.0,
+        n_terms: int = 30,
+        delta: float = 0.75,
+    ) -> None:
+        super().__init__(
+            base, m=m, alpha=alpha, beta=beta, gamma=gamma, n_terms=n_terms, delta=delta
+        )
+        self.generator = generator
+        self.name = "hyde" + self.name.removeprefix("rocchio")
+
+    def score_text(self, text: str, k: int = 100) -> Ranking:
+        hypothetical = self.generator.generate(text)
+        return self.score_vector(self.expanded_query(text, hypothetical), k)
