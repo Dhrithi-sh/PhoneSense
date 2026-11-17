@@ -17,17 +17,11 @@ from collections import Counter
 import numpy as np
 
 from phonesense import io
-from phonesense.config import get_config, get_path
+from phonesense.config import get_path
 from phonesense.trust.baselines import bayesian_average
+from phonesense.trust.methods import trust_params
 from phonesense.trust.toy import make_toy_reviews
 from phonesense.trust.trust import compute_trust
-
-
-def trust_params() -> dict:
-    t = get_config()["trust"]
-    return {"prior_weight": t["bayesian_prior_weight"], "prior_strength": t["prior_strength"],
-            "prior_reliability": t["prior_reliability"], "max_iterations": t["max_iterations"],
-            "tol": t["tol"]}
 
 
 def main() -> None:

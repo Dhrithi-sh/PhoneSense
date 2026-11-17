@@ -26,30 +26,10 @@ import matplotlib.pyplot as plt  # noqa: E402
 from phonesense import io  # noqa: E402
 from phonesense.attacks.simulator import attack_size, inject, measure, pick_targets  # noqa: E402
 from phonesense.config import get_config, get_path  # noqa: E402
-from phonesense.trust.baselines import (  # noqa: E402
-    bayesian_average,
-    helpful_weighted_average,
-    median_rating,
-    raw_average,
-)
+from phonesense.trust.methods import reputation_methods  # noqa: E402
 from phonesense.trust.toy import make_toy_reviews  # noqa: E402
-from phonesense.trust.trust import compute_trust  # noqa: E402
 
 KINDS = ("bad_mouth", "ballot_stuff")
-
-
-def reputation_methods() -> dict:
-    t = get_config()["trust"]
-    return {
-        "raw": raw_average,
-        "bayesian": lambda rs: bayesian_average(rs, prior_weight=t["bayesian_prior_weight"]),
-        "helpful": helpful_weighted_average,
-        "median": median_rating,
-        "trust": lambda rs: compute_trust(
-            rs, prior_weight=t["bayesian_prior_weight"], prior_strength=t["prior_strength"],
-            prior_reliability=t["prior_reliability"], max_iterations=t["max_iterations"],
-            tol=t["tol"]).quality,
-    }
 
 
 def main() -> None:
