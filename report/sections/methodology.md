@@ -97,3 +97,61 @@ $$\mathrm{RRF}(d) = \sum_{s \in S} \frac{1}{k + \mathrm{rank}_s(d)}, \qquad k = 
 A phone missing from a system's list contributes nothing for that system. Weighted linear
 fusion min-max normalises each system's scores per query and takes
 $\sum_s \lambda_s\,\hat x_s(d)$, with the weights tuned on dev queries.
+
+## 7.5 Phone graph (T16, `phonesense/graph/build_graph.py`)
+
+Phones are nodes. Two edge types are built and merged; when both give the same directed pair,
+their weights are added.
+
+* **Co-review.** Phones $a$ and $b$ are linked in both directions when at least
+  $s_{\min} = 2$ reviewers rated both. With $s_{ab}$ shared reviewers the weight is
+  $w_{ab} = \min(s_{ab}, 5)/5$. Reviewers who rated more than 30 phones are skipped: they
+  add a quadratic number of pairs and little signal.
+* **Semantic kNN.** Each phone points to its $k = 8$ most similar phones by cosine similarity
+  of the dense embeddings (7.3), with that similarity as the weight. Non-positive
+  similarities are dropped.
+
+Co-purchase links ("bought together") are not used: the phone file does not carry them.
+For the report we record, per edge type, the number of edges and the share of phones
+touched, and for the merged graph the dangling phones (no out-edges), the isolated phones
+(no edges) and the size of the largest connected component.
+
+## 7.6 PageRank and personalized PageRank (T17, `phonesense/graph/pagerank.py`)
+
+Let $\pi$ be the rank vector, $d$ the damping factor ($d = 1 - \epsilon$ in the lecture's
+notation, default 0.85), $\mathbf t$ the teleport distribution and
+$W_u = \sum_v w_{uv}$ the out-weight of $u$. One power-iteration step is
+
+$$\pi^{(i+1)}_v = d\left(\sum_{u \to v} \pi^{(i)}_u\,\frac{w_{uv}}{W_u}
++ t_v \sum_{u:\,W_u = 0} \pi^{(i)}_u\right) + (1 - d)\,t_v$$
+
+The second term handles dangling phones: rank that would leak out of a phone with no
+out-edges is redistributed according to $\mathbf t$, which keeps $\sum_v \pi_v = 1$. We stop
+when $\lVert \pi^{(i+1)} - \pi^{(i)} \rVert_1 < 10^{-8}$. Because the error shrinks by at
+least a factor $d$ per step, this takes at most $\lceil \log 10^{-8} / \log 0.85 \rceil = 114$
+iterations.
+
+* **Global PageRank** uses the uniform teleport $t_v = 1/N$. It is a query-independent
+  "how central is this phone" score. Because PageRank is heavy-tailed, it is turned into a
+  prior by its percentile rank: $\mathrm{pr}(d) = |\{d' : \pi_{d'} \le \pi_d\}| / N$.
+* **Personalized PageRank** teleports only to seed phones. For a query, the seeds are its top
+  10 results with weight $1/\mathrm{rank}$, so rank flows to phones linked to the best hits
+  (the HippoRAG idea, Gutiérrez et al., 2024). Phones unreachable from the seeds score 0.
+
+The implementation is our own (two sparse weighted sums per step with `numpy.bincount`);
+tests check it against `networkx.pagerank` to within $10^{-9}$, for both variants.
+
+**Algorithm 1: PageRank by power iteration**
+```
+input:  edges (u, v, w), teleport t (sums to 1), damping d, tolerance tol
+W[u]  <- sum of w over edges leaving u
+pi    <- t
+repeat
+    flow[v]  <- sum over edges (u, v, w) of pi[u] * w / W[u]
+    leak     <- sum of pi[u] over u with W[u] = 0
+    new[v]   <- d * (flow[v] + leak * t[v]) + (1 - d) * t[v]
+    err      <- sum over v of |new[v] - pi[v]|
+    pi       <- new
+until err < tol
+return pi
+```
