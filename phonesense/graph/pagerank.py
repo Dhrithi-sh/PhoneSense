@@ -87,3 +87,33 @@ def pagerank(graph: Graph, damping: float = 0.85, tol: float = 1e-8) -> dict[str
     pi, _ = power_iteration(len(graph.doc_ids), graph.src, graph.dst, graph.w,
                             damping=damping, tol=tol)
     return dict(zip(graph.doc_ids, pi.tolist(), strict=True))
+
+
+def personalized_pagerank(graph: Graph, seeds: dict[str, float], damping: float = 0.85,
+                          tol: float = 1e-8) -> dict[str, float]:
+    """PageRank whose teleport vector is the normalised seed scores (e.g. the top fused
+    hits for a query). Phones unreachable from the seeds score 0. Values sum to 1."""
+    index = {d: i for i, d in enumerate(graph.doc_ids)}
+    unknown = [d for d in seeds if d not in index]
+    if unknown:
+        raise KeyError(f"seed doc_ids not in graph: {unknown[:5]}")
+    t = np.zeros(len(graph.doc_ids))
+    for doc_id, score in seeds.items():
+        t[index[doc_id]] = score
+    pi, _ = power_iteration(len(graph.doc_ids), graph.src, graph.dst, graph.w,
+                            damping=damping, teleport=t, tol=tol)
+    return dict(zip(graph.doc_ids, pi.tolist(), strict=True))
+
+
+def scale_unit(scores: dict[str, float], method: str = "percentile") -> dict[str, float]:
+    """Map scores to [0, 1]. 'percentile': share of phones scoring <= this one (ties equal),
+    robust to PageRank's heavy tail. 'max': divide by the largest score."""
+    doc_ids = list(scores)
+    x = np.array([scores[d] for d in doc_ids], dtype=float)
+    if method == "percentile":
+        y = np.searchsorted(np.sort(x), x, side="right") / len(x)
+    elif method == "max":
+        y = x / x.max()
+    else:
+        raise ValueError(f"unknown scaling method: {method!r}")
+    return dict(zip(doc_ids, y.tolist(), strict=True))
