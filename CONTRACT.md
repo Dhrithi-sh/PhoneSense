@@ -250,6 +250,13 @@ user_id	trust
 AE7K2QLXDZ4P	0.92
 ```
 * `trust` is a float in [0, 1] (1 = fully trusted). One row per `user_id`.
+* Written by `scripts/build_trust.py` (T19). `trust` is the reviewer's **reliability**: how
+  closely their ratings agree with the trust-weighted quality of the phones they rated,
+  shrunk toward `trust.prior_reliability` (0.5) for reviewers with few reviews. A new
+  account with one review sits near 0.5, never at 0 or 1. Formulas: docstring of
+  `phonesense/trust/trust.py`.
+* The phone-level score for ranking is not stored in a file: call
+  `phonesense.trust.trust.trust_scores(reviews)` -> `{doc_id: score in [0, 1]}`.
 
 C may add columns or change semantics, but must update this section, the schema and the
 fixtures in the same PR. The paths stay the same.
