@@ -13,6 +13,17 @@ offers the standard fixes:
   ``k`` makes the gap between rank 1 and rank 2 small, a small ``k`` rewards a top position
   strongly. A document missing from a ranking contributes 0 for that system.
 
+* **Weighted linear fusion** over min-max normalised scores::
+
+      score(d) = sum_i w_i * norm_i(d) / sum_i w_i
+      norm_i(d) = (s_i(d) - min_i) / (max_i - min_i)
+
+  Unlike RRF this keeps the *size* of the score gaps, so a system that is very sure about one
+  document can outvote the others. The min and max are taken over the ranking that system
+  returned (its top ``depth``), so the last document of every list normalises to 0; a list whose
+  scores are all equal normalises to 1 for every document. A document missing from a ranking
+  contributes 0 for that system. The weights are tuned on dev queries (see ``fusion_tune.py``).
+
 Every function is deterministic: documents with equal fused scores are ordered by ``doc_id``
 ascending, as required of every ranking in CONTRACT.md. Inputs are never modified.
 """
@@ -85,7 +96,42 @@ def reciprocal_rank_fusion(
     return _top(fused, depth)
 
 
-METHODS = ("rrf",)
+def minmax_normalise(ranking: Ranking) -> dict[str, float]:
+    """Scale the scores of one ranking to [0, 1]; all-equal scores (or one doc) become 1.0."""
+    if not ranking:
+        return {}
+    scores = [s for _, s in ranking]
+    lo, hi = min(scores), max(scores)
+    if hi == lo:
+        return {doc_id: 1.0 for doc_id, _ in ranking}
+    span = hi - lo
+    out: dict[str, float] = {}
+    for doc_id, s in ranking:
+        out.setdefault(doc_id, (s - lo) / span)  # a repeated doc keeps its first (best) score
+    return out
+
+
+def weighted_linear_fusion(
+    rankings: Sequence[Ranking],
+    weights: Sequence[float] | None = None,
+    depth: int | None = None,
+) -> Ranking:
+    """Fuse ``rankings`` as the weight-averaged min-max normalised score (result in [0, 1]).
+
+    Weights are divided by their sum, so ``[1, 1]`` and ``[5, 5]`` give the same result.
+    """
+    ws = _check_weights(weights, len(rankings))
+    total = sum(ws)
+    fused: dict[str, float] = {}
+    for w, ranking in zip(ws, rankings, strict=True):
+        if w == 0:  # weight 0 means "ignore this system"
+            continue
+        for doc_id, norm in minmax_normalise(ranking).items():
+            fused[doc_id] = fused.get(doc_id, 0.0) + w * norm / total
+    return _top(fused, depth)
+
+
+METHODS = ("rrf", "linear")
 
 
 class FusionRetriever(Retriever):
@@ -122,7 +168,9 @@ class FusionRetriever(Retriever):
 
     def _default_name(self) -> str:
         parts = "+".join(r.name for r in self.retrievers)
-        return f"fusion_{self.method}_k{self.rrf_k}_{parts}"
+        if self.method == "rrf":
+            return f"fusion_rrf_k{self.rrf_k}_{parts}"
+        return f"fusion_linear_{parts}"
 
     def fit(self, phones: list[Phone]) -> None:
         if self.fit_children:
@@ -131,6 +179,8 @@ class FusionRetriever(Retriever):
 
     def fuse(self, rankings: Sequence[Ranking], k: int) -> Ranking:
         """Fuse already-retrieved rankings with this retriever's method and settings."""
+        if self.method == "linear":
+            return weighted_linear_fusion(rankings, self.weights, depth=k)
         return reciprocal_rank_fusion(rankings, self.rrf_k, self.weights, depth=k)
 
     def search(self, query: Query, k: int = 100) -> Ranking:
