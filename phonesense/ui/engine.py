@@ -3,6 +3,19 @@
 The UI (``app.py``) only draws; everything that loads data, builds retrievers and turns a
 ranking into displayable results lives here.
 
+Systems (toggles in the sidebar), in priority order:
+
+* ``tfidf``   TF-IDF lnc.ltc (always available),
+* ``rocchio`` TF-IDF + Rocchio pseudo-relevance feedback,
+* ``hyde``    Rocchio + an LLM-written hypothetical listing (needs a key in ``.env`` or logged
+              answers, see ``phonesense/llm/client.py``),
+* ``dense``   sentence-embedding cosine search (``phonesense.retrieval.dense``).
+
+With two or more systems on, their rankings are merged by rank fusion (RRF or linear) when the
+fusion switch is on; otherwise the first system in priority order is used and a note says so.
+``dense`` and the fusion code live in separate modules that may be missing from a build; they
+are imported lazily and reported as unavailable instead of crashing the app.
+
 Data: the phones file is looked up in this order: the ``PHONESENSE_PHONES`` environment
 variable, ``paths.phones`` (full data), ``paths.sample_dir/phones.jsonl`` (the early sample).
 When no override is given and a saved index exists (``scripts/build_index.py``) it is loaded;
@@ -11,13 +24,19 @@ otherwise an index is built in memory.
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import os
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from phonesense.config import get_path
 from phonesense.index import InvertedIndex, index_path
-from phonesense.io import read_phones
+from phonesense.io import Ranking, read_phones
+from phonesense.llm.client import LLMClient, LLMError
+from phonesense.retrieval.hyde import HydeGenerator, HydeRetriever
+from phonesense.retrieval.rocchio import RocchioRetriever
 from phonesense.retrieval.tfidf import TfidfRetriever
 from phonesense.schemas import Phone, Query
 
@@ -51,6 +70,26 @@ class Result:
         return f"{self.avg_rating:.1f}/5 ({self.rating_count:,} ratings)"
 
 
+COMPONENTS = ("tfidf", "rocchio", "hyde", "dense")  # priority order
+LABELS = {
+    "tfidf": "TF-IDF",
+    "rocchio": "Rocchio feedback",
+    "hyde": "HyDE expansion",
+    "dense": "Dense (embeddings)",
+}
+FUSION_METHODS = ("rrf", "linear")
+DEPTH = 100  # documents taken from each system before fusing
+
+
+@dataclass(frozen=True)
+class SearchResponse:
+    """Results plus what actually ran: ``used`` are the systems, ``notes`` explain fallbacks."""
+
+    results: list[Result]
+    used: list[str]
+    notes: list[str] = field(default_factory=list)
+
+
 def find_phones_file() -> tuple[Path, bool]:
     """Return ``(path, is_sample)`` of the phones file to use, or raise :class:`NoDataError`."""
     env = os.environ.get("PHONESENSE_PHONES")
@@ -72,15 +111,20 @@ def find_phones_file() -> tuple[Path, bool]:
 
 
 class SearchEngine:
-    """TF-IDF search over a phone collection, returning displayable :class:`Result` rows."""
+    """Search over a phone collection with switchable systems; returns :class:`Result` rows."""
 
     def __init__(self, phones: list[Phone], index: InvertedIndex | None = None) -> None:
         self.phones = {p.doc_id: p for p in phones}
+        self._phone_list = phones
         self.tfidf = TfidfRetriever()
         if index is not None:
             self.tfidf.fit_index(index)
         else:
             self.tfidf.fit(phones)
+        self.rocchio = RocchioRetriever(self.tfidf)
+        self._hyde: HydeRetriever | None = None
+        self._dense = None
+        self._unavailable: dict[str, str] = {}
 
     @classmethod
     def from_default_data(cls) -> SearchEngine:
@@ -100,7 +144,43 @@ class SearchEngine:
     def __len__(self) -> int:
         return len(self.phones)
 
-    def _results(self, ranking: list[tuple[str, float]]) -> list[Result]:
+    # ------------------------------------------------------------------ availability
+
+    def unavailable_reason(self, key: str) -> str | None:
+        """Why system ``key`` (or ``"fusion"``) cannot be used right now, or None if it can."""
+        if key in self._unavailable:
+            return self._unavailable[key]
+        if key == "dense" and importlib.util.find_spec("phonesense.retrieval.dense") is None:
+            return "dense retrieval is not in this build"
+        if key == "fusion" and importlib.util.find_spec("phonesense.retrieval.fusion") is None:
+            return "rank fusion is not in this build"
+        return None
+
+    def _get_dense(self):
+        """Build the dense retriever on first use (embeds all phones; cached on disk)."""
+        if self._dense is None:
+            module = importlib.import_module("phonesense.retrieval.dense")
+            retriever = module.DenseRetriever()
+            retriever.fit(self._phone_list)
+            self._dense = retriever
+        return self._dense
+
+    def _get_hyde(self) -> HydeRetriever:
+        if self._hyde is None:
+            self._hyde = HydeRetriever(HydeGenerator(LLMClient()), self.tfidf)
+        return self._hyde
+
+    def _retriever(self, key: str):
+        return {
+            "tfidf": lambda: self.tfidf,
+            "rocchio": lambda: self.rocchio,
+            "hyde": self._get_hyde,
+            "dense": self._get_dense,
+        }[key]()
+
+    # ------------------------------------------------------------------ searching
+
+    def _results(self, ranking: Ranking) -> list[Result]:
         out = []
         for rank, (doc_id, score) in enumerate(ranking, start=1):
             p = self.phones[doc_id]
@@ -108,9 +188,62 @@ class SearchEngine:
                               p.avg_rating, p.rating_count, score))
         return out
 
-    def search(self, text: str, k: int = 10) -> list[Result]:
-        """Top ``k`` phones for ``text`` (empty text gives no results)."""
+    def _fuse(self, rankings: list[Ranking], method: str, k: int) -> Ranking:
+        fusion = importlib.import_module("phonesense.retrieval.fusion")
+        if method == "linear":
+            return fusion.weighted_linear_fusion(rankings, depth=k)
+        return fusion.reciprocal_rank_fusion(rankings, depth=k)
+
+    def search(
+        self,
+        text: str,
+        toggles: Mapping[str, bool] | None = None,
+        k: int = 10,
+        fusion_method: str = "rrf",
+    ) -> SearchResponse:
+        """Top ``k`` phones for ``text`` using the systems switched on in ``toggles``.
+
+        ``toggles`` maps ``tfidf``/``rocchio``/``hyde``/``dense``/``fusion`` to bool; missing
+        keys count as off, except that TF-IDF is used when nothing is selected. A system that
+        cannot run (missing module, no LLM key) is dropped with a note rather than raising.
+        """
+        if fusion_method not in FUSION_METHODS:
+            raise ValueError(f"fusion_method must be one of {FUSION_METHODS}, got {fusion_method}")
         if not text.strip():
-            return []
+            return SearchResponse([], [])
+        toggles = toggles or {"tfidf": True}
         query = Query(qid="q00", text=text, split="dev")
-        return self._results(self.tfidf.search(query, k))
+        notes: list[str] = []
+
+        wanted = [c for c in COMPONENTS if toggles.get(c)]
+        if not wanted:
+            wanted = ["tfidf"]
+            notes.append("No system selected, showing TF-IDF.")
+        rankings: dict[str, Ranking] = {}
+        depth = DEPTH if len(wanted) > 1 else k
+        for key in wanted:
+            reason = self.unavailable_reason(key)
+            if reason is None:
+                try:
+                    rankings[key] = self._retriever(key).search(query, depth)
+                    continue
+                except ImportError as exc:  # a missing package will not appear mid-session
+                    reason = self._unavailable[key] = str(exc)
+                except LLMError as exc:  # may be transient (network, quota): retry next search
+                    reason = str(exc)
+            notes.append(f"{LABELS[key]} skipped: {reason}.")
+        if not rankings:  # every chosen system failed: fall back so the page is never empty
+            rankings["tfidf"] = self.tfidf.search(query, k)
+            notes.append("Falling back to TF-IDF.")
+
+        used = list(rankings)
+        if len(used) == 1:
+            return SearchResponse(self._results(rankings[used[0]][:k]), used, notes)
+
+        fusion_reason = self.unavailable_reason("fusion")
+        if toggles.get("fusion") and fusion_reason is None:
+            fused = self._fuse([rankings[u] for u in used], fusion_method, k)
+            return SearchResponse(self._results(fused), used, notes)
+        why = "fusion is off" if fusion_reason is None else f"{fusion_reason}"
+        notes.append(f"{len(used)} systems selected but {why}; showing {LABELS[used[0]]} only.")
+        return SearchResponse(self._results(rankings[used[0]][:k]), [used[0]], notes)

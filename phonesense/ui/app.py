@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import streamlit as st
 
-from phonesense.ui.engine import NoDataError, SearchEngine
+from phonesense.ui.engine import COMPONENTS, FUSION_METHODS, LABELS, NoDataError, SearchEngine
+
+FUSION_LABELS = {"rrf": "RRF (rank-based, k=60)", "linear": "Weighted linear (min-max)"}
 
 
 @st.cache_resource(show_spinner="Loading phones and building the index...")
@@ -37,8 +39,35 @@ def main() -> None:
         st.error(str(exc))
         st.stop()
 
+    toggles: dict[str, bool] = {}
     with st.sidebar:
-        st.header("Search settings")
+        st.header("Systems")
+        for key in COMPONENTS:
+            reason = engine.unavailable_reason(key)
+            toggles[key] = st.checkbox(
+                LABELS[key],
+                value=(key == "tfidf"),
+                disabled=reason is not None,
+                help=reason or None,
+                key=f"toggle_{key}",
+            )
+        st.header("Fusion")
+        fusion_reason = engine.unavailable_reason("fusion")
+        toggles["fusion"] = st.checkbox(
+            "Fuse selected systems",
+            value=True,
+            disabled=fusion_reason is not None,
+            help=fusion_reason or "Merge the rankings of every selected system.",
+            key="toggle_fusion",
+        )
+        fusion_method = st.radio(
+            "Fusion method",
+            FUSION_METHODS,
+            format_func=FUSION_LABELS.get,
+            disabled=fusion_reason is not None or not toggles["fusion"],
+            key="fusion_method",
+        )
+        st.header("Display")
         k = st.slider("Results", min_value=5, max_value=20, value=10, step=5)
         st.caption(f"{len(engine):,} phones indexed")
 
@@ -47,12 +76,16 @@ def main() -> None:
         st.info("Type a search above to see ranked phones.")
         return
 
-    results = engine.search(text, k)
-    if not results:
+    with st.spinner("Searching (the first dense query embeds every phone, so it is slow)..."):
+        response = engine.search(text, toggles, k, fusion_method)
+    for note in response.notes:
+        st.warning(note)
+    if not response.results:
         st.warning("No phone matched. Try different words.")
         return
-    st.subheader(f"Top {len(results)} results")
-    for r in results:
+    st.subheader(f"Top {len(response.results)} results")
+    st.caption("Systems used: " + ", ".join(LABELS[u] for u in response.used))
+    for r in response.results:
         draw_result(r)
 
 
