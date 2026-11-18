@@ -28,3 +28,10 @@ paths:
 
 retrieval:
   default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)
+
+# ---- B: rank fusion (T13). Tune on dev queries only; test is used once per final setting. ----
+fusion:
+  method: rrf        # rrf (linear is added in the next commit)
+  rrf_k: 60          # RRF constant; 60 is the published default, swept on dev in T13
+  depth: 100         # documents taken from each system before fusing (<= 100)
+  weights: null      # per-system weights, null = equal
