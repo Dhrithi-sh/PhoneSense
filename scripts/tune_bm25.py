@@ -23,15 +23,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 import time
 from pathlib import Path
 from typing import Any
 
-import yaml
-
-from phonesense.config import config_path, get_config, get_path
+from phonesense.config import get_config, get_path, write_tuned_block
 from phonesense.eval.evaluate import evaluate_rankings, resolve_qrels_path
 from phonesense.eval.metrics import canonical_metric, metric_names
 from phonesense.index import StaleIndexError, open_index
@@ -45,9 +42,6 @@ REFUSE_TEST = (
     "test results. Tune on dev (the default), then run "
     "`python scripts/run_baselines.py --split test` once with the tuned parameters."
 )
-MARKER_RE = re.compile(r"(  # BEGIN bm25\.tuned[^\n]*\n)(.*?)(  # END bm25\.tuned)", re.DOTALL)
-
-
 def score(retriever: Any, queries: list[Query], qrels: dict, k: int) -> dict[str, float]:
     """Mean metrics of ``retriever`` over ``queries`` (via the T11 harness)."""
     rankings = {q.qid: [d for d, _ in retriever.search(q, k)] for q in queries}
@@ -57,16 +51,7 @@ def score(retriever: Any, queries: list[Query], qrels: dict, k: int) -> dict[str
 
 def write_tuned(tuned: dict[str, Any], path: Path | None = None) -> Path:
     """Replace the ``bm25.tuned`` block in config.yaml (between the marker comments)."""
-    path = path or config_path()
-    text = path.read_text(encoding="utf-8")
-    m = MARKER_RE.search(text)
-    if not m:
-        raise ValueError(f"{path}: bm25.tuned marker comments not found; cannot update it")
-    body = yaml.safe_dump({"tuned": tuned}, default_flow_style=None, sort_keys=False, width=100)
-    body = "".join(f"  {line}\n" for line in body.strip().splitlines())
-    path.write_text(text[: m.start(2)] + body + text[m.end(2) :], encoding="utf-8", newline="\n")
-    get_config.cache_clear()
-    return path
+    return write_tuned_block("bm25", tuned, path)
 
 
 def _best(rows: list[dict], key: str, prefer: dict[str, float]) -> dict:

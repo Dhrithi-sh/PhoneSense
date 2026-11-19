@@ -245,6 +245,70 @@ best parameters into **`config.yaml` under `bm25.tuned`** (only the block betwee
 tuning on test would invalidate the test results. `run_baselines.py --split test` refuses to
 overwrite existing test runs without `--force`.
 
+## Filters (T06)
+
+`phonesense/retrieval/filters.py`. Filters use the contract syntax (CONTRACT.md 4.4), checked
+by `schemas.validate_filter`:
+
+```json
+{"and": [{"field": "price", "op": "<", "value": 300}, {"field": "has_5g", "op": "==", "value": true}]}
+```
+
+* **Null policy:** a phone whose spec is `null` never satisfies a constraint on it, **not even
+  under `not`** (three-valued Kleene logic; a phone passes only if the whole filter is TRUE).
+  This trades recall for precision: phones with missing specs drop out of filtered runs.
+* **Filter source per query:** the query's own `filters` in `queries/queries.jsonl` if set,
+  otherwise the rule-based parser `parse_constraints(text) -> (filter, residual_text)`. The
+  source is logged in `runs/<run_name>.filters.json`.
+* **Parser coverage:** price (`under/below/less than $X`, `up to $X`, `over $X`,
+  `$X-Y`, `between X and Y`), RAM (`8gb ram`, `at least 6 gb ram`), storage (`128gb`,
+  `256 gb storage`, `1tb`; a bare `Ngb` below 16 is RAM), battery (`5000 mah` -> `>=`),
+  screen (`6.5 inch` -> ±0.2", `under 6 inches`, `compact`/`small` -> `<= 6.2`), `5g`,
+  `android`, `ios`/`iphone`. Numeric specs mean "at least" (`8gb ram` -> `ram_gb >= 8`).
+  **Not parsed:** "budget", "cheap", "big battery", camera megapixels, brands, negation.
+  The matched phrases are removed and the rest of the query goes to the ranker.
+* **Wrap any retriever:**
+
+```python
+from phonesense.retrieval.filters import FilteredRetriever
+FilteredRetriever(bm25, phones, mode="pre")    # TF-IDF / BM25 / BM25F / phrase: filter inside the scoring loop
+FilteredRetriever(dense, phones, mode="post")  # any retriever: top 1000, then filter
+```
+
+  Pre-filtered docs keep exactly their unfiltered scores. If fewer than k docs pass, fewer
+  are returned (no padding).
+
+## Boolean & phrase search (T07)
+
+```python
+from phonesense.retrieval.boolean import BooleanSearcher
+from phonesense.retrieval.positional import phrase_matches, proximity_matches, PhraseBoostRetriever
+BooleanSearcher(idx).search("samsung AND 5g AND NOT refurbished")   # doc_ids
+BooleanSearcher(idx).search("(pixel OR iphone) AND NOT renewed", field="title")
+phrase_matches(idx, "wireless charging")        # {doc: occurrences}, any field
+proximity_matches(idx, "battery", "life", 3)    # within 3 positions, either order
+```
+
+* **Boolean syntax:** terms, `AND`, `OR`, `NOT`, parentheses; adjacent terms are ANDed;
+  operators have equal precedence and apply left to right (`a OR b AND c` = `(a OR b) AND c`).
+  AND operands are intersected smallest first, with sqrt(n) skip pointers.
+* **Phrases** `"t1 t2"` match consecutive positions (stopword gaps are kept identically in
+  queries and documents); **proximity** `t1 /k t2` matches `|pos1 − pos2| <= k`.
+* **Phrase boost:** `PhraseBoostRetriever(bm25)` adds `phrase_weight · Σ ln(1 + matches)` for
+  the query's quoted phrases and the auto-phrases in `phrase.auto_phrases`. `phrase_weight`
+  is tuned on dev only.
+
+```bash
+python scripts/tune_phrase.py                 # dev only (refuses --split test) -> phrase.tuned in config.yaml
+python scripts/run_t06_t07.py --split dev     # bm25_tuned(+filters)(+phrase) runs, table, compare, constraint subset
+python scripts/run_t06_t07.py --split test    # ONCE
+python scripts/bench_boolean.py               # AND latency with/without skip pointers -> results/efficiency.json
+```
+
+`run_t06_t07.py` writes `results/table_t06_t07_<split>.md`, `results/compare_t06_t07_<split>.json`
+(Holm-corrected vs. `bm25_tuned` on nDCG@10 and MAP) and `results/filters_subset_<split>.{json,md}`
+(metrics over queries with constraints vs. without).
+
 ## Repo map
 
 ```

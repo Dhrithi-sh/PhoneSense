@@ -87,3 +87,21 @@ bm25:
   # BEGIN bm25.tuned (written by scripts/tune_bm25.py on dev; do not edit by hand)
   tuned: null
   # END bm25.tuned
+
+# T06 Boolean spec filters (phonesense/retrieval/filters.py).
+filters:
+  compact_max_screen_in: 6.2   # "compact" / "small" -> screen_in <= this
+  screen_tolerance_in: 0.2     # "6.5 inch" -> 6.3 <= screen_in <= 6.7
+  small_ram_gb: 16             # a bare "<N>gb" with N below this is RAM, otherwise storage
+  post_depth: 1000             # post-filter mode retrieves this many, then filters
+
+# T07 phrase boost (phonesense/retrieval/positional.py, scripts/tune_phrase.py).
+phrase:
+  weight: 1.0                  # used until phrase.tuned is written
+  weight_grid: [0.5, 1.0, 2.0, 4.0]
+  auto_phrases: [wireless charging, fast charging, battery life, night mode, face unlock,
+                 fingerprint sensor, dual sim, headphone jack, refresh rate, water resistant,
+                 screen protector, unlocked phone]
+  # BEGIN phrase.tuned (written by scripts/tune_phrase.py on dev; do not edit by hand)
+  tuned: null
+  # END phrase.tuned

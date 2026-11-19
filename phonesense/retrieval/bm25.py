@@ -175,8 +175,13 @@ class BM25Retriever(Retriever):
             out[term] = 1.0 if self.query_tf == "once" else (self.k3 + 1) * qtf / (self.k3 + qtf)
         return out
 
-    def score_all(self, text: str) -> dict[int, float]:
-        """Accumulators ``{internal doc: score}`` for every doc sharing a query term."""
+    def score_all(self, text: str, allowed: set[int] | None = None) -> dict[int, float]:
+        """Accumulators ``{internal doc: score}`` for every doc sharing a query term.
+
+        ``allowed`` (internal doc ids) restricts scoring to those docs (pre-filtering, T06);
+        idf and lengths still come from the whole collection, so surviving docs keep exactly
+        their unfiltered scores.
+        """
         index = self._require_index()
         n, k1p1 = index.N, self.k1 + 1
         acc: dict[int, float] = defaultdict(float)
@@ -184,12 +189,14 @@ class BM25Retriever(Retriever):
             plist = index.postings(term, self.field)
             w = wq * idf(len(plist), n)
             for p in plist:
+                if allowed is not None and p.doc not in allowed:
+                    continue
                 acc[p.doc] += w * p.tf * k1p1 / (p.tf + self._K[p.doc])
         return acc
 
-    def score_text(self, text: str, k: int = 100) -> Ranking:
-        """Top k ``(doc_id, score)`` for a free-text query."""
-        return top_k(self.score_all(text), self._require_index(), k)
+    def score_text(self, text: str, k: int = 100, allowed: set[int] | None = None) -> Ranking:
+        """Top k ``(doc_id, score)`` for a free-text query (optionally only ``allowed`` docs)."""
+        return top_k(self.score_all(text, allowed), self._require_index(), k)
 
     def search(self, query: Query, k: int = 100) -> Ranking:
         """Rank documents for ``query.text`` (filters are ignored by plain BM25)."""
@@ -253,18 +260,18 @@ class BM25FRetriever(Retriever):
         for p in self.parts.values():
             p.fit_index(index)
 
-    def score_all(self, text: str) -> dict[int, float]:
+    def score_all(self, text: str, allowed: set[int] | None = None) -> dict[int, float]:
         acc: dict[int, float] = defaultdict(float)
         for f, part in self.parts.items():
             w = self.weights[f]
-            for d, s in part.score_all(text).items():
+            for d, s in part.score_all(text, allowed).items():
                 acc[d] += w * s
         return acc
 
-    def score_text(self, text: str, k: int = 100) -> Ranking:
+    def score_text(self, text: str, k: int = 100, allowed: set[int] | None = None) -> Ranking:
         if self.index is None:
             raise RuntimeError("call fit() or fit_index() before searching")
-        return top_k(self.score_all(text), self.index, k)
+        return top_k(self.score_all(text, allowed), self.index, k)
 
     def search(self, query: Query, k: int = 100) -> Ranking:
         return self.score_text(query.text, k)

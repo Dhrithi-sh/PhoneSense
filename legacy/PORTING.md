@@ -33,6 +33,15 @@ documented, and every ported module says "Adapted from our midterm project Dhvan
 | (none) | `phonesense/eval/agreement.py` | New: Cohen's kappa, linear weighted kappa, `agreement_report` for T09b. |
 | (none) | `scripts/tune_bm25.py`, `scripts/run_baselines.py` | New: dev-only k1/b and field-weight grid, heatmaps, `bm25.tuned` in config.yaml; baseline runs + table. |
 
+## T06 / T07
+
+| Original file | New file | What changed |
+|---------------|----------|--------------|
+| `index/search.py` (`and_search`, `intersect_postings`, `build_skip_pointers`) | `phonesense/retrieval/boolean.py` | Same smallest-first AND with sqrt(n) skip pointers, now on int doc-id lists with comparison counts and a no-skip mode for the benchmark. The OR / NOT / parentheses parser (left-to-right precedence) is new. |
+| `index/search.py` (`phrase_search`, `proximity_search`) | `phonesense/retrieval/positional.py` | Same consecutive-offset phrase check and windowed proximity, now with stopword-gap offsets from the analyzer, match counts, candidate docs from the skip intersection, any field. `PhraseBoostRetriever` is new. |
+| `dhvani/rank/filters.py` (idea only: filter before taking the top k) | `phonesense/retrieval/filters.py` | New for phone specs: Kleene evaluator for the contract's filter syntax, rule-based constraint parser, `FilteredRetriever` (pre / post). |
+| (none) | `scripts/tune_phrase.py`, `scripts/run_t06_t07.py`, `scripts/bench_boolean.py` | New: dev-only phrase-weight tuning, filtered/phrase runs with comparison and constraint subset, skip-pointer benchmark. |
+
 ## Not ported (don't fit English phone listings)
 
 `text/normalize.py`, `text/stem.py`, `text/aggressive_stem.py`, `text/auto_stem.py`
@@ -44,6 +53,5 @@ transliteration), `dhvani/crawl/` (news crawler), recency tiers and `g(d)` in
 
 | Task | Original | Notes |
 |------|----------|-------|
-| T07 phrase / proximity | `index/search.py` (`phrase_search`, `proximity_search`), `dhvani/rank/scoring.py` (`smallest_window`) | Positions are in every posting; stopword gaps are kept identically for documents and queries. |
 | T07 tolerant retrieval | `dhvani/query/{kgram,editdist}.py` | Use `idx.vocabulary(field)`. |
 | Efficiency | `dhvani/rank/speedups.py` (index elimination, champion lists, impact ordering) | Optional extra for the efficiency table. |
