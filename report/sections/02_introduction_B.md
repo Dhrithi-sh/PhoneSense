@@ -37,16 +37,24 @@ against human labels, supplies the relevance judgements we evaluate with.
 
 ## 1.4 Contributions
 
-*(To be finalised against the results table; keep only what we can show.)*
+We list only what we can show; numbers in brackets are filled in at Gate 3 from the frozen
+results. None of the retrieval ideas below is new; the contribution is how they are combined,
+measured and made explainable.
 
-1. A phone-search test collection: 45 queries (27 dev, 18 test), graded judgements from an LLM
-   judge, and a human-labelled sample with agreement `[kappa TBD]`.
-2. A comparison of lexical, dense, feedback-based and fused retrieval on that collection, with
-   an add-one and leave-one-out ablation `[TBD]`.
-3. A HyDE-style expansion adapted to sparse retrieval and combined with Rocchio weighting
-   `[effect on nDCG@10 TBD]`.
-4. A reviewer-trust score and an attack study of bad-mouthing and ballot stuffing `[TBD]`.
-5. A demo with per-component toggles and a per-result score breakdown.
+1. **A phone-search test collection**: 45 queries of four types (spec, aspect, model, vague),
+   split into 27 dev and 18 test queries, with graded 0-3 judgements from an LLM judge and a
+   human-labelled sample on which agreement is measured (Cohen's kappa `[TBD]`).
+2. **A controlled comparison** of lexical (TF-IDF, BM25), dense, feedback-based and fused
+   retrieval on that collection, with an add-one and leave-one-out ablation showing what each
+   component adds `[TBD]`.
+3. **An application of HyDE with Rocchio term weighting to phone search**, following Jedidi and
+   Lin (2025), with every LLM call logged and replayable so that results do not depend on an
+   API key `[effect on nDCG@10 TBD]`.
+4. **A reviewer-trust score and a fake-review attack study** (bad-mouthing and ballot stuffing,
+   simulated) comparing it with raw, Bayesian and helpful-vote averages `[TBD]`, and the effect of
+   graph and trust priors on ranking quality `[TBD]`.
+5. **An explainable demo**: per-component switches, a per-result score breakdown, and an optional
+   buying guide that may only restate listed facts and flags figures it cannot find in the data.
 
 ## 1.5 Scope and honest limits
 
