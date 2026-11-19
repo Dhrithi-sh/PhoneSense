@@ -323,3 +323,19 @@ def test_priors_are_unavailable_without_the_rerank_module(engine):
         assert "not in this build" in engine.unavailable_reason(key)
     r = engine.search("compact camera", {"tfidf": True, "pagerank": True})
     assert r.used == ["tfidf"] and any("PageRank prior skipped" in n for n in r.notes)
+
+
+# ---------------------------------------------------------------------------- robustness
+
+
+def test_an_unexpected_error_in_one_system_is_a_note_not_a_crash(engine):
+    class Boom:
+        def search(self, query, k=100):
+            raise RuntimeError("model download failed")
+
+    engine.rocchio = Boom()
+    r = engine.search("compact camera", {"tfidf": True, "rocchio": True, "fusion": False})
+    assert r.results and any("Rocchio feedback skipped: RuntimeError" in n for n in r.notes)
+    only = engine.search("compact camera", {"rocchio": True})
+    assert only.used == ["tfidf"] and any("Falling back to TF-IDF" in n for n in only.notes)
+    assert engine.unavailable_reason("rocchio") is None  # a runtime failure is retried next time

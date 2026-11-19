@@ -216,3 +216,43 @@ tests/ (+ fixtures/)     contract tests and one tiny example per file format
    Check it with `python -m phonesense.eval.cli --run runs/tfidf_lnc.ltc_dev.run --qrels qrels/qrels.txt`.
 5. Add a test on the fixtures (`tests/fixtures/phones.jsonl`), run `make test && make lint`,
    and open a PR to `main`.
+
+## Demo UI (T24)
+
+```bash
+pip install -r requirements-ui.txt
+streamlit run phonesense/ui/app.py
+```
+
+It needs the data (`python scripts/build_data.py`), or `PHONESENSE_PHONES=path/to/phones.jsonl`
+to try any phones file. Two tabs: **Search** and **Fake-review attack** (C's `attack_tab.py`).
+All search logic is in `phonesense/ui/engine.py`; `app.py` only draws.
+
+| Control | What it does |
+|---|---|
+| Systems | TF-IDF, BM25, Rocchio, HyDE, Dense. Grey = not in this build or not usable, hover for why. |
+| Fuse selected systems | With two or more systems on, merge them with RRF or weighted linear fusion. Off: only the first system is shown, with a note. |
+| Priors + lambda | PageRank and reviewer-trust reorder the top 100: `(1 - lambda) * score + lambda * prior`. |
+| Score breakdown | Under each result: rank and raw score from every selected system, the prior values, and the final score. |
+
+A system that fails (no LLM key, missing model, missing data) is skipped with a warning; the page
+never shows a stack trace. HyDE needs a key in `.env` for new queries; answers already logged in
+`runs/llm_logs/` are replayed without one.
+
+### Demo script (about 5 minutes)
+
+1. **Spec query.** Click *Spec: 5G phone under $300* with TF-IDF only. Say what it matches
+   (words, not numbers) and open one *Score breakdown*.
+2. **Aspect query.** Click *Aspect: ... battery lasts two days*. Turn on **Rocchio**, then **HyDE**:
+   the vocabulary gap ("lasts two days" vs "5000mAh") is what feedback and the hypothetical
+   listing try to close. Point at the warnings if a system was skipped.
+3. **Fusion.** Turn on Dense and keep fusion on. Switch RRF and linear. In the breakdown show where
+   each system ranked the same phone, and a phone one system missed ("not in top 100").
+4. **Model query.** Click *Model: Google Pixel 7a*: names are easy for lexical search, hard for vague
+   embeddings.
+5. **Priors.** Turn on **PageRank prior**, raise lambda from 0.2 to 0.5, watch the order change; the
+   breakdown shows the prior value of each phone. Then add **Reviewer-trust prior**.
+6. **Attack tab.** Pick *Bad-mouthing*, a target phone, and a size; compare how far the phone moves
+   under raw average versus reviewer trust.
+7. **Limits (say them yourself).** 2023 data, USD prices, a heuristic phone filter, 45 queries,
+   simulated attacks, LLM labels checked against a small human sample.

@@ -358,6 +358,8 @@ class SearchEngine:
                     reason = self._unavailable[key] = str(exc)
                 except LLMError as exc:  # may be transient (network, quota): retry next search
                     reason = str(exc)
+                except Exception as exc:  # noqa: BLE001 - a demo page must not die on one system
+                    reason = f"{type(exc).__name__}: {exc}"
             notes.append(f"{LABELS[key]} skipped: {reason}.")
         if not rankings:  # every chosen system failed: fall back so the page is never empty
             rankings["tfidf"] = self.tfidf.search(query, depth)
@@ -398,8 +400,8 @@ class SearchEngine:
                 try:
                     values[key] = self._prior(key)
                     continue
-                except (OSError, ValueError, ImportError) as exc:
-                    reason = str(exc)
+                except Exception as exc:  # noqa: BLE001 - skip the prior, keep the page alive
+                    reason = f"{type(exc).__name__}: {exc}"
             notes.append(f"{PRIOR_LABELS[key]} skipped: {reason}.")
         if not values or weight == 0.0:
             return ranking, values

@@ -27,6 +27,18 @@ from phonesense.ui.engine import (
 
 FUSION_LABELS = {"rrf": "RRF (rank-based, k=60)", "linear": "Weighted linear (min-max)"}
 
+# One example per query type of the evaluation set (spec, aspect, model, vague), for the demo.
+EXAMPLES = {
+    "Spec": "5G phone under $300",
+    "Aspect": "phone whose battery lasts two days of heavy use",
+    "Model": "Google Pixel 7a",
+    "Vague": "best phone for a teenager",
+}
+CAVEATS = (
+    "Data: Amazon Reviews 2023 (Cell Phones), prices in USD, phones picked by a heuristic "
+    "filter. Rankings are not shopping advice."
+)
+
 
 @st.cache_resource(show_spinner="Loading phones and building the index...")
 def load_engine() -> SearchEngine:
@@ -130,14 +142,32 @@ def render_sidebar(engine: SearchEngine) -> tuple[dict[str, bool], str, float, i
     return toggles, fusion_method, prior_weight, k
 
 
+def _use_example(text: str) -> None:
+    st.session_state["query_text"] = text
+
+
 def render_search_tab(engine, toggles, fusion_method, prior_weight, k) -> None:
-    text = st.text_input("What are you looking for?", placeholder="phone with a great night camera")
+    text = st.text_input(
+        "What are you looking for?",
+        placeholder="phone with a great night camera",
+        key="query_text",
+    )
+    cols = st.columns(len(EXAMPLES))
+    for col, (kind, example) in zip(cols, EXAMPLES.items(), strict=True):
+        col.button(f"{kind}: {example}", on_click=_use_example, args=(example,),
+                   use_container_width=True, key=f"example_{kind}")
     if not text.strip():
-        st.info("Type a search above to see ranked phones.")
+        st.info("Type a search above, or pick an example, to see ranked phones.")
         return
 
-    with st.spinner("Searching (the first dense query embeds every phone, so it is slow)..."):
-        response = engine.search(text, toggles, k, fusion_method, prior_weight)
+    try:
+        with st.spinner("Searching (the first dense query embeds every phone, so it is slow)..."):
+            response = engine.search(text, toggles, k, fusion_method, prior_weight)
+    except Exception as exc:  # noqa: BLE001 - show a readable error instead of a stack trace
+        st.error(f"The search failed: {type(exc).__name__}: {exc}")
+        with st.expander("Details"):
+            st.exception(exc)
+        return
     for note in response.notes:
         st.warning(note)
     if not response.results:
@@ -150,6 +180,7 @@ def render_search_tab(engine, toggles, fusion_method, prior_weight, k) -> None:
     st.caption(f"Systems used: {used}{priors}")
     for r in response.results:
         draw_result(r)
+    st.caption(CAVEATS)
 
 
 def render_attack_tab_or_note(engine: SearchEngine) -> None:
