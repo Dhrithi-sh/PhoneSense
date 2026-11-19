@@ -77,7 +77,12 @@ leave-one-out ablation `[results TBD]`.
 ## 6. What is new and what already existed
 
 Existing ideas we implement and compare: TF-IDF, BM25, Rocchio, dense retrieval with sentence
-encoders, HyDE, RRF, PageRank. Our contribution is their **combination and evaluation on a
-spec-heavy, review-rich product domain**, a HyDE adaptation that works through sparse Rocchio
-weights, a reviewer-trust score evaluated under simulated attacks, and a demo that exposes every
-component. We do not claim a new retrieval model `[confirm against results]`.
+encoders, HyDE, RRF, PageRank. Weighting HyDE's expansion terms with Rocchio for a sparse
+retriever is **not ours**: Jedidi and Lin (2025) proposed and evaluated it, and we apply their
+idea to phone search `[verify the details against the paper before describing our variant]`.
+
+What we contribute is the **combination and evaluation on a spec-heavy, review-rich product
+domain**: all of these rankers on one test collection with graded labels and a measured judge
+agreement, an ablation of what each adds, a reviewer-trust score evaluated under simulated
+attacks (own design, inspired by HITS), and a demo that exposes every component. We do not claim
+a new retrieval model `[confirm against results]`.
