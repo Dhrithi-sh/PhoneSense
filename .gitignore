@@ -18,6 +18,9 @@ results/*
 !results/handcheck_filter.csv
 !results/handcheck_summary.json
 
+# Generated report snippets (scripts/report_numbers.py)
+report/generated/
+
 # Secrets
 .env
 

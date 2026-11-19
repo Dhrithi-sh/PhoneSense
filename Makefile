@@ -1,7 +1,7 @@
 # PhoneSense Makefile. Windows users without make: see README "Plain commands".
 PYTHON ?= python
 
-.PHONY: setup test lint data data-quick sample handcheck handcheck-score index index-sample tfidf tune baselines tune-phrase t06-t07 bench eval all
+.PHONY: setup test lint data data-quick sample handcheck handcheck-score index index-sample tfidf tune baselines tune-phrase t06-t07 bench eval ablation report-numbers submission reproduce all
 
 setup:
 	$(PYTHON) -m pip install -e .
@@ -55,4 +55,17 @@ bench: index
 eval:
 	$(PYTHON) scripts/run_eval.py
 
-all: test data eval
+ablation:
+	$(PYTHON) scripts/ablation.py
+
+report-numbers:
+	$(PYTHON) scripts/report_numbers.py
+
+submission:
+	$(PYTHON) scripts/make_submission.py
+
+# From processed data; `make reproduce FULL=1` also downloads and rebuilds the raw data.
+reproduce:
+	$(PYTHON) scripts/reproduce.py $(if $(filter 1,$(FULL)),--full,)
+
+all: test reproduce

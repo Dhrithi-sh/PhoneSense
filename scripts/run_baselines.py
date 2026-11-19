@@ -23,8 +23,12 @@ test is evaluated once.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
+import time
 from pathlib import Path
+
+import numpy as np
 
 from phonesense.config import get_config, get_path
 from phonesense.eval.cli import TABLE_METRICS, write_table
@@ -34,6 +38,40 @@ from phonesense.io import read_queries
 from phonesense.retrieval.base import Retriever, run_retriever
 from phonesense.retrieval.bm25 import BM25FRetriever, BM25Retriever
 from phonesense.retrieval.tfidf import TfidfRetriever
+
+
+class Timed(Retriever):
+    """Wraps a retriever and records the wall-clock time of each search (efficiency table)."""
+
+    def __init__(self, inner: Retriever) -> None:
+        self.inner, self.name, self.latencies = inner, inner.name, []
+
+    def fit(self, phones) -> None:
+        self.inner.fit(phones)
+
+    def search(self, query, k: int = 100):
+        t0 = time.perf_counter()
+        out = self.inner.search(query, k)
+        self.latencies.append(time.perf_counter() - t0)
+        return out
+
+    def summary(self, run_name: str, n_docs: int) -> dict:
+        ms = np.array(self.latencies) * 1000
+        return {
+            "run": run_name,
+            "N": n_docs,
+            "queries": len(ms),
+            "mean_ms": round(float(ms.mean()), 4),
+            "p95_ms": round(float(np.percentile(ms, 95)), 4),
+        }
+
+
+def write_latency(results_dir: Path, lat: dict) -> Path:
+    """results/latency_<run>.json (read by scripts/report_numbers.py)."""
+    out = results_dir / f"latency_{lat['run']}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(lat, indent=2) + "\n", encoding="utf-8")
+    return out
 
 
 def build_retrievers(index, cfg: dict) -> tuple[list[Retriever], list[str]]:
@@ -101,9 +139,13 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
     paths = []
+    results_dir = args.results_dir or get_path("results_dir")
     for r in retrievers:
-        p = run_retriever(r, queries, run_name=f"{r.name}_{args.split}", runs_dir=runs_dir)
-        print(f"wrote {p}")
+        timed = Timed(r)
+        p = run_retriever(timed, queries, run_name=f"{r.name}_{args.split}", runs_dir=runs_dir)
+        lat = timed.summary(p.stem, index.N)
+        write_latency(results_dir, lat)
+        print(f"wrote {p} (latency mean {lat['mean_ms']:.2f} ms, p95 {lat['p95_ms']:.2f} ms)")
         paths.append(p)
 
     try:
@@ -111,7 +153,6 @@ def main(argv: list[str] | None = None) -> int:
     except FileNotFoundError as e:
         print(f"note: {e} Runs written; evaluation skipped.")
         return 0
-    results_dir = args.results_dir or get_path("results_dir")
     files = []
     for p in paths:
         try:

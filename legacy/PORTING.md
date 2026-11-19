@@ -42,6 +42,13 @@ documented, and every ported module says "Adapted from our midterm project Dhvan
 | `dhvani/rank/filters.py` (idea only: filter before taking the top k) | `phonesense/retrieval/filters.py` | New for phone specs: Kleene evaluator for the contract's filter syntax, rule-based constraint parser, `FilteredRetriever` (pre / post). |
 | (none) | `scripts/tune_phrase.py`, `scripts/run_t06_t07.py`, `scripts/bench_boolean.py` | New: dev-only phrase-weight tuning, filtered/phrase runs with comparison and constraint subset, skip-pointer benchmark. |
 
+## T22 / final assembly
+
+| Original file | New file | What changed |
+|---------------|----------|--------------|
+| `dhvani/eval/experiments.py` (`run_experiments`, `wins_and_losses`, `plot_pr_curves`) | `scripts/ablation.py`, `ablation.yaml` | The midterm's experiment grid became a config-driven ablation over every team member's runs: pending rows, Holm across rows, coverage flags, dev-only best-system choice, incremental table, bootstrap CIs, failure cases. |
+| (none) | `scripts/report_numbers.py`, `scripts/reproduce.py`, `scripts/make_submission.py` | New: generated report snippets, one-command reproduction, submission ZIP with dry run and checklist. |
+
 ## Not ported (don't fit English phone listings)
 
 `text/normalize.py`, `text/stem.py`, `text/aggressive_stem.py`, `text/auto_stem.py`
