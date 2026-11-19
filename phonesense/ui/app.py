@@ -21,11 +21,25 @@ def load_engine() -> SearchEngine:
     return SearchEngine.from_default_data()
 
 
+def breakdown_table(r) -> str:
+    """Markdown table: where each selected system ranked this phone and its raw score."""
+    rows = ["| System | Rank | Raw score |", "|---|---:|---:|"]
+    for part in r.breakdown:
+        rank = "not in top 100" if part.rank is None else str(part.rank)
+        score = "-" if part.score is None else f"{part.score:.4f}"
+        rows.append(f"| {part.label} | {rank} | {score} |")
+    rows.append(f"| **Final score shown above** | **{r.rank}** | **{r.score:.4f}** |")
+    return "\n".join(rows)
+
+
 def draw_result(r) -> None:
     with st.container(border=True):
         st.markdown(f"**{r.rank}. {r.title}**")
         st.caption(f"{r.brand or 'brand unknown'}  ·  {r.price_text}  ·  {r.rating_text}")
         st.caption(f"score {r.score:.4f}  ·  id {r.doc_id}")
+        if r.breakdown:
+            with st.expander("Score breakdown"):
+                st.markdown(breakdown_table(r))
 
 
 def main() -> None:

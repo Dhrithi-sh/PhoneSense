@@ -6,6 +6,7 @@ ranking into displayable results lives here.
 Systems (toggles in the sidebar), in priority order:
 
 * ``tfidf``   TF-IDF lnc.ltc (always available),
+* ``bm25``    BM25 (``phonesense.retrieval.bm25``, T05; picked up automatically once it exists),
 * ``rocchio`` TF-IDF + Rocchio pseudo-relevance feedback,
 * ``hyde``    Rocchio + an LLM-written hypothetical listing (needs a key in ``.env`` or logged
               answers, see ``phonesense/llm/client.py``),
@@ -35,6 +36,7 @@ from phonesense.config import get_path
 from phonesense.index import InvertedIndex, index_path
 from phonesense.io import Ranking, read_phones
 from phonesense.llm.client import LLMClient, LLMError
+from phonesense.retrieval.base import Retriever
 from phonesense.retrieval.hyde import HydeGenerator, HydeRetriever
 from phonesense.retrieval.rocchio import RocchioRetriever
 from phonesense.retrieval.tfidf import TfidfRetriever
@@ -46,8 +48,20 @@ class NoDataError(FileNotFoundError):
 
 
 @dataclass(frozen=True)
+class SystemScore:
+    """What one system said about one result: its 1-based ``rank`` in its own top list (None if
+    the phone was not in it) and its raw ``score`` there."""
+
+    key: str
+    label: str
+    rank: int | None
+    score: float | None
+
+
+@dataclass(frozen=True)
 class Result:
-    """One search result, ready to draw."""
+    """One search result, ready to draw. ``score`` is the final (possibly fused) score and
+    ``breakdown`` lists what each selected system gave this phone."""
 
     rank: int
     doc_id: str
@@ -58,6 +72,7 @@ class Result:
     avg_rating: float | None
     rating_count: int
     score: float
+    breakdown: tuple[SystemScore, ...] = ()
 
     @property
     def price_text(self) -> str:
@@ -70,9 +85,10 @@ class Result:
         return f"{self.avg_rating:.1f}/5 ({self.rating_count:,} ratings)"
 
 
-COMPONENTS = ("tfidf", "rocchio", "hyde", "dense")  # priority order
+COMPONENTS = ("tfidf", "bm25", "rocchio", "hyde", "dense")  # priority order
 LABELS = {
     "tfidf": "TF-IDF",
+    "bm25": "BM25",
     "rocchio": "Rocchio feedback",
     "hyde": "HyDE expansion",
     "dense": "Dense (embeddings)",
@@ -123,6 +139,7 @@ class SearchEngine:
             self.tfidf.fit(phones)
         self.rocchio = RocchioRetriever(self.tfidf)
         self._hyde: HydeRetriever | None = None
+        self._bm25 = None
         self._dense = None
         self._unavailable: dict[str, str] = {}
 
@@ -152,6 +169,8 @@ class SearchEngine:
             return self._unavailable[key]
         if key == "dense" and importlib.util.find_spec("phonesense.retrieval.dense") is None:
             return "dense retrieval is not in this build"
+        if key == "bm25" and importlib.util.find_spec("phonesense.retrieval.bm25") is None:
+            return "BM25 is not in this build"
         if key == "fusion" and importlib.util.find_spec("phonesense.retrieval.fusion") is None:
             return "rank fusion is not in this build"
         return None
@@ -165,6 +184,33 @@ class SearchEngine:
             self._dense = retriever
         return self._dense
 
+    def _get_bm25(self):
+        """Instantiate the BM25 retriever from ``phonesense.retrieval.bm25``.
+
+        The module is written by A (T05). We do not depend on its class name: we take the
+        ``Retriever`` subclass defined in it, build it without arguments and share our index
+        when it can use one (``fit_index``, like ``TfidfRetriever``), else fit it on the phones.
+        """
+        if self._bm25 is None:
+            module = importlib.import_module("phonesense.retrieval.bm25")
+            classes = [
+                obj for obj in vars(module).values()
+                if isinstance(obj, type) and issubclass(obj, Retriever)
+                and obj is not Retriever and obj.__module__ == module.__name__
+            ]
+            if len(classes) != 1:
+                found = len(classes)
+                raise ImportError(
+                    f"expected one Retriever class in phonesense.retrieval.bm25, found {found}"
+                )
+            retriever = classes[0]()
+            if hasattr(retriever, "fit_index"):
+                retriever.fit_index(self.tfidf.index)
+            else:
+                retriever.fit(self._phone_list)
+            self._bm25 = retriever
+        return self._bm25
+
     def _get_hyde(self) -> HydeRetriever:
         if self._hyde is None:
             self._hyde = HydeRetriever(HydeGenerator(LLMClient()), self.tfidf)
@@ -173,6 +219,7 @@ class SearchEngine:
     def _retriever(self, key: str):
         return {
             "tfidf": lambda: self.tfidf,
+            "bm25": self._get_bm25,
             "rocchio": lambda: self.rocchio,
             "hyde": self._get_hyde,
             "dense": self._get_dense,
@@ -180,12 +227,24 @@ class SearchEngine:
 
     # ------------------------------------------------------------------ searching
 
-    def _results(self, ranking: Ranking) -> list[Result]:
+    def _results(
+        self, ranking: Ranking, systems: Mapping[str, Ranking] | None = None
+    ) -> list[Result]:
+        """Turn a final ranking into rows. ``systems`` ({key: that system's own ranking}) fills
+        the per-result breakdown: where each selected system put the phone, and its raw score."""
+        lookup = {
+            key: {doc: (pos, score) for pos, (doc, score) in enumerate(r, start=1)}
+            for key, r in (systems or {}).items()
+        }
         out = []
         for rank, (doc_id, score) in enumerate(ranking, start=1):
             p = self.phones[doc_id]
+            parts = tuple(
+                SystemScore(key, LABELS[key], *lookup[key].get(doc_id, (None, None)))
+                for key in lookup
+            )
             out.append(Result(rank, doc_id, p.title, p.brand, p.price, p.currency,
-                              p.avg_rating, p.rating_count, score))
+                              p.avg_rating, p.rating_count, score, parts))
         return out
 
     def _fuse(self, rankings: list[Ranking], method: str, k: int) -> Ranking:
@@ -238,12 +297,13 @@ class SearchEngine:
 
         used = list(rankings)
         if len(used) == 1:
-            return SearchResponse(self._results(rankings[used[0]][:k]), used, notes)
+            return SearchResponse(self._results(rankings[used[0]][:k], rankings), used, notes)
 
         fusion_reason = self.unavailable_reason("fusion")
         if toggles.get("fusion") and fusion_reason is None:
             fused = self._fuse([rankings[u] for u in used], fusion_method, k)
-            return SearchResponse(self._results(fused), used, notes)
+            return SearchResponse(self._results(fused, rankings), used, notes)
         why = "fusion is off" if fusion_reason is None else f"{fusion_reason}"
         notes.append(f"{len(used)} systems selected but {why}; showing {LABELS[used[0]]} only.")
-        return SearchResponse(self._results(rankings[used[0]][:k]), [used[0]], notes)
+        first = {used[0]: rankings[used[0]]}
+        return SearchResponse(self._results(rankings[used[0]][:k], first), [used[0]], notes)

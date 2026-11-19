@@ -147,3 +147,93 @@ def test_find_phones_file_explains_what_to_do_when_there_is_no_data(monkeypatch,
     monkeypatch.setattr("phonesense.ui.engine.get_path", lambda key: tmp_path / key)
     with pytest.raises(NoDataError, match="build_data.py"):
         find_phones_file()
+
+
+# ---------------------------------------------------------------------------- score breakdown
+
+
+def test_single_system_breakdown_matches_the_result(engine):
+    r = engine.search("compact camera battery", {"rocchio": True})
+    assert r.results
+    for res in r.results:
+        assert [p.key for p in res.breakdown] == ["rocchio"]
+        part = res.breakdown[0]
+        assert part.label == "Rocchio feedback" and part.rank == res.rank
+        assert part.score == pytest.approx(res.score)
+
+
+def test_breakdown_marks_phones_a_system_did_not_return(engine):
+    ranking = [("B0TEST0001", 0.9), ("B0TEST0002", 0.5)]
+    only_one = {"tfidf": [("B0TEST0001", 2.0)], "rocchio": ranking}
+    rows = engine._results(ranking, only_one)
+    assert [(p.key, p.rank) for p in rows[0].breakdown] == [("tfidf", 1), ("rocchio", 1)]
+    second = {p.key: p for p in rows[1].breakdown}
+    assert second["tfidf"].rank is None and second["tfidf"].score is None
+    assert second["rocchio"].rank == 2 and second["rocchio"].score == 0.5
+    assert engine._results(ranking)[0].breakdown == ()  # no systems given: empty breakdown
+
+
+@pytest.mark.skipif(not HAS_FUSION, reason="fusion module not in this build")
+def test_fused_breakdown_lists_every_selected_system(engine):
+    toggles = {"tfidf": True, "rocchio": True, "fusion": True}
+    for res in engine.search("compact camera battery", toggles).results:
+        assert [p.key for p in res.breakdown] == ["tfidf", "rocchio"]
+
+
+# ---------------------------------------------------------------------------- BM25 hook
+
+
+@pytest.fixture
+def fake_bm25(monkeypatch):
+    """Install a stand-in ``phonesense.retrieval.bm25`` module with one Retriever class."""
+    import sys
+    import types
+    from importlib.machinery import ModuleSpec
+
+    from phonesense.retrieval.base import Retriever
+
+    def install(*class_names, use_index=True):
+        module = types.ModuleType("phonesense.retrieval.bm25")
+        module.__spec__ = ModuleSpec("phonesense.retrieval.bm25", None)
+        for name in class_names:
+            body = {"name": "bm25_fake", "fit": lambda self, phones: None,
+                    "search": lambda self, query, k=100: [("B0TEST0002", 3.5)]}
+            if use_index:
+                body["fit_index"] = lambda self, index: setattr(self, "got_index", index)
+            cls = type(name, (Retriever,), body)
+            cls.__module__ = module.__name__
+            setattr(module, name, cls)
+        monkeypatch.setitem(sys.modules, "phonesense.retrieval.bm25", module)
+        return module
+
+    return install
+
+
+def test_bm25_toggle_uses_the_retriever_found_in_the_module(engine, fake_bm25):
+    fake_bm25("Bm25Retriever")
+    assert engine.unavailable_reason("bm25") is None
+    r = engine.search("compact camera", {"bm25": True})
+    assert r.used == ["bm25"] and r.notes == []
+    assert [x.doc_id for x in r.results] == ["B0TEST0002"] and r.results[0].score == 3.5
+    assert engine._bm25.got_index is engine.tfidf.index  # shares our index when it can
+
+
+def test_bm25_without_fit_index_is_fitted_on_the_phones(engine, fake_bm25):
+    fake_bm25("Bm25Retriever", use_index=False)
+    assert engine.search("compact camera", {"bm25": True}).used == ["bm25"]
+
+
+def test_bm25_module_with_two_retrievers_is_skipped_with_a_note(engine, fake_bm25):
+    fake_bm25("BM25A", "BM25B")
+    r = engine.search("compact camera", {"bm25": True})
+    assert r.used == ["tfidf"] and any("found 2" in n for n in r.notes)
+
+
+@pytest.mark.skipif(
+    importlib.util.find_spec("phonesense.retrieval.bm25") is not None,
+    reason="only meaningful while BM25 is missing",
+)
+def test_missing_bm25_is_reported_not_raised(engine):
+    assert "not in this build" in engine.unavailable_reason("bm25")
+    r = engine.search("compact camera", {"bm25": True})
+    assert r.used == ["tfidf"] and any("BM25 skipped" in n for n in r.notes)
