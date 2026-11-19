@@ -237,3 +237,89 @@ def test_missing_bm25_is_reported_not_raised(engine):
     assert "not in this build" in engine.unavailable_reason("bm25")
     r = engine.search("compact camera", {"bm25": True})
     assert r.used == ["tfidf"] and any("BM25 skipped" in n for n in r.notes)
+
+
+# ---------------------------------------------------------------------------- priors
+
+HAS_RERANK = importlib.util.find_spec("phonesense.graph.rerank") is not None
+needs_rerank = pytest.mark.skipif(not HAS_RERANK, reason="prior reranking not in this build")
+
+IDS = ["B0TEST0001", "B0TEST0002", "B0TEST0003"]
+
+
+def engine_with_priors(fixtures, **priors):
+    return SearchEngine(read_phones(fixtures / "phones.jsonl"), priors=priors)
+
+
+@needs_rerank
+def test_prior_with_lambda_one_ranks_by_the_prior_alone(fixtures):
+    # prefer the phone that TF-IDF ranks last for "camera battery": 0003 > 0002 > 0001
+    prior = {"B0TEST0001": 0.0, "B0TEST0002": 0.5, "B0TEST0003": 1.0}
+    eng = engine_with_priors(fixtures, pagerank=lambda: prior)
+    plain = ids(eng.search("compact camera battery", {"tfidf": True}, k=3))
+    r = eng.search("compact camera battery", {"tfidf": True, "pagerank": True}, 3, prior_weight=1.0)
+    ranked = ids(r)
+    assert ranked == [d for d in sorted(prior, key=prior.get, reverse=True) if d in plain]
+    assert r.used == ["tfidf"] and r.notes == []
+
+
+@needs_rerank
+def test_prior_with_lambda_zero_keeps_the_order_but_still_reports_the_prior(fixtures):
+    eng = engine_with_priors(fixtures, pagerank=lambda: {d: 0.3 for d in IDS})
+    plain = eng.search("compact camera battery", {"tfidf": True})
+    r = eng.search("compact camera battery", {"tfidf": True, "pagerank": True}, prior_weight=0.0)
+    assert ids(r) == ids(plain)
+    row = r.results[0].breakdown[-1]
+    assert row.kind == "prior" and row.key == "pagerank" and row.rank is None
+    assert row.score == pytest.approx(0.3) and "lambda=0" in row.label
+
+
+@needs_rerank
+def test_two_priors_are_averaged_and_both_listed(fixtures):
+    seen = []
+
+    def loader(name, value):
+        def load():
+            seen.append(name)
+            return {d: value for d in IDS}
+        return load
+
+    eng = engine_with_priors(fixtures, pagerank=loader("pagerank", 1.0), trust=loader("trust", 0.0))
+    toggles = {"tfidf": True, "pagerank": True, "trust": True}
+    r = eng.search("compact camera battery", toggles, prior_weight=0.5)
+    assert [p.key for p in r.results[0].breakdown if p.kind == "prior"] == ["pagerank", "trust"]
+    eng.search("compact camera battery", toggles, prior_weight=0.5)
+    assert sorted(seen) == ["pagerank", "trust"]  # each prior is computed once, then kept
+
+
+@needs_rerank
+def test_a_failing_prior_is_skipped_with_a_note(fixtures):
+    def broken():
+        raise FileNotFoundError("graph_edges.tsv not found")
+
+    eng = engine_with_priors(fixtures, pagerank=broken)
+    plain = ids(eng.search("compact camera battery", {"tfidf": True}))
+    r = eng.search("compact camera battery", {"tfidf": True, "pagerank": True})
+    assert ids(r) == plain and any("PageRank prior skipped" in n for n in r.notes)
+
+
+@needs_rerank
+def test_priors_never_add_phones(fixtures):
+    eng = engine_with_priors(fixtures, trust=lambda: {d: 1.0 for d in IDS})
+    base = set(ids(eng.search("camera", {"tfidf": True}, k=20)))
+    got = set(ids(eng.search("camera", {"tfidf": True, "trust": True}, k=20, prior_weight=1.0)))
+    assert got == base
+
+
+def test_prior_weight_must_be_a_fraction(engine):
+    for bad in (-0.1, 1.5):
+        with pytest.raises(ValueError):
+            engine.search("compact camera", {"tfidf": True}, prior_weight=bad)
+
+
+@pytest.mark.skipif(HAS_RERANK, reason="only meaningful while prior reranking is missing")
+def test_priors_are_unavailable_without_the_rerank_module(engine):
+    for key in ("pagerank", "trust"):
+        assert "not in this build" in engine.unavailable_reason(key)
+    r = engine.search("compact camera", {"tfidf": True, "pagerank": True})
+    assert r.used == ["tfidf"] and any("PageRank prior skipped" in n for n in r.notes)

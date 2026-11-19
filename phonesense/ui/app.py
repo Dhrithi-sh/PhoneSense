@@ -1,17 +1,29 @@
-"""PhoneSense demo (owner: B, T24). Run from the repo root:
+"""PhoneSense demo (owner: B, T24; attack tab: C, T25). Run from the repo root:
 
     streamlit run phonesense/ui/app.py
 
 Needs ``pip install -r requirements-ui.txt`` and data (``scripts/build_data.py``), or
 ``PHONESENSE_PHONES=path/to/phones.jsonl`` to try it on any phones file.
-All logic is in ``phonesense/ui/engine.py``; this file only draws.
+All search logic is in ``phonesense/ui/engine.py``; this file only draws. Two tabs: *Search*
+(systems, fusion and prior toggles, per-result score breakdown) and *Fake-review attack*
+(C's ``phonesense/ui/attack_tab.py``, shown when that module is in the build).
 """
 
 from __future__ import annotations
 
 import streamlit as st
 
-from phonesense.ui.engine import COMPONENTS, FUSION_METHODS, LABELS, NoDataError, SearchEngine
+from phonesense.config import get_path
+from phonesense.ui.engine import (
+    COMPONENTS,
+    DEFAULT_PRIOR_WEIGHT,
+    FUSION_METHODS,
+    LABELS,
+    PRIOR_LABELS,
+    PRIORS,
+    NoDataError,
+    SearchEngine,
+)
 
 FUSION_LABELS = {"rrf": "RRF (rank-based, k=60)", "linear": "Weighted linear (min-max)"}
 
@@ -21,14 +33,34 @@ def load_engine() -> SearchEngine:
     return SearchEngine.from_default_data()
 
 
+@st.cache_resource(show_spinner="Loading reviews...")
+def load_attack_data(_titles: dict[str, str], key: str):
+    """``(reviews, titles, data_key, is_toy)`` for the attack tab: the real reviews when
+    ``reviews.jsonl`` exists, otherwise seeded toy reviews (the tab labels them as toy data).
+    ``key`` is only the cache key (the phones file in use); ``_titles`` is not hashed."""
+    from phonesense import io
+
+    reviews_path = get_path("reviews")
+    if reviews_path.exists():
+        return io.read_reviews(reviews_path), _titles, str(reviews_path), False
+    from phonesense.trust.toy import make_toy_reviews
+
+    reviews = make_toy_reviews(n_phones=300, n_users=4000)
+    return reviews, {r.doc_id: f"Toy phone {r.doc_id[-3:]}" for r in reviews}, "toy", True
+
+
 def breakdown_table(r) -> str:
-    """Markdown table: where each selected system ranked this phone and its raw score."""
+    """Markdown table: where each selected system ranked this phone and its raw score, then
+    the value of each prior (priors have no rank), then the final rank and score."""
     rows = ["| System | Rank | Raw score |", "|---|---:|---:|"]
     for part in r.breakdown:
-        rank = "not in top 100" if part.rank is None else str(part.rank)
+        if part.kind == "prior":
+            rank = "-"
+        else:
+            rank = "not in top 100" if part.rank is None else str(part.rank)
         score = "-" if part.score is None else f"{part.score:.4f}"
         rows.append(f"| {part.label} | {rank} | {score} |")
-    rows.append(f"| **Final score shown above** | **{r.rank}** | **{r.score:.4f}** |")
+    rows.append(f"| **Final (shown above)** | **{r.rank}** | **{r.score:.4f}** |")
     return "\n".join(rows)
 
 
@@ -42,17 +74,8 @@ def draw_result(r) -> None:
                 st.markdown(breakdown_table(r))
 
 
-def main() -> None:
-    st.set_page_config(page_title="PhoneSense", page_icon="📱", layout="wide")
-    st.title("PhoneSense")
-    st.caption("Search smartphones by what you need, e.g. *phone under $300 with good battery*.")
-
-    try:
-        engine = load_engine()
-    except NoDataError as exc:
-        st.error(str(exc))
-        st.stop()
-
+def render_sidebar(engine: SearchEngine) -> tuple[dict[str, bool], str, float, int]:
+    """Draw the controls; returns ``(toggles, fusion_method, prior_weight, k)``."""
     toggles: dict[str, bool] = {}
     with st.sidebar:
         st.header("Systems")
@@ -81,26 +104,85 @@ def main() -> None:
             disabled=fusion_reason is not None or not toggles["fusion"],
             key="fusion_method",
         )
+        st.header("Priors")
+        for key in PRIORS:
+            reason = engine.unavailable_reason(key)
+            toggles[key] = st.checkbox(
+                PRIOR_LABELS[key],
+                value=False,
+                disabled=reason is not None,
+                help=reason or "Reorders the top 100 using a [0, 1] score per phone.",
+                key=f"toggle_{key}",
+            )
+        prior_weight = st.slider(
+            "Prior weight (lambda)",
+            min_value=0.0,
+            max_value=1.0,
+            value=DEFAULT_PRIOR_WEIGHT,
+            step=0.05,
+            disabled=not any(toggles[key] for key in PRIORS),
+            help="0 keeps the retrieval order; 1 ranks by the prior alone.",
+            key="prior_weight",
+        )
         st.header("Display")
         k = st.slider("Results", min_value=5, max_value=20, value=10, step=5)
         st.caption(f"{len(engine):,} phones indexed")
+    return toggles, fusion_method, prior_weight, k
 
+
+def render_search_tab(engine, toggles, fusion_method, prior_weight, k) -> None:
     text = st.text_input("What are you looking for?", placeholder="phone with a great night camera")
     if not text.strip():
         st.info("Type a search above to see ranked phones.")
         return
 
     with st.spinner("Searching (the first dense query embeds every phone, so it is slow)..."):
-        response = engine.search(text, toggles, k, fusion_method)
+        response = engine.search(text, toggles, k, fusion_method, prior_weight)
     for note in response.notes:
         st.warning(note)
     if not response.results:
         st.warning("No phone matched. Try different words.")
         return
     st.subheader(f"Top {len(response.results)} results")
-    st.caption("Systems used: " + ", ".join(LABELS[u] for u in response.used))
+    used = ", ".join(LABELS[u] for u in response.used)
+    active = [p for p in PRIORS if toggles.get(p) and not engine.unavailable_reason(p)]
+    priors = f"  ·  Priors: {', '.join(PRIOR_LABELS[p] for p in active)}" if active else ""
+    st.caption(f"Systems used: {used}{priors}")
     for r in response.results:
         draw_result(r)
+
+
+def render_attack_tab_or_note(engine: SearchEngine) -> None:
+    """Mount C's attack tab, or explain why it is missing from this build."""
+    try:
+        from phonesense.ui.attack_tab import render_attack_tab
+
+        reviews, titles, data_key, is_toy = load_attack_data(
+            {p.doc_id: p.title for p in engine.phones.values()}, str(len(engine))
+        )
+    except ImportError as exc:
+        st.info(f"The fake-review attack tab is not in this build ({exc}).")
+        return
+    render_attack_tab(reviews, titles, data_key=data_key, is_toy=is_toy)
+
+
+def main() -> None:
+    st.set_page_config(page_title="PhoneSense", page_icon="📱", layout="wide")
+    st.title("PhoneSense")
+    st.caption("Search smartphones by what you need, e.g. *phone under $300 with good battery*.")
+
+    try:
+        engine = load_engine()
+    except NoDataError as exc:
+        st.error(str(exc))
+        st.stop()
+
+    controls = render_sidebar(engine)
+    search_tab, attack_tab = st.tabs(["Search", "Fake-review attack"])
+    with search_tab:
+        render_search_tab(engine, *controls)
+    with attack_tab:
+        render_attack_tab_or_note(engine)
 
 
 main()

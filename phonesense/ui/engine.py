@@ -12,6 +12,12 @@ Systems (toggles in the sidebar), in priority order:
               answers, see ``phonesense/llm/client.py``),
 * ``dense``   sentence-embedding cosine search (``phonesense.retrieval.dense``).
 
+Two *priors* can then reorder the top 100 (they never add phones): ``pagerank`` (global
+PageRank of the "bought together" graph, C's T17) and ``trust`` (reviewer-trust phone quality,
+C's T19). Both are in [0, 1]; with both on, their mean is used. The final order is
+``(1 - lambda) * score_hat + lambda * prior`` (``phonesense.graph.rerank.rerank_with_prior``,
+C's T18), where ``score_hat`` is the ranking's own score min-max scaled to [0, 1].
+
 With two or more systems on, their rankings are merged by rank fusion (RRF or linear) when the
 fusion switch is on; otherwise the first system in priority order is used and a note says so.
 ``dense`` and the fusion code live in separate modules that may be missing from a build; they
@@ -28,7 +34,7 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import os
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -56,6 +62,7 @@ class SystemScore:
     label: str
     rank: int | None
     score: float | None
+    kind: str = "system"  # "system" (a retriever) or "prior" (a reranking prior; no rank)
 
 
 @dataclass(frozen=True)
@@ -93,6 +100,15 @@ LABELS = {
     "hyde": "HyDE expansion",
     "dense": "Dense (embeddings)",
 }
+PRIORS = ("pagerank", "trust")
+PRIOR_LABELS = {"pagerank": "PageRank prior", "trust": "Reviewer-trust prior"}
+# prior -> (module, function, data file path key, script that creates the file)
+PRIOR_SOURCES = {
+    "pagerank": ("phonesense.graph.pagerank", "pagerank_scores", "graph_edges",
+                 "scripts/build_graph.py"),
+    "trust": ("phonesense.trust.trust", "trust_scores", "reviews", "scripts/build_data.py"),
+}
+DEFAULT_PRIOR_WEIGHT = 0.2  # lambda; C's rerank: block sweeps 0.1-0.5 on dev
 FUSION_METHODS = ("rrf", "linear")
 DEPTH = 100  # documents taken from each system before fusing
 
@@ -129,8 +145,17 @@ def find_phones_file() -> tuple[Path, bool]:
 class SearchEngine:
     """Search over a phone collection with switchable systems; returns :class:`Result` rows."""
 
-    def __init__(self, phones: list[Phone], index: InvertedIndex | None = None) -> None:
+    def __init__(
+        self,
+        phones: list[Phone],
+        index: InvertedIndex | None = None,
+        priors: Mapping[str, Callable[[], Mapping[str, float]]] | None = None,
+    ) -> None:
+        """``priors`` maps ``pagerank``/``trust`` to a function returning ``{doc_id: [0, 1]}``;
+        by default they come from C's modules and data files (loaded lazily, once)."""
         self.phones = {p.doc_id: p for p in phones}
+        self._prior_loaders = dict(priors) if priors is not None else None
+        self._prior_cache: dict[str, Mapping[str, float]] = {}
         self._phone_list = phones
         self.tfidf = TfidfRetriever()
         if index is not None:
@@ -173,7 +198,35 @@ class SearchEngine:
             return "BM25 is not in this build"
         if key == "fusion" and importlib.util.find_spec("phonesense.retrieval.fusion") is None:
             return "rank fusion is not in this build"
+        if key in PRIORS and importlib.util.find_spec("phonesense.graph.rerank") is None:
+            return "prior reranking is not in this build"
+        if key in PRIORS and self._prior_loaders is None:  # real loaders: check cheaply first
+            module, func, path_key, script = PRIOR_SOURCES[key]
+            if importlib.util.find_spec(module) is None or not hasattr(
+                importlib.import_module(module), func
+            ):
+                return f"{PRIOR_LABELS[key].lower()} is not in this build"
+            if not get_path(path_key).exists():
+                return f"{get_path(path_key).name} not found (run {script})"
         return None
+
+    def _prior(self, key: str) -> Mapping[str, float]:
+        """The prior ``{doc_id: [0, 1]}`` for ``key``, computed once and kept."""
+        if key not in self._prior_cache:
+            if self._prior_loaders is not None:
+                self._prior_cache[key] = self._prior_loaders[key]()
+            elif key == "pagerank":
+                from phonesense.graph.pagerank import pagerank_scores
+
+                self._prior_cache[key] = pagerank_scores(doc_ids=list(self.phones))
+            else:
+                from phonesense.io import read_reviews
+                from phonesense.trust.methods import trust_params
+                from phonesense.trust.trust import trust_scores
+
+                reviews = read_reviews(get_path("reviews"))
+                self._prior_cache[key] = trust_scores(reviews, **trust_params())
+        return self._prior_cache[key]
 
     def _get_dense(self):
         """Build the dense retriever on first use (embeds all phones; cached on disk)."""
@@ -228,10 +281,15 @@ class SearchEngine:
     # ------------------------------------------------------------------ searching
 
     def _results(
-        self, ranking: Ranking, systems: Mapping[str, Ranking] | None = None
+        self,
+        ranking: Ranking,
+        systems: Mapping[str, Ranking] | None = None,
+        priors: Mapping[str, Mapping[str, float]] | None = None,
+        prior_weight: float = 0.0,
     ) -> list[Result]:
         """Turn a final ranking into rows. ``systems`` ({key: that system's own ranking}) fills
-        the per-result breakdown: where each selected system put the phone, and its raw score."""
+        the per-result breakdown: where each selected system put the phone, and its raw score.
+        ``priors`` ({key: {doc_id: value}}) adds one row per prior with its value for the phone."""
         lookup = {
             key: {doc: (pos, score) for pos, (doc, score) in enumerate(r, start=1)}
             for key, r in (systems or {}).items()
@@ -242,6 +300,10 @@ class SearchEngine:
             parts = tuple(
                 SystemScore(key, LABELS[key], *lookup[key].get(doc_id, (None, None)))
                 for key in lookup
+            ) + tuple(
+                SystemScore(key, f"{PRIOR_LABELS[key]} (lambda={prior_weight:g})", None,
+                            values.get(doc_id), kind="prior")
+                for key, values in (priors or {}).items()
             )
             out.append(Result(rank, doc_id, p.title, p.brand, p.price, p.currency,
                               p.avg_rating, p.rating_count, score, parts))
@@ -259,13 +321,18 @@ class SearchEngine:
         toggles: Mapping[str, bool] | None = None,
         k: int = 10,
         fusion_method: str = "rrf",
+        prior_weight: float = DEFAULT_PRIOR_WEIGHT,
     ) -> SearchResponse:
         """Top ``k`` phones for ``text`` using the systems switched on in ``toggles``.
 
-        ``toggles`` maps ``tfidf``/``rocchio``/``hyde``/``dense``/``fusion`` to bool; missing
-        keys count as off, except that TF-IDF is used when nothing is selected. A system that
-        cannot run (missing module, no LLM key) is dropped with a note rather than raising.
+        ``toggles`` maps ``tfidf``/``bm25``/``rocchio``/``hyde``/``dense`` (systems),
+        ``fusion`` and ``pagerank``/``trust`` (priors, weight ``prior_weight`` = lambda in
+        [0, 1]) to bool; missing keys count as off, except that TF-IDF is used when nothing is
+        selected. A system or prior that cannot run (missing module or data, no LLM key) is
+        dropped with a note rather than raising.
         """
+        if not 0.0 <= prior_weight <= 1.0:
+            raise ValueError(f"prior_weight must be in [0, 1], got {prior_weight}")
         if fusion_method not in FUSION_METHODS:
             raise ValueError(f"fusion_method must be one of {FUSION_METHODS}, got {fusion_method}")
         if not text.strip():
@@ -279,7 +346,8 @@ class SearchEngine:
             wanted = ["tfidf"]
             notes.append("No system selected, showing TF-IDF.")
         rankings: dict[str, Ranking] = {}
-        depth = DEPTH if len(wanted) > 1 else k
+        wants_priors = [p for p in PRIORS if toggles.get(p)]
+        depth = DEPTH if len(wanted) > 1 or wants_priors else k
         for key in wanted:
             reason = self.unavailable_reason(key)
             if reason is None:
@@ -292,18 +360,53 @@ class SearchEngine:
                     reason = str(exc)
             notes.append(f"{LABELS[key]} skipped: {reason}.")
         if not rankings:  # every chosen system failed: fall back so the page is never empty
-            rankings["tfidf"] = self.tfidf.search(query, k)
+            rankings["tfidf"] = self.tfidf.search(query, depth)
             notes.append("Falling back to TF-IDF.")
 
         used = list(rankings)
+        shown = rankings
         if len(used) == 1:
-            return SearchResponse(self._results(rankings[used[0]][:k], rankings), used, notes)
+            final = rankings[used[0]]
+        else:
+            fusion_reason = self.unavailable_reason("fusion")
+            if toggles.get("fusion") and fusion_reason is None:
+                final = self._fuse([rankings[u] for u in used], fusion_method, depth)
+            else:
+                why = "fusion is off" if fusion_reason is None else f"{fusion_reason}"
+                notes.append(
+                    f"{len(used)} systems selected but {why}; showing {LABELS[used[0]]} only."
+                )
+                used = used[:1]
+                shown = {used[0]: rankings[used[0]]}
+                final = rankings[used[0]]
 
-        fusion_reason = self.unavailable_reason("fusion")
-        if toggles.get("fusion") and fusion_reason is None:
-            fused = self._fuse([rankings[u] for u in used], fusion_method, k)
-            return SearchResponse(self._results(fused, rankings), used, notes)
-        why = "fusion is off" if fusion_reason is None else f"{fusion_reason}"
-        notes.append(f"{len(used)} systems selected but {why}; showing {LABELS[used[0]]} only.")
-        first = {used[0]: rankings[used[0]]}
-        return SearchResponse(self._results(rankings[used[0]][:k], first), [used[0]], notes)
+        prior_values: dict[str, Mapping[str, float]] = {}
+        if wants_priors:
+            final, prior_values = self._apply_priors(final, wants_priors, prior_weight, notes)
+        return SearchResponse(
+            self._results(final[:k], shown, prior_values, prior_weight), used, notes
+        )
+
+    def _apply_priors(
+        self, ranking: Ranking, keys: list[str], weight: float, notes: list[str]
+    ) -> tuple[Ranking, dict[str, Mapping[str, float]]]:
+        """Reorder ``ranking`` with the mean of the usable priors; returns it and the priors."""
+        values: dict[str, Mapping[str, float]] = {}
+        for key in keys:
+            reason = self.unavailable_reason(key)
+            if reason is None:
+                try:
+                    values[key] = self._prior(key)
+                    continue
+                except (OSError, ValueError, ImportError) as exc:
+                    reason = str(exc)
+            notes.append(f"{PRIOR_LABELS[key]} skipped: {reason}.")
+        if not values or weight == 0.0:
+            return ranking, values
+        combined: dict[str, float] = {}
+        for doc_id, _ in ranking:
+            have = [v[doc_id] for v in values.values() if doc_id in v]
+            if have:
+                combined[doc_id] = sum(have) / len(have)
+        rerank = importlib.import_module("phonesense.graph.rerank")
+        return rerank.rerank_with_prior({"q": ranking}, combined, weight)["q"], values
