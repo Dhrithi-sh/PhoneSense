@@ -11,8 +11,9 @@ be checkable:
 * every number with a unit that the guide states (``5000 mAh``, ``$299``, ``128 GB``) must also
   appear in the facts block; figures that do not are returned as ``warnings``, for the UI to show.
 
-The check catches invented figures, not wrong judgements ("best camera" is still opinion), so
-the UI labels the guide as machine-written. Calls go through
+The check catches invented figures. It does NOT check which phone a figure belongs to (a real
+price attributed to the wrong phone passes) nor judgements ("best camera" is opinion), so the UI
+labels the guide as machine-written and asks the reader to check figures. Calls go through
 :class:`~phonesense.llm.client.LLMClient` (purpose ``guide``): logged, and replayed when the
 same request repeats.
 """

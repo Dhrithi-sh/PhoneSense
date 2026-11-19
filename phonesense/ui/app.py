@@ -14,6 +14,7 @@ from __future__ import annotations
 import streamlit as st
 
 from phonesense.config import get_path
+from phonesense.llm.client import LLMError
 from phonesense.ui.engine import (
     COMPONENTS,
     DEFAULT_PRIOR_WEIGHT,
@@ -146,6 +147,27 @@ def _use_example(text: str) -> None:
     st.session_state["query_text"] = text
 
 
+def render_guide(engine: SearchEngine, text: str, results) -> None:
+    """Button that asks the LLM for a short buying guide about the top results."""
+    if not st.button("Write a buying guide for the top results", key="write_guide"):
+        return
+    try:
+        with st.spinner("Writing the guide..."):
+            guide = engine.write_guide(text, results)
+    except LLMError as exc:
+        st.error(f"The guide needs the LLM: {exc}")
+        return
+    except Exception as exc:  # noqa: BLE001 - never show a stack trace on the demo page
+        st.error(f"The guide failed: {type(exc).__name__}: {exc}")
+        return
+    st.subheader("Buying guide")
+    st.caption("Written by an LLM from the listed phone data only. Check any figure before "
+               "you rely on it.")
+    st.markdown(guide.text)
+    for warning in guide.warnings:
+        st.warning(warning)
+
+
 def render_search_tab(engine, toggles, fusion_method, prior_weight, k) -> None:
     text = st.text_input(
         "What are you looking for?",
@@ -180,6 +202,7 @@ def render_search_tab(engine, toggles, fusion_method, prior_weight, k) -> None:
     st.caption(f"Systems used: {used}{priors}")
     for r in response.results:
         draw_result(r)
+    render_guide(engine, text, response.results)
     st.caption(CAVEATS)
 
 
