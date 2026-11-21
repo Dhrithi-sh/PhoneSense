@@ -25,19 +25,23 @@ from phonesense.schemas import VALID_GRADES, Phone, Query
 
 PURPOSE = "judge"
 
+# The fixed instructions come FIRST and the query and phone LAST, so every prompt starts with the
+# same text. Providers that cache prompt prefixes (Groq does, and does not count cached tokens
+# against the rate limit) then only charge for the part that changes.
 RUBRIC = """\
 Rate how well a phone answers a shopper's search, from 0 to 3.
-Search: "{query}"
-{notes}{filters}Phone:
-{phone}
 
 3 = perfect: clearly what they want, every stated requirement met
 2 = relevant: a good answer; minor requirements unverified or roughly met
 1 = marginal: related but a poor answer (for example only one requirement met)
 0 = not relevant: not a phone (case, charger, cable, accessory), wrong model, or it clearly \
 breaks a requirement
-Judge only from the text above. An unknown spec cannot be assumed to meet a requirement.
+Judge only from the text given. An unknown spec cannot be assumed to meet a requirement.
 Reply with JSON only: {{"grade": <0|1|2|3>, "reason": "<at most 12 words>"}}
+
+Search: "{query}"
+{notes}{filters}Phone:
+{phone}
 """
 
 RETRY_SUFFIX = '\nYour last answer was not valid. Reply with exactly: {"grade": N, "reason": "..."}'
