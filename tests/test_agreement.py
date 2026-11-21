@@ -99,3 +99,24 @@ def test_script_writes_report_and_merged_qrels(tmp_path, capsys):
 def test_script_reports_missing_files(tmp_path):
     argv = ["--llm", str(tmp_path / "no.txt"), "--human", str(tmp_path / "x")]
     assert _load_script().main(argv) == 1
+
+
+def test_script_without_human_labels_skips_kappa_but_still_merges(tmp_path, capsys):
+    write_qrels(tmp_path / "llm.txt", LLM)
+    argv = ["--llm", str(tmp_path / "llm.txt"), "--human", str(tmp_path / "missing.txt"),
+            "--out", str(tmp_path / "kappa.json"), "--merge",
+            "--merged-out", str(tmp_path / "qrels.txt")]
+    assert _load_script().main(argv) == 0
+    out = capsys.readouterr().out
+    assert "kappa skipped" in out and "wrote" in out
+    assert not (tmp_path / "kappa.json").exists()  # no fake agreement number
+    assert read_qrels(tmp_path / "qrels.txt") == {q: dict(d) for q, d in LLM.items()}
+
+
+def test_script_with_an_empty_human_file_behaves_the_same(tmp_path, capsys):
+    write_qrels(tmp_path / "llm.txt", LLM)
+    (tmp_path / "human.txt").write_text("")
+    argv = ["--llm", str(tmp_path / "llm.txt"), "--human", str(tmp_path / "human.txt"),
+            "--out", str(tmp_path / "kappa.json")]
+    assert _load_script().main(argv) == 0
+    assert "kappa skipped" in capsys.readouterr().out

@@ -7,6 +7,10 @@
 Reads qrels/llm.txt and qrels/human.txt (CONTRACT 4.5), writes results/kappa.json. ``--merge``
 writes qrels/qrels.txt in which a human grade replaces the LLM grade wherever one exists.
 Read the pair count before trusting a kappa: with fewer than 30 pairs the estimate is noisy.
+
+If there are no human labels yet (qrels/human.txt missing or empty), kappa is skipped with a
+notice and ``--merge`` still writes qrels/qrels.txt, which is then the LLM labels only. Re-run
+this script once humans have labelled to get the real agreement and the merged file.
 """
 
 from __future__ import annotations
@@ -23,6 +27,21 @@ from phonesense.llm.agreement import agreement_report, merge_qrels
 MIN_PAIRS = 30
 
 
+def _write_merged(llm, human, args) -> None:
+    """Write the final qrels: human grades replace LLM grades where both exist."""
+    merged = merge_qrels(llm, human)
+    target = args.merged_out or get_path("qrels")
+    write_qrels(target, merged)
+    replaced = sum(
+        1
+        for qid, docs in human.items()
+        for doc, grade in docs.items()
+        if doc in llm.get(qid, {}) and llm[qid][doc] != grade
+    )
+    print(f"wrote {target}: {sum(len(d) for d in merged.values())} judgments, "
+          f"{replaced} LLM grades replaced by human ones")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("--split", choices=("dev", "test", "all"), default="all")
@@ -35,12 +54,17 @@ def main(argv: list[str] | None = None) -> int:
 
     llm_path = args.llm or get_path("qrels_llm")
     human_path = args.human or get_path("qrels_human")
-    needed = ((llm_path, "scripts/judge_pool.py"), (human_path, "scripts/label_sheet.py import"))
-    for path, hint in needed:
-        if not path.exists():
-            print(f"missing {path}: produce it first ({hint})", file=sys.stderr)
-            return 1
-    llm, human = read_qrels(llm_path), read_qrels(human_path)
+    if not llm_path.exists():
+        print(f"missing {llm_path}: produce it first (scripts/judge_pool.py)", file=sys.stderr)
+        return 1
+    llm = read_qrels(llm_path)
+    human = read_qrels(human_path) if human_path.exists() else {}
+
+    if not any(human.values()):
+        print(f"no human labels in {human_path}: kappa skipped (labels are LLM-only for now)")
+        if args.merge:
+            _write_merged(llm, human, args)
+        return 0
 
     qids = None
     if args.split != "all":
@@ -70,17 +94,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"wrote {out}")
 
     if args.merge:
-        merged = merge_qrels(llm, human)
-        target = args.merged_out or get_path("qrels")
-        write_qrels(target, merged)
-        replaced = sum(
-            1
-            for qid, docs in human.items()
-            for doc, grade in docs.items()
-            if doc in llm.get(qid, {}) and llm[qid][doc] != grade
-        )
-        print(f"wrote {target}: {sum(len(d) for d in merged.values())} judgments, "
-              f"{replaced} LLM grades replaced by human ones")
+        _write_merged(llm, human, args)
     return 0
 
 
