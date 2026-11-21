@@ -48,3 +48,28 @@ def test_read_rejects_a_wrong_header(tmp_path):
     bad.write_text("qid\tdoc\n")
     with pytest.raises(ValueError):
         read_pool(bad)
+
+
+# ---------------------------------------------------------------------------- deepening
+
+
+def test_queries_without_relevant_lists_only_judged_queries_with_no_grade_2():
+    from phonesense.llm.pooling import queries_without_relevant
+
+    qrels = {"q01": {"a": 3, "b": 0}, "q02": {"a": 1, "b": 0}, "q03": {"a": 2}, "q04": {}}
+    assert queries_without_relevant(qrels) == ["q02"]  # q04 has no judgments: not judged yet
+    assert queries_without_relevant(qrels, threshold=1) == []
+    assert queries_without_relevant({}) == []
+
+
+def test_deepen_pool_changes_only_the_listed_queries_and_keeps_old_pairs():
+    from phonesense.llm.pooling import deepen_pool
+
+    runs = {"s": {"q01": [("a", 3.0), ("b", 2.0), ("c", 1.0)], "q02": [("x", 1.0), ("y", 0.5)]}}
+    shallow = pool_runs(runs, depth=1)
+    assert shallow == {"q01": {"a": ["s"]}, "q02": {"x": ["s"]}}
+    deep = deepen_pool(shallow, runs, depth=3, qids=["q01"])
+    assert set(deep["q01"]) == {"a", "b", "c"} and set(deep["q01"]) >= set(shallow["q01"])
+    assert deep["q02"] == shallow["q02"]  # untouched
+    assert deepen_pool(shallow, runs, depth=3, qids=[]) == shallow
+    assert shallow == {"q01": {"a": ["s"]}, "q02": {"x": ["s"]}}  # the input is not modified

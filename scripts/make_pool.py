@@ -2,12 +2,16 @@
 
     python scripts/make_pool.py --split dev                      # every runs/*_dev.run + *_all.run
     python scripts/make_pool.py --split dev --depth 20
+    python scripts/make_pool.py --split dev --deepen-empty qrels/llm.txt --deep-depth 10
     python scripts/make_pool.py --split dev --runs tfidf_lnc.ltc_dev dense_all-minilm-l6-v2_dev
 
 Reads runs/<name>.run (CONTRACT 4.6; ``*_all.run`` runs cover both splits and only the queries of
 ``--split`` are pooled), takes the top ``--depth`` documents of each run per query
 and writes the union to runs/pool_<split>.tsv (qid, doc_id, systems). Judge it next with
-scripts/judge_pool.py. Pool every system you will evaluate, baselines included, before judging:
+scripts/judge_pool.py. ``--deepen-empty QRELS`` re-pools to ``--deep-depth`` every query that has
+judgments in QRELS but no relevant phone (unanswerable, or its relevant phones sit below the
+pooling depth): after judging, only the new pairs cost LLM calls.
+Pool every system you will evaluate, baselines included, before judging:
 documents outside the pool count as not relevant.
 """
 
@@ -19,8 +23,13 @@ from collections import Counter
 from pathlib import Path
 
 from phonesense.config import get_path
-from phonesense.io import read_queries, read_run
-from phonesense.llm.pooling import pool_runs, write_pool
+from phonesense.io import read_qrels, read_queries, read_run
+from phonesense.llm.pooling import (
+    deepen_pool,
+    pool_runs,
+    queries_without_relevant,
+    write_pool,
+)
 from phonesense.schemas import run_name_split
 
 
@@ -30,6 +39,9 @@ def main(argv: list[str] | None = None, runs_dir: Path | None = None) -> int:
     ap.add_argument("--runs", nargs="*", help="run names without .run (default: all for the split)")
     ap.add_argument("--depth", type=int, default=15, help="top documents taken from each run")
     ap.add_argument("--out", type=Path, help="default: runs/pool_<split>.tsv")
+    ap.add_argument("--deepen-empty", type=Path, metavar="QRELS",
+                    help="re-pool queries with no relevant judged phone in QRELS to --deep-depth")
+    ap.add_argument("--deep-depth", type=int, default=10, help="depth for --deepen-empty")
     args = ap.parse_args(argv)
 
     runs_dir = runs_dir or get_path("runs_dir")
@@ -53,6 +65,11 @@ def main(argv: list[str] | None = None, runs_dir: Path | None = None) -> int:
     qids = [q.qid for q in read_queries(get_path("queries"), args.split)]
     runs = {name: read_run(runs_dir / f"{name}.run") for name in names}
     pool = pool_runs(runs, args.depth, qids)
+    if args.deepen_empty:
+        empty = [q for q in queries_without_relevant(read_qrels(args.deepen_empty)) if q in qids]
+        pool = deepen_pool(pool, runs, args.deep_depth, empty)
+        print(f"deepened to depth {args.deep_depth}: {len(empty)} queries without a relevant "
+              f"phone ({', '.join(empty) or 'none'})")
     out = write_pool(args.out or runs_dir / f"pool_{args.split}.tsv", pool)
 
     sizes = [len(d) for d in pool.values()]
