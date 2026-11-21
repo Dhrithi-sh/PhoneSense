@@ -1,10 +1,11 @@
 """Pool the top documents of several runs for judging (T09a / T09b).
 
-    python scripts/make_pool.py --split dev                      # every runs/*_dev.run
+    python scripts/make_pool.py --split dev                      # every runs/*_dev.run + *_all.run
     python scripts/make_pool.py --split dev --depth 20
     python scripts/make_pool.py --split dev --runs tfidf_lnc.ltc_dev dense_all-minilm-l6-v2_dev
 
-Reads runs/<name>.run (CONTRACT 4.6), takes the top ``--depth`` documents of each run per query
+Reads runs/<name>.run (CONTRACT 4.6; ``*_all.run`` runs cover both splits and only the queries of
+``--split`` are pooled), takes the top ``--depth`` documents of each run per query
 and writes the union to runs/pool_<split>.tsv (qid, doc_id, systems). Judge it next with
 scripts/judge_pool.py. Pool every system you will evaluate, baselines included, before judging:
 documents outside the pool count as not relevant.
@@ -33,14 +34,17 @@ def main(argv: list[str] | None = None, runs_dir: Path | None = None) -> int:
 
     runs_dir = runs_dir or get_path("runs_dir")
     names = args.runs or sorted(
-        p.stem for p in runs_dir.glob(f"*_{args.split}.run") if not p.stem.startswith("pool_")
+        p.stem
+        for pattern in (f"*_{args.split}.run", "*_all.run")
+        for p in runs_dir.glob(pattern)
+        if not p.stem.startswith("pool_")
     )
     if not names:
         print(f"no runs for split {args.split!r} in {runs_dir}", file=sys.stderr)
         return 1
     for name in names:
-        if run_name_split(name) != args.split:
-            print(f"run {name!r} is not a {args.split} run", file=sys.stderr)
+        if run_name_split(name) not in (args.split, "all"):
+            print(f"run {name!r} is not a {args.split} or all run", file=sys.stderr)
             return 1
         if not (runs_dir / f"{name}.run").exists():
             print(f"missing {runs_dir / (name + '.run')}", file=sys.stderr)
