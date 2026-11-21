@@ -64,14 +64,16 @@ analyzer:
 
 # ---- B: LLM (T09, T15). Keys live in .env (see .env.example), never here. ----
 llm:
-  provider: gemini                # gemini | openai | mistral
+  provider: gemini                # gemini | openai | mistral | groq
   models:                         # check the names against the provider before the first run
     gemini: gemini-2.0-flash
     openai: gpt-4o-mini
     mistral: mistral-small-latest   # free "Experiment" plan: about 1 request/s; check the name
+    groq: openai/gpt-oss-120b       # free: 30 req/min, 8K tokens/min, ~200K tokens/day per model
   temperature: 0.0                # deterministic; identical calls are replayed from the logs
   max_retries: 3
-  min_interval_seconds: {mistral: 1.1}   # stay under the free plan's 1 request per second
+  # seconds between real calls, to stay under each free plan's per-minute limits
+  min_interval_seconds: {mistral: 1.1, groq: 4.0}
 
 retrieval:
   default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)

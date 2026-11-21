@@ -33,7 +33,7 @@ from phonesense.config import get_config, get_path, repo_root
 Backend = Callable[[str, str, float], str]  # (prompt, model, temperature) -> response text
 
 KEY_VARS = {"openai": "OPENAI_API_KEY", "gemini": "GEMINI_API_KEY",
-            "mistral": "MISTRAL_API_KEY"}
+            "mistral": "MISTRAL_API_KEY", "groq": "GROQ_API_KEY"}
 
 
 class LLMError(RuntimeError):
@@ -73,6 +73,7 @@ def _retry_delay(exc: urllib.error.HTTPError, attempt: int) -> float:
 
 def _post_json(url: str, headers: dict[str, str], body: dict, retries: int) -> dict:
     data = json.dumps(body).encode("utf-8")
+    headers = {"User-Agent": "phonesense/0.1 (course project)", **headers}
     for attempt in range(retries + 1):
         req = urllib.request.Request(url, data=data, headers=headers, method="POST")
         try:
@@ -162,10 +163,37 @@ def mistral_backend(retries: int = 3) -> Backend:
     return call
 
 
+def groq_backend(retries: int = 3) -> Backend:
+    """Groq chat completions (OpenAI format). gpt-oss models are reasoning models: ask for low
+    reasoning effort so they do not spend the small free daily token budget on thinking."""
+
+    def call(prompt: str, model: str, temperature: float) -> str:
+        body: dict = {
+            "model": model,
+            "temperature": temperature,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if model.startswith("openai/gpt-oss"):
+            body["reasoning_effort"] = "low"
+        out = _post_json(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {"Authorization": f"Bearer {_api_key('groq')}", "Content-Type": "application/json"},
+            body,
+            retries,
+        )
+        try:
+            return out["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise LLMError(f"unexpected Groq response: {str(out)[:200]}") from exc
+
+    return call
+
+
 BACKENDS: dict[str, Callable[[int], Backend]] = {
     "openai": openai_backend,
     "gemini": gemini_backend,
     "mistral": mistral_backend,
+    "groq": groq_backend,
 }
 
 
