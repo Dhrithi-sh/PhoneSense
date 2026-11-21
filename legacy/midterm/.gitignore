@@ -1,0 +1,39 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+
+# Project data: crawled articles, indexes, downloads and eval output stay local.
+# Only the placeholder, sample, and result documentation are kept in git.
+/data/*
+!/data/.gitkeep
+!/artifacts/auto_candidates.tsv
+!/data/news_sample_300.jsonl
+data/*.jsonl
+data/*.json
+data/sitemaps/
+data/cache/
+data/*.txt
+data/*.zip
+*.zip
+
+# Built indexes
+indexes/
+*.pkl
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
