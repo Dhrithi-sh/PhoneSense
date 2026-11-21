@@ -1,0 +1,197 @@
+# English to Hindi news dictionary for cross-lingual queries.
+# Format: english<TAB>hindi[:weight]|hindi[:weight]|...
+# Weights are optional; translations without one share the weight equally.
+# Multi-word English entries are matched as phrases, longest first.
+# Multi-word Hindi translations are split into separate query terms.
+#
+# weather and time
+weather	मौसम
+rain	बारिश:0.7|वर्षा:0.3
+rains	बारिश:0.7|वर्षा:0.3
+rainfall	बारिश:0.7|वर्षा:0.3
+heavy rain	भारी बारिश
+monsoon	मानसून
+cloud	बादल
+clouds	बादल
+wind	हवा
+heat	गर्मी
+temperature	तापमान
+cold	ठंड
+flood	बाढ़
+waterlogging	जलभराव
+alert	अलर्ट|चेतावनी
+warning	चेतावनी|अलर्ट
+forecast	पूर्वानुमान|मौसम
+today	आज
+tomorrow	कल
+yesterday	कल
+tonight	आज रात
+night	रात
+evening	शाम
+morning	सुबह
+week	हफ्ते|सप्ताह
+next week	अगले हफ्ते
+day	दिन
+days	दिन
+friday	शुक्रवार
+# places
+delhi	दिल्ली
+new delhi	नई दिल्ली
+mumbai	मुंबई
+patna	पटना
+lucknow	लखनऊ
+kanpur	कानपुर
+bihar	बिहार
+india	भारत
+indian	भारतीय|भारत
+australia	ऑस्ट्रेलिया
+city	शहर
+state	राज्य
+# sport
+cricket	क्रिकेट
+match	मैच
+century	शतक
+hundred	शतक|सौ
+kohli	कोहली
+virat	विराट
+virat kohli	विराट कोहली
+team	टीम
+captain	कप्तान
+series	सीरीज
+wicket	विकेट
+wickets	विकेट
+world cup	विश्व कप
+women	महिला
+womens	महिला
+win	जीत
+won	जीत|जीता
+victory	जीत
+beat	हराया
+defeat	हार|हराया
+lead	बढ़त
+# politics
+election	चुनाव
+elections	चुनाव
+election commission	चुनाव आयोग
+commission	आयोग
+vote	मतदान|वोट
+voting	मतदान
+polling	मतदान
+dates	तारीखें
+date	तारीख
+assembly	विधानसभा
+assembly election	विधानसभा चुनाव
+minister	मंत्री
+chief minister	मुख्यमंत्री
+prime minister	प्रधानमंत्री
+pm	प्रधानमंत्री
+cm	मुख्यमंत्री
+parliament	संसद
+budget	बजट
+debate	बहस
+opposition	विपक्ष
+government	सरकार
+party	दल|पार्टी
+parties	दल|पार्टी
+meeting	बैठक
+preparation	तैयारी
+preparations	तैयारी
+issue	मुद्दा
+project	परियोजना
+road	सड़क
+traffic	जाम|यातायात
+traffic jam	जाम
+inauguration	उद्घाटन
+inaugurate	उद्घाटन
+inaugurates	उद्घाटन
+announced	घोषित|एलान
+announcement	एलान|घोषणा
+order	आदेश
+# business
+stock market	शेयर बाजार
+share market	शेयर बाजार
+stock	शेयर
+stocks	शेयर
+shares	शेयर
+market	बाजार
+sensex	सेंसेक्स
+investors	निवेशकों|निवेशक
+profit	फायदा|मुनाफा
+petrol	पेट्रोल
+diesel	डीजल
+price	दाम|कीमत
+prices	दाम|कीमत
+fuel prices	पेट्रोल डीजल दाम
+inflation	महंगाई
+rise	तेजी|बढ़त
+# crime
+police	पुलिस
+theft	चोरी
+robbery	चोरी|लूट
+arrest	गिरफ्तार
+arrested	गिरफ्तार
+accused	आरोपी|आरोपियों
+case	मामले|मामला
+# education
+school	स्कूल|स्कूलों
+schools	स्कूलों|स्कूल
+holiday	छुट्टी
+holidays	छुट्टी
+students	छात्र
+exam	परीक्षा
+exams	परीक्षा
+board	बोर्ड
+board exam	बोर्ड परीक्षा
+education	शिक्षा
+# entertainment
+film	फिल्म
+movie	फिल्म
+release	रिलीज
+released	रिलीज
+record	रिकॉर्ड
+earnings	कमाई
+box office	कमाई
+audience	दर्शकों|दर्शक
+# transport
+rail	रेल
+railway	रेल|रेलवे
+train	ट्रेन|रेल
+rail line	रेल लाइन
+travel	यात्रा
+journey	यात्रा
+# general
+news	खबर|समाचार
+update	अपडेट
+people	लोगों|लोग
+water	पानी
+relief	राहत
+new	नई|नया
+heavy	भारी
+# disasters
+earthquake	भूकंप
+earthquakes	भूकंप
+quake	भूकंप
+tremor	झटके
+tremors	झटके
+# protests and politics
+protest	प्रदर्शन
+protests	प्रदर्शन
+detained	हिरासत
+detention	हिरासत
+march	मार्च
+candidate	प्रत्याशी:0.6|उम्मीदवार:0.4
+candidates	प्रत्याशी:0.6|उम्मीदवार:0.4
+nomination	नामांकन
+nominations	नामांकन
+assets	संपत्ति
+bypoll	उपचुनाव
+bypolls	उपचुनाव
+turnout	मतदान
+claim	दावा
+claims	दावा
+# religion and travel
+pilgrims	श्रद्धालु
+pilgrimage	यात्रा
+# countries and faiths
+france	फ्रांस
+islam	इस्लाम
