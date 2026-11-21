@@ -26,24 +26,18 @@ from phonesense.schemas import VALID_GRADES, Phone, Query
 PURPOSE = "judge"
 
 RUBRIC = """\
-You are a careful relevance assessor for a smartphone search engine.
-
-Shopper's search: "{query}"
-{notes}{filters}
-Candidate product:
+Rate how well a phone answers a shopper's search, from 0 to 3.
+Search: "{query}"
+{notes}{filters}Phone:
 {phone}
 
-Grade how well this product answers the search:
-3 = perfect: clearly what the shopper wants, and every stated requirement is met
-2 = relevant: a good answer; minor requirements are unverified or only roughly met
-1 = marginal: related (same kind of phone, or only one requirement met) but a poor answer
-0 = not relevant: not a phone (case, charger, screen protector, cable, accessory), the wrong \
-model, or it clearly breaks a stated requirement
-
-Rules: judge only from the product text above. A spec shown as unknown cannot be assumed to \
-satisfy a requirement. Do not reward a product for being popular or expensive.
-
-Answer with JSON only, no other text: {{"grade": <0|1|2|3>, "reason": "<one short sentence>"}}
+3 = perfect: clearly what they want, every stated requirement met
+2 = relevant: a good answer; minor requirements unverified or roughly met
+1 = marginal: related but a poor answer (for example only one requirement met)
+0 = not relevant: not a phone (case, charger, cable, accessory), wrong model, or it clearly \
+breaks a requirement
+Judge only from the text above. An unknown spec cannot be assumed to meet a requirement.
+Reply with JSON only: {{"grade": <0|1|2|3>, "reason": "<at most 12 words>"}}
 """
 
 RETRY_SUFFIX = '\nYour last answer was not valid. Reply with exactly: {"grade": N, "reason": "..."}'
@@ -72,11 +66,13 @@ def _query_filters(query: Query) -> str:
     return f"Hard requirements (as JSON): {json.dumps(query.filters, sort_keys=True)}\n"
 
 
-def phone_summary(phone: Phone, max_desc_chars: int = 600, max_features: int = 8) -> str:
-    """Compact text view of a phone for the judge (no reviews, no ratings)."""
-    specs = ", ".join(
-        f"{k}={'unknown' if v is None else v}" for k, v in phone.specs.to_dict().items()
-    )
+def phone_summary(phone: Phone, max_desc_chars: int = 300, max_features: int = 5) -> str:
+    """Compact text view of a phone for the judge (no reviews, no ratings). Known specs are
+    written out; unknown ones are listed by name so the judge knows they are not stated."""
+    spec_items = phone.specs.to_dict().items()
+    known = ", ".join(f"{k}={v}" for k, v in spec_items if v is not None)
+    unknown = ", ".join(k for k, v in spec_items if v is None)
+    specs = (known or "none") + (f"; unknown: {unknown}" if unknown else "")
     price = "unknown" if phone.price is None else f"{phone.price:g} {phone.currency}"
     lines = [
         f"Title: {phone.title}",
@@ -87,7 +83,7 @@ def phone_summary(phone: Phone, max_desc_chars: int = 600, max_features: int = 8
     features = [f for f in phone.fields.features if f.strip()][:max_features]
     if features:
         lines.append("Features:")
-        lines += [f"- {f.strip()[:200]}" for f in features]
+        lines += [f"- {f.strip()[:120]}" for f in features]
     desc = " ".join(phone.fields.description.split())
     if desc:
         lines.append(f"Description: {desc[:max_desc_chars]}")

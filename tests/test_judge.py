@@ -40,8 +40,9 @@ def test_prompt_shows_query_filters_notes_and_phone_but_not_ratings(queries, pho
 
 def test_unknown_specs_are_marked_unknown(phones):
     summary = phone_summary(phones[2])  # fixture phone 3 has mostly null specs
-    for text in ("ram_gb=unknown", "Price: unknown", "Brand: unknown"):
+    for text in ("Price: unknown", "Brand: unknown", "storage_gb=32.0", "unknown: ram_gb"):
         assert text in summary
+    assert "ram_gb=unknown" not in summary  # unknown specs are named once, not spelled out
 
 
 def test_type_prefix_is_not_leaked_into_the_prompt(phones):
