@@ -32,12 +32,13 @@ PURPOSE = "judge"
 RUBRIC = """\
 Rate how well a phone answers a shopper's search, from 0 to 3.
 
-3 = perfect: clearly what they want, every stated requirement met
-2 = relevant: a good answer; minor requirements unverified or roughly met
-1 = marginal: related but a poor answer (for example only one requirement met)
-0 = not relevant: not a phone (case, charger, cable, accessory), wrong model, or it clearly \
-breaks a requirement
-Judge only from the text given. An unknown spec cannot be assumed to meet a requirement.
+3 = perfect: clearly what they want, every stated requirement is confirmed in the listing
+2 = relevant: a good fit; at most minor requirements are unconfirmed or roughly met
+1 = marginal: related, but a key requirement is unconfirmed or only partly met
+0 = not relevant: not a phone (case, charger, cable, accessory), the wrong model, or the listing \
+clearly breaks a requirement (it states the opposite, for example 4G only for a 5G search)
+Judge only from the text given. A spec the listing does not state is unconfirmed, not wrong: \
+never give 0 for that alone, but do not give 3 either.
 Reply with JSON only: {{"grade": <0|1|2|3>, "reason": "<at most 12 words>"}}
 
 Search: "{query}"
