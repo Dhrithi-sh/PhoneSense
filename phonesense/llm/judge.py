@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from phonesense.llm.client import LLMClient
@@ -125,6 +126,26 @@ def parse_grade(response: str) -> tuple[int, str]:
     if loose and loose.group(1) in {str(g) for g in VALID_GRADES}:
         return int(loose.group(1)), ""
     raise JudgeError(f"no valid grade in answer: {text[:120]!r}")
+
+
+def assign_models(qids: Sequence[str], models: Sequence[str]) -> dict[str, str]:
+    """Give every query to ONE judge model (round robin over the sorted query ids).
+
+    Free plans cap tokens per model per day, so the work is split across models. A query is
+    never judged by two models, so all systems are compared under the same judge within a query.
+    """
+    if not models:
+        raise ValueError("need at least one model")
+    return {qid: models[i % len(models)] for i, qid in enumerate(sorted(set(qids)))}
+
+
+def interleave(groups: Sequence[Sequence]) -> list:
+    """Round-robin merge of lists (a1, b1, a2, b2, ...): consecutive calls then go to different
+    models, so each model's per-minute limit is respected while both run in parallel."""
+    out = []
+    for i in range(max((len(g) for g in groups), default=0)):
+        out.extend(g[i] for g in groups if i < len(g))
+    return out
 
 
 class LLMJudge:
