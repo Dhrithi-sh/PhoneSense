@@ -32,7 +32,8 @@ from phonesense.config import get_config, get_path, repo_root
 
 Backend = Callable[[str, str, float], str]  # (prompt, model, temperature) -> response text
 
-KEY_VARS = {"openai": "OPENAI_API_KEY", "gemini": "GEMINI_API_KEY"}
+KEY_VARS = {"openai": "OPENAI_API_KEY", "gemini": "GEMINI_API_KEY",
+            "mistral": "MISTRAL_API_KEY"}
 
 
 class LLMError(RuntimeError):
@@ -60,6 +61,16 @@ def call_key(provider: str, model: str, temperature: float, prompt: str) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def _retry_delay(exc: urllib.error.HTTPError, attempt: int) -> float:
+    """Seconds to wait before retrying: the server's ``Retry-After`` (capped at 60) when it
+    sends one, else exponential backoff (1, 2, 4, ...)."""
+    header = exc.headers.get("Retry-After") if exc.headers else None
+    try:
+        return min(float(header), 60.0) if header is not None else float(2**attempt)
+    except ValueError:
+        return float(2**attempt)
+
+
 def _post_json(url: str, headers: dict[str, str], body: dict, retries: int) -> dict:
     data = json.dumps(body).encode("utf-8")
     for attempt in range(retries + 1):
@@ -69,7 +80,7 @@ def _post_json(url: str, headers: dict[str, str], body: dict, retries: int) -> d
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             if exc.code in (429, 500, 502, 503, 504) and attempt < retries:
-                time.sleep(2**attempt)
+                time.sleep(_retry_delay(exc, attempt))
                 continue
             raise LLMError(f"HTTP {exc.code} from {url.split('?')[0]}") from exc
         except urllib.error.URLError as exc:
@@ -129,9 +140,32 @@ def gemini_backend(retries: int = 3) -> Backend:
     return call
 
 
+def mistral_backend(retries: int = 3) -> Backend:
+    """Mistral La Plateforme chat completions (same message format as OpenAI)."""
+
+    def call(prompt: str, model: str, temperature: float) -> str:
+        out = _post_json(
+            "https://api.mistral.ai/v1/chat/completions",
+            {"Authorization": f"Bearer {_api_key('mistral')}", "Content-Type": "application/json"},
+            {
+                "model": model,
+                "temperature": temperature,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            retries,
+        )
+        try:
+            return out["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise LLMError(f"unexpected Mistral response: {str(out)[:200]}") from exc
+
+    return call
+
+
 BACKENDS: dict[str, Callable[[int], Backend]] = {
     "openai": openai_backend,
     "gemini": gemini_backend,
+    "mistral": mistral_backend,
 }
 
 
@@ -151,6 +185,9 @@ class LLMClient:
         backend: Backend | None = None,
         log_dir: str | Path | None = None,
         offline: bool = False,
+        min_interval: float | None = None,
+        clock: Callable[[], float] = time.monotonic,
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         cfg = get_config().get("llm", {})
         self.provider = provider or cfg.get("provider", "gemini")
@@ -166,6 +203,12 @@ class LLMClient:
         self.log_dir = Path(log_dir) if log_dir is not None else get_path("llm_logs")
         self._backend = backend
         self._retries = int(cfg.get("max_retries", 3))
+        # free tiers cap requests per second: wait at least this long between real calls
+        intervals = cfg.get("min_interval_seconds", {})
+        self.min_interval = float(
+            min_interval if min_interval is not None else intervals.get(self.provider, 0.0)
+        )
+        self._clock, self._sleep, self._last_call = clock, sleep, None
         self._replay: dict[str, str] | None = None
         self.calls_made = 0
         self.calls_replayed = 0
@@ -214,6 +257,11 @@ class LLMClient:
             raise LLMError(f"offline: no logged response for this {purpose} call")
         if self._backend is None:
             self._backend = BACKENDS[self.provider](self._retries)
+        if self.min_interval > 0 and self._last_call is not None:
+            wait = self.min_interval - (self._clock() - self._last_call)
+            if wait > 0:
+                self._sleep(wait)
+        self._last_call = self._clock()
         response = self._backend(prompt, self.model, temp)
         self.calls_made += 1
         self._replay[key] = response
