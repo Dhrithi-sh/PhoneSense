@@ -3,12 +3,26 @@ data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+# Built indexes (T03)
+data/index/
+# Midterm sample corpus holds copyrighted article text: keep it out of git
+legacy/midterm/data/
 
-# Generated outputs
+# Generated outputs. Run files (ids + scores only, no Amazon text) and their filter logs
+# are tracked so teammates and the submission get them; LLM judge logs are not.
 runs/*
 !runs/.gitkeep
+!runs/*.run
+!runs/*.filters.json
+runs/llm_logs/
+# Results JSON, Markdown and LaTeX tables are tracked (generated, small, no listing text
+# except product titles in failure_cases.md).
+# The hand-check CSVs (with listing text) stay out of git; their scored summary is JSON.
 results/*
 !results/.gitkeep
+!results/*.json
+!results/*.md
+!results/*.tex
 
 # Secrets
 .env

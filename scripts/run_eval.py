@@ -1,13 +1,17 @@
-"""Evaluate every run in runs/ against qrels and write results/*.json.
+"""Evaluate every run in runs/ against qrels and write results/*.json + results/table_<split>.md.
 
-Placeholder until T11 (owner: A). Single runs can already be validated with:
-    python -m phonesense.eval.cli --run runs/<name>.run --qrels qrels/qrels.txt
+    python scripts/run_eval.py              # = make eval
+    python scripts/run_eval.py --qrels qrels/llm.txt
+
+Same as ``python -m phonesense.eval.cli all``. Qrels default to qrels/qrels.txt, falling back
+to qrels/llm.txt with a warning.
 """
 
+from __future__ import annotations
 
-def main() -> None:
-    print("TODO (T11): evaluate all runs in runs/ and write results/<run_name>.json.")
+import sys
 
+from phonesense.eval.cli import main
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main(["all", *sys.argv[1:]]))

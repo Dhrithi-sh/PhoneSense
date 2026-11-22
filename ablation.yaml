@@ -1,0 +1,65 @@
+# T22 ablation table definition (read by scripts/ablation.py). Rows appear in this order.
+#
+# run:     the exact run base name, i.e. runs/<run>_dev.run and runs/<run>_test.run.
+#          Exact names are pinned for every row so nothing depends on sort order. (Glob
+#          patterns still work, but if one matches more than one file in a split, ablation.py
+#          stops with an error listing the candidates.) A row with no matching run is "pending".
+# parent:  for the incremental table: the run this row builds on. With several parents the
+#          one with the best DEV nDCG@10 is used (never test). Rows without a parent appear
+#          only in the main table (vs. the reference, Holm-corrected).
+
+reference: bm25_tuned        # significance baseline (Holm across all rows)
+judged_threshold: 0.7        # rows with judged@10 below this get a double dagger
+metrics: [P@10, R@10, MAP, nDCG@10, RR, judged@10]   # RR is shown as MRR
+selection_metric: nDCG@10    # "best overall" = best DEV value of this metric
+bootstrap_samples: 1000
+
+rows:
+  - {label: "TF-IDF lnc.ltc", run: tfidf_lnc.ltc, owner: A, group: Lexical,
+     description: "SMART lnc.ltc on the text field"}
+  - {label: "BM25 (k1=1.2, b=0.75)", run: bm25_default, owner: A, group: Lexical,
+     description: "Okapi BM25, textbook parameters",
+     parent: tfidf_lnc.ltc}               # BM25 vs. the other classic lexical baseline
+  - {label: "BM25 tuned", run: bm25_tuned, owner: A, group: Lexical,
+     description: "k1, b tuned on dev (nDCG@10)",
+     parent: bm25_default}                # what dev tuning of k1/b adds
+  - {label: "BM25F tuned", run: bm25f_tuned, owner: A, group: Lexical,
+     description: "per-field BM25, field weights tuned on dev",
+     parent: bm25_tuned}                  # field weighting on top of tuned BM25
+
+  - {label: "+ filters", run: bm25_tuned+filters, owner: A, group: +Structure,
+     description: "Boolean spec pre-filter (queries.jsonl filters, else parser)",
+     parent: bm25_tuned}                  # pre-filters tuned BM25's ranking
+  - {label: "+ phrase", run: bm25_tuned+phrase, owner: A, group: +Structure,
+     description: "phrase-match boost, weight tuned on dev",
+     parent: bm25_tuned}                  # boosts tuned BM25's scores
+  - {label: "+ filters + phrase", run: bm25_tuned+filters+phrase, owner: A, group: +Structure,
+     description: "both",
+     parent: [bm25_tuned+filters, bm25_tuned+phrase]}   # adds the other component: best on dev
+
+  - {label: "Dense", run: dense_sentence-transformers-all-minilm-l6-v2, owner: B, group: Neural,
+     description: "bi-encoder dense retrieval (all-MiniLM-L6-v2)"}   # no parent: main table only
+  - {label: "Rocchio PRF", run: rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50, owner: B, group: Neural,
+     description: "Rocchio pseudo-relevance feedback on TF-IDF, tuned on dev",
+     parent: tfidf_lnc.ltc}               # feedback expands TF-IDF's first-pass ranking
+  - {label: "HyDE", run: hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35, owner: B, group: Neural,
+     description: "LLM hypothetical-document expansion on TF-IDF, tuned on dev",
+     parent: tfidf_lnc.ltc}               # HyDE query expansion on TF-IDF retrieval
+
+  - {label: "RRF (BM25, dense)", run: rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2,
+     owner: B, group: Fusion, description: "reciprocal rank fusion, k tuned on dev",
+     parent: [bm25_tuned, dense_sentence-transformers-all-minilm-l6-v2]}   # best single input on dev
+  - {label: "Weighted fusion",
+     run: fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2,
+     owner: B, group: Fusion, description: "linear score fusion, weights tuned on dev",
+     parent: [bm25_tuned, dense_sentence-transformers-all-minilm-l6-v2]}   # best single input on dev
+
+  - {label: "PageRank rerank", run: bm25_tuned+pagerank0.1, owner: C, group: Graph+Trust,
+     description: "rerank with a co-review PageRank prior, lambda tuned on dev",
+     parent: bm25_tuned}                  # reranks tuned BM25's top 100
+  - {label: "Personalized PR", run: bm25_tuned+ppr0.1, owner: C, group: Graph+Trust,
+     description: "query-personalized PageRank rerank, lambda tuned on dev",
+     parent: bm25_tuned}                  # reranks tuned BM25's top 100
+  - {label: "Trust-weighted rerank", run: bm25_tuned+trust0.2, owner: C, group: Graph+Trust,
+     description: "reviewer-trust prior rerank, lambda tuned on dev",
+     parent: bm25_tuned}                  # reranks tuned BM25's top 100
