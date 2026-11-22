@@ -1,11 +1,11 @@
-# Literature Review
+# 3. Literature Review
 
 > **Status: full draft (owner: B).** Citation details marked ✔ were checked against the
 > publisher, ACL Anthology, arXiv, dblp or the authors' page in November 2026. Items marked
 > **(not re-checked)** are from memory and must be verified before the final report. Hand the
 > final list to C for `10_references_C.md` (reference format).
 
-## 1. Lexical retrieval
+## 3.1 Lexical retrieval
 
 Term weighting by TF-IDF is the textbook baseline for ranked retrieval; we use the SMART
 lnc.ltc variant described by Manning, Raghavan and Schuetze (2008). BM25 refines it with term
@@ -15,7 +15,7 @@ on model names ("Pixel 7a") and spec tokens ("5000mAh") and their weakness on a 
 "battery that lasts two days". We implement both ourselves and use them as the baselines every
 other component is compared with.
 
-## 2. Query refinement and expansion
+## 3.2 Query refinement and expansion
 
 Rocchio (1971) moves the query vector towards documents judged relevant and away from those
 judged not relevant. With no user to judge, **pseudo-relevance feedback** assumes the top
@@ -28,7 +28,7 @@ Rocchio works better than concatenating the generated text to the query (their r
 about 1.4 points, 4.2%, on average). Our HyDE component follows this line, applied to phones;
 it is their idea, not ours.
 
-## 3. Dense retrieval
+## 3.3 Dense retrieval
 
 Sentence-BERT (Reimers and Gurevych, 2019) produces sentence embeddings that can be compared
 with cosine similarity, which makes semantic search cheap once the documents are embedded. Our
@@ -36,7 +36,7 @@ dense retriever uses an off-the-shelf encoder of this family on each phone's tex
 fine-tuning, so any gain comes from the encoder's general knowledge and not from training on
 phone data.
 
-## 4. Rank fusion
+## 3.4 Rank fusion
 
 Rankers fail on different queries and their scores are not on the same scale. Reciprocal Rank
 Fusion (Cormack, Clarke and Buettcher, 2009) merges rankings using only ranks, giving a
@@ -45,7 +45,7 @@ fusion and individual rank-learning methods. We use RRF with the published const
 the default, and compare it with weighted linear fusion of min-max normalised scores tuned on
 development queries.
 
-## 5. Graph and reputation signals
+## 3.5 Graph and reputation signals
 
 PageRank (Page, Brin, Motwani and Winograd, 1999) scores a node by the stationary behaviour of a
 random surfer on a link graph, with damping and a teleport step so that dead ends and cycles do
@@ -55,7 +55,7 @@ reviewer-trust score lets phone quality and reviewer reliability reinforce each 
 spirit of hubs and authorities (Kleinberg, 1999, **not re-checked**). Its design and the attack
 simulation belong to the Methodology and Experiments sections.
 
-## 6. Evaluating with LLM judges
+## 3.6 Evaluating with LLM judges
 
 Graded relevance labels for every pooled (query, phone) pair are too many to write by hand.
 Thomas, Spielman, Craswell and Mitra (2024) report that, with a prompt chosen against feedback
@@ -66,7 +66,7 @@ the agreement rather than assuming it. Pooling (judging only the union of the sy
 results) means a phone no system retrieves is never judged and counts as not relevant, which
 favours the pooled systems.
 
-## 7. Gap and our position
+## 3.7 Gap and our position
 
 | Work | Lexical | Dense | Feedback / expansion | Fusion | Graph / trust | Attack study | Spec filters |
 |---|---|---|---|---|---|---|---|

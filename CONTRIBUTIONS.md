@@ -7,9 +7,29 @@ completed (a task counts only when its code, tests and run files exist and are p
 
 | Member | Name | GitHub | Completed WU | Task IDs | Report sections written |
 |---|---|---|---|---|---|
-| A | | | | | |
+| A | Dhrithi Shashibushan | Dhrithi-sh | [from task board] (details below) | T01, T02, T03, T04, T05, T06, T07, T11, T22, final assembly | Abstract; Dataset; Experiments: test collection, main results, lexical baselines and tuning, filters, efficiency, failure cases (8.1-8.4); Appendix A; Methodology parts for BM25, filters and evaluation (7.2, 7.10); report assembly and numbering |
 | B | Palleti Viraja | virajapalleti | 30.5 (details below) | T08, T12, T13, T14, T15, T09a, T09b, L-B, T23; T24 in progress | Introduction, Literature Review, Objective, Proposed Model (drafts: result numbers still to fill) |
 | C | Rishit Kamboj | rishitkam | 44.5 (details below) | T16, T17, T18, T19, T20, T21, T25, L-C, R-C1, R-C2, R-C3; R-C4 in progress | Methodology; Experiments: graph, trust, attacks and reranking (8.5); Conclusions and Limitations; References |
+
+## Member A: details
+
+| Task | Planned WU | Status | Where |
+|---|---|---|---|
+| T01 repo, environment, data/IO contract | [board] | done, merged (PR #1) | `CONTRACT.md`, `phonesense/schemas.py`, `phonesense/io.py`, `phonesense/retrieval/base.py` |
+| T02 data pipeline (raw Amazon 2023 to phones and reviews) | [board] | done, merged (PR #1); data shared as release `data-v1` of the private data repo. The hand-check sheets were generated but not filled, so no filter/parser accuracy is reported | `phonesense/data/`, `scripts/build_data.py`, `results/data_stats.json` |
+| T03 positional inverted index (ported from the midterm), VB compression | [board] | done, merged (PR #1) | `phonesense/index/`, `legacy/PORTING.md` |
+| T04 TF-IDF lnc.ltc | [board] | done, merged (PR #1) | `phonesense/retrieval/tfidf.py` |
+| T05 BM25, BM25F-lite, dev-only tuning | [board] | done, merged (PRs #5, #19); k1 = 1.2, b = 0.9 | `phonesense/retrieval/bm25.py`, `scripts/tune_bm25.py`, `runs/bm25*` |
+| T06 Boolean spec filters and constraint parser | [board] | done, merged (PRs #5, #19) | `phonesense/retrieval/filters.py`, `runs/bm25_tuned+filters*` |
+| T07 Boolean, phrase and proximity search, phrase boost | [board] | done, merged (PRs #5, #19) | `phonesense/retrieval/{boolean,positional}.py`, `scripts/bench_boolean.py` |
+| T11 evaluation harness (metrics, significance, kappa helpers, tables, CLI) | [board] | done, merged (PR #5) | `phonesense/eval/` |
+| T22 ablation over all members' runs, report numbers, reproduction, submission ZIP | [board] | done, merged (PRs #5, #19); validated and integrated B's and C's run files | `scripts/ablation.py`, `ablation.yaml`, `scripts/report_numbers.py`, `scripts/reproduce.py`, `scripts/make_submission.py` |
+| Report: abstract, dataset, retrieval experiments, appendix, assembly | [board] | done | `report/sections/01_*`, `06_*`, `08a_experiments_retrieval_A.md`, `11_*`, `scripts/build_report.py`, `report/PhoneSense_report.pdf` |
+
+Work beyond the plan: the private data repository and releases for sharing the processed data,
+validation of every teammate run file against the contract before it entered the ablation,
+merging all pull requests into `main` (resolving the `config.yaml` conflicts of PRs #3 and #11),
+and the report build (one PDF from the section files with consistent numbering).
 
 ## Member B: details
 
@@ -45,8 +65,8 @@ analysis and a label-sensitivity check, and tuning of Rocchio, HyDE and fusion o
 | T21 attack experiments (sizes 0-100%, 3 seeds, 45 targets per type) | 4 | done (PRs #7, #9); rank and star shift per method, plus camouflaged attackers. Measured on reputation rank, not end-to-end search nDCG | `scripts/run_attacks.py`, `phonesense/attacks/report.py`, `report/figures/attack_rank_shift*.png` |
 | L-C hand-labelling share | 1.5 | done (share 1/3) | `qrels/human.txt` |
 | T25 attack tab for the demo | 3 | done, merged (PR #7); standalone page and `render_attack_tab()` for the UI | `phonesense/ui/attack_tab.py`, `.streamlit/config.toml` |
-| R-C1 Methodology | 6 | done, merged (PR #8) | `report/sections/methodology.md` |
-| R-C2 Experiments: graph, trust, attacks, reranking | 3 | done, merged (PRs #9, #10) | `report/sections/08_experiments_graph_attack_C.md` |
+| R-C1 Methodology | 6 | done, merged (PR #8) | `report/sections/07_methodology_C.md` |
+| R-C2 Experiments: graph, trust, attacks, reranking | 3 | done, merged (PRs #9, #10) | `report/sections/08b_experiments_graph_attack_C.md` |
 | R-C3 Conclusions, Limitations, References | 3 | done, merged (PRs #9, #15) | `report/sections/09_*`, `10_references_C.md` |
 | R-C4 final pass (numbers against tables, numbering, references) | 1.5 | in progress | whole report |
 

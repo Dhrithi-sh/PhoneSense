@@ -45,6 +45,7 @@ INCLUDE_FILES = [
     ".env.example",
     ".gitignore",
     "legacy/PORTING.md",
+    "CONTRIBUTIONS.md",
 ]
 INCLUDE_DIRS = [
     "phonesense",

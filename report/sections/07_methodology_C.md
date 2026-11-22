@@ -43,20 +43,27 @@ Scores are accumulated term-at-a-time over the postings lists, so only phones th
 term with the query are scored. A three-document worked example is checked in
 `tests/test_tfidf.py`.
 
-### BM25 (T05) **[to confirm]**
+### BM25 (T05, `phonesense/retrieval/bm25.py`)
 
-$$\mathrm{BM25}(q,d) = \sum_{t \in q} \log\frac{N - \mathrm{df}_t + 0.5}{\mathrm{df}_t + 0.5}
+$$\mathrm{BM25}(q,d) = \sum_{t \in q} \ln\left(1 + \frac{N - \mathrm{df}_t + 0.5}{\mathrm{df}_t + 0.5}\right)
 \cdot \frac{\mathrm{tf}_{t,d}\,(k_1 + 1)}{\mathrm{tf}_{t,d} + k_1\left(1 - b + b\,\frac{|d|}{\mathrm{avgdl}}\right)}$$
 
 $k_1$ controls how quickly repeated terms stop adding score, and $b$ how strongly long
-listings are penalised. Both are tuned on the dev queries only. The owner confirms the idf
-variant used.
+listings are penalised. Both are tuned on the dev queries only. The $1 +$ inside the logarithm
+keeps the idf positive for terms that occur in more than half of the phones, and each distinct
+query term is counted once. The field-weighted variant (BM25F-lite) sums per-field BM25 scores,
+$\sum_f w_f\,\mathrm{BM25}_f(q,d)$, each with that field's own lengths and document frequencies.
 
-### Boolean specification filters (T06) **[to confirm]**
+### Boolean specification filters (T06, `phonesense/retrieval/filters.py`)
 
 Queries may carry structured constraints such as `battery_mah >= 5000` and `price < 300`
-(CONTRACT.md 4.4). Phones that fail a constraint are removed before ranking. The owner states
-how a phone with an unknown (`null`) value for a constrained field is handled.
+(CONTRACT.md 4.4). Phones that fail a constraint are removed before ranking (pre-filtering:
+filtered phones never enter the score accumulators, so the remaining phones keep their scores).
+Constraints combine with `and`, `or` and `not` under three-valued logic: a phone with an unknown
+(`null`) value for a constrained field never satisfies that constraint, not even under `not`.
+A query's filter comes from the query file when one is given there, otherwise from a rule-based
+parser that reads price, RAM, storage, battery, screen size, 5G and operating-system phrases
+from the query text and passes the rest of the query to the ranker.
 
 ## 7.3 Dense retrieval and query expansion
 
@@ -73,13 +80,13 @@ collection of a few thousand phones.
 The query vector moves toward the centroid of phones assumed relevant and away from those
 assumed non-relevant:
 
-$$\vec q\,' = \alpha\,\vec q + \beta\,\frac{1}{|D_r|}\sum_{d \in D_r}\vec d
+$$\vec{q}' = \alpha\,\vec q + \beta\,\frac{1}{|D_r|}\sum_{d \in D_r}\vec d
 - \gamma\,\frac{1}{|D_{nr}|}\sum_{d \in D_{nr}}\vec d$$
 
 $D_r$ is the top $m = 10$ phones of a first TF-IDF pass. With the default $\gamma = 0$ no
 non-relevant set is used; for $\gamma > 0$ the phones ranked $m+1$ to $2m$ form $D_{nr}$.
 Defaults are $\alpha = 1$, $\beta = 0.75$. Negative components are dropped and only the 20
-heaviest terms of $\vec q\,'$ are kept, to limit topic drift. Phones are then re-scored as
+heaviest terms of $\vec{q}'$ are kept, to limit topic drift. Phones are then re-scored as
 $\sum_t q'_t\,w_{t,d}$ with the lnc document weights.
 
 ### HyDE-style LLM expansion (T15) **[to confirm]**
@@ -269,13 +276,17 @@ for kind in {bad_mouth, ballot_stuff}, seed in seeds:
                 record rank and score of target, before and after
 ```
 
-## 7.10 Evaluation (T09, T11) **[to confirm]**
+## 7.10 Evaluation (T09, T11, `phonesense/eval/`)
 
 **Relevance labels.** Phones are judged on a 0-3 scale (0 not relevant to 3 perfect). The
-pool for each query is the union of the top results of every system; LLM judgments are
-validated against a hand-labelled sample with Cohen's kappa. The owner of T09 records the pool
-depth, the judge model and its prompt. Unjudged phones count as non-relevant, which favours
-the systems that contributed to the pool; this is listed as a limitation.
+pool for each query is the union of the top 5 results of five systems (TF-IDF, BM25 with
+default parameters, Rocchio, HyDE with Rocchio, dense retrieval), extended to depth 10 for
+queries with no relevant phone; it is graded by an LLM judge with a fixed 0-3 rubric
+(`phonesense/llm/judge.py`, two Groq-hosted models, one per query; `qrels/README.md`). The
+judgments are validated against a hand-labelled sample with Cohen's kappa. Unjudged phones
+count as non-relevant, which favours the systems that contributed to the pool; this is listed
+as a limitation, and every result table reports judged@10, the share of the top 10 that was
+judged.
 
 **Metrics.** For binary metrics a phone is relevant when its grade is at least 2
 (`schemas.RELEVANCE_THRESHOLD`). With $\mathrm{Rel}_q$ the relevant phones for query $q$ and
@@ -298,5 +309,9 @@ ordering. nDCG@10 is the headline metric because it uses the graded labels and r
 putting the best phones first. Accuracy is not reported: almost every phone is irrelevant to
 almost every query, so a system that returns nothing would score close to 100%.
 
-Differences between systems are tested with a paired test over per-query scores. With the
-small test set many differences will not be significant, and the results say so.
+Differences between systems are tested with a two-sided paired randomization test over
+per-query scores (10,000 random sign flips of the per-query differences, seed fixed in
+`config.yaml`), with a paired t-test reported alongside, and Holm-Bonferroni correction when
+several systems are compared with one baseline. Queries with no relevant phone in the qrels
+are excluded from every average. With the small test set many differences will not be
+significant, and the results say so.

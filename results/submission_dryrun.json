@@ -1,6 +1,6 @@
 {
   "pytest": "passed",
-  "pytest_summary": "398 passed, 3 skipped in 33.13s",
+  "pytest_summary": "514 passed, 4 skipped in 30.85s",
   "pytest_output_tail": "",
   "table_cli": {
     "status": "passed",

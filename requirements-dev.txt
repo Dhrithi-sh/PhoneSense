@@ -1,3 +1,6 @@
 # Test-only extras. networkx is ONLY for cross-checking our own PageRank in tests,
 # never imported from phonesense/ code.
 networkx>=3.2
+# Report build only (scripts/build_report.py): Markdown -> HTML -> PDF via headless Chrome/Edge.
+markdown>=3.5
+pymdown-extensions>=10.0

@@ -1,7 +1,7 @@
 # PhoneSense Makefile. Windows users without make: see README "Plain commands".
 PYTHON ?= python
 
-.PHONY: setup test lint data data-quick sample handcheck handcheck-score index index-sample tfidf tune baselines tune-phrase t06-t07 bench eval ablation report-numbers submission reproduce all
+.PHONY: setup test lint data data-quick sample handcheck handcheck-score index index-sample tfidf tune baselines tune-phrase t06-t07 bench eval ablation report-numbers submission report reproduce all
 
 setup:
 	$(PYTHON) -m pip install -e .
@@ -60,6 +60,9 @@ ablation:
 
 report-numbers:
 	$(PYTHON) scripts/report_numbers.py
+
+report:
+	$(PYTHON) scripts/build_report.py
 
 submission:
 	$(PYTHON) scripts/make_submission.py

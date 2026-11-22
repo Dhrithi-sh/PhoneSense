@@ -1,9 +1,9 @@
-# Conclusions and Limitations
+# 9. Conclusions and Limitations
 
 > Report section R-C3 (owner C). Numbers come from the ablation tables (`results/ablation_*.md`,
 > owner A), the kappa result (`results/kappa.json`, owner B) and sections 8.5.1-8.5.5.
 
-## Conclusions
+## 9.1 Conclusions
 
 We built PhoneSense, a phone search system over 7,166 phones and 575,816 Amazon reviews, and
 measured each of its components separately. Going back to the contributions listed in the
@@ -51,7 +51,7 @@ no system beats tuned BM25 by more than 0.03 nDCG@10, and none does so significa
 HITS-style trust score helps a little against naive fake reviews, and an attacker who first
 builds a normal-looking history removes even that.
 
-## Limitations
+## 9.2 Limitations
 
 **Data.**
 * The collection is a 2023 Amazon snapshot with prices in USD. It does not describe the
@@ -109,7 +109,7 @@ builds a normal-looking history removes even that.
 * The reranking weight $\lambda$ is a single value per prior, chosen on 23 dev queries (the
   4 with no relevant phone drop out), and the reranked runs were not part of the judging pool.
 
-## Future work
+## 9.3 Future work
 
 The most direct improvements are to add the semantic kNN edges so that every phone joins the
 graph, to give the trust score more signal through account age and purchase verification, to

@@ -24,6 +24,9 @@ results/*
 !results/*.md
 !results/*.tex
 
+# Report build intermediate (scripts/build_report.py writes the PDF to report/)
+report/build/
+
 # Secrets
 .env
 

@@ -1,4 +1,4 @@
-# Proposed Model
+# 5. Proposed Model
 
 > **Status: draft (owner: B).** Formulas and parameters live in the Methodology section; this
 > section explains how the pieces fit and why. Items that depend on final results are marked
@@ -10,7 +10,7 @@
 separate offline preparation, the per-query path and the evaluation loop. Regenerate with
 `python scripts/make_pipeline_figure.py`.*
 
-## 1. Overview
+## 5.1 Overview
 
 PhoneSense answers a free-text need with a ranked list of phones. It is a **hybrid** system: a
 lexical stage and a dense stage retrieve candidates in different ways, feedback and LLM
@@ -19,7 +19,7 @@ filters enforce hard numeric constraints, and a prior built from the phone graph
 reviewer trust nudges the final order. A separate loop builds the test collection and measures
 every stage with the same metrics.
 
-## 2. Offline stage (built once)
+## 5.2 Offline stage (built once)
 
 1. **Data.** Phones and their reviews come from Amazon Reviews 2023 (Cell Phones and
    Accessories). A heuristic filter removes cases, chargers and other accessories; a parser
@@ -34,7 +34,7 @@ every stage with the same metrics.
 5. **Reviewer trust**: an iterative score in which phone quality and reviewer reliability
    reinforce each other, compared with the raw, Bayesian and helpful-vote averages.
 
-## 3. Online stage (per query)
+## 5.3 Online stage (per query)
 
 | Stage | What it does | Why it is there |
 |---|---|---|
@@ -52,7 +52,7 @@ can be explained rather than just trusted. An optional **buying guide** asks an 
 summarise the top results from the listed facts only; figures that are not in the data are
 flagged.
 
-## 4. Evaluation loop
+## 5.4 Evaluation loop
 
 45 queries (spec, aspect, model, vague) are split into 27 dev and 18 test. For each query we
 **pool** the top results of every system, an LLM judge grades them 0-3, and people grade a
@@ -61,7 +61,7 @@ where one exists. All settings are tuned on dev; test is used once per final con
 Metrics are P@5, P@10, R@10, R@100, F1, MAP and nDCG@10, with a paired test and an add-one /
 leave-one-out ablation `[results TBD]`.
 
-## 5. Design decisions and trade-offs
+## 5.5 Design decisions and trade-offs
 
 * **Own code for the core IR** (TF-IDF, BM25, fusion, PageRank, Rocchio): the course asks for it,
   and it keeps every score explainable. Libraries are used only to cross-check in tests.
@@ -75,7 +75,7 @@ leave-one-out ablation `[results TBD]`.
 * **Everything replayable.** Every LLM call is logged and replayed, so a rerun gives the same
   numbers and does not need an API key.
 
-## 6. What is new and what already existed
+## 5.6 What is new and what already existed
 
 Existing ideas we implement and compare: TF-IDF, BM25, Rocchio, dense retrieval with sentence
 encoders, HyDE, RRF, PageRank. Weighting HyDE's expansion terms with Rocchio for a sparse
