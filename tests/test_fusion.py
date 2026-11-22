@@ -234,3 +234,13 @@ def test_tuning_finds_the_good_system_and_best_rrf_k():
     assert fused["q1"][0][0] == "c"
     with pytest.raises(ValueError):
         fuse_runs([good], qids, "borda")
+
+
+def test_local_ndcg_matches_the_evaluation_harness_definition():
+    """The tuner must optimise the same nDCG@10 the harness reports (gain 2^grade - 1)."""
+    metrics = pytest.importorskip("phonesense.eval.metrics")
+    grades = {"a": 3, "b": 0, "c": 2, "d": 1, "e": 0}
+    ranking = [("e", 0.0), ("c", 0.0), ("a", 0.0), ("b", 0.0), ("d", 0.0), ("x", 0.0)]
+    ids = [d for d, _ in ranking]
+    for k in (1, 3, 5, 10):
+        assert ndcg_at_k(ranking, grades, k) == pytest.approx(metrics.ndcg_at_k(ids, grades, k))
