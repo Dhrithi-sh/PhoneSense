@@ -35,11 +35,11 @@ from phonesense.retrieval.rocchio import RocchioRetriever
 from phonesense.retrieval.tfidf import TfidfRetriever
 
 ROCCHIO_DEFAULT = {"m": 10, "beta": 0.75, "n_terms": 20}
-ROCCHIO_GRID = {"m": [3, 5, 10, 15], "beta": [0.25, 0.5, 0.75, 1.0, 1.5],
+ROCCHIO_GRID = {"m": [3, 5, 10, 15], "beta": [0.1, 0.25, 0.5, 0.75, 1.0, 1.5],
                 "n_terms": [10, 20, 30, 50]}
 HYDE_DEFAULT = {"m": 10, "beta": 0.75, "n_terms": 30, "delta": 0.75}
 HYDE_GRID = {"m": [5, 10], "beta": [0.0, 0.25, 0.5, 0.75], "n_terms": [20, 30, 50],
-             "delta": [0.25, 0.5, 0.75, 1.0, 1.5, 2.0]}
+             "delta": [0.1, 0.15, 0.2, 0.25, 0.35, 0.5, 0.75, 1.0, 1.5, 2.0]}
 
 
 def configs(grid: dict[str, list]) -> list[dict]:
@@ -104,13 +104,15 @@ def main(argv: list[str] | None = None) -> int:
     tied = [t for t in trials if t["ndcg10"] >= best - 1e-9]
     chosen = min(tied, key=lambda t: distance({k: t[k] for k in default}, default, grid))
 
-    print(f"{args.method}: {len(trials)} settings on {len(queries)} dev queries, qrels {qrels_path}")
+    print(f"{args.method}: {len(trials)} settings on {len(queries)} dev queries "
+          f"(qrels {qrels_path})")
     print(f"  default {default}: nDCG@10 {default_score:.4f}")
     for t in sorted(trials, key=lambda t: -t["ndcg10"])[:6]:
         print(f"  {t['ndcg10']:.4f}  " + ", ".join(f"{k}={t[k]}" for k in default))
     gain = chosen["ndcg10"] - default_score
     picked = ", ".join(f"{k}={chosen[k]}" for k in default)
-    print(f"chosen: {picked}  ({chosen['ndcg10']:.4f}, default {default_score:.4f}, gain {gain:+.4f})")
+    print(f"chosen: {picked}  ({chosen['ndcg10']:.4f}; default {default_score:.4f}, "
+          f"gain {gain:+.4f})")
 
     out = args.out or get_path("results_dir") / f"prf_{args.method}_dev.json"
     out.parent.mkdir(parents=True, exist_ok=True)

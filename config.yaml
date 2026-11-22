@@ -63,6 +63,20 @@ analyzer:
   stemmer: porter     # porter (NLTK algorithm, no download) | light (plural-only S-stemmer)
 
 # ---- B: LLM (T09, T15). Keys live in .env (see .env.example), never here. ----
+# ---- B: query expansion, tuned on the 27 DEV queries with scripts/tune_prf.py (T14, T15) ----
+# nDCG@10 with the harness (queries without a relevant phone excluded). Test was run once with
+# these settings. Both beat or approach their TF-IDF base only partly: see the dev numbers.
+prf:
+  tfidf_dev_ndcg10: 0.5224          # the base both build on (plain TF-IDF lnc.ltc)
+  rocchio:
+    default: {m: 10, beta: 0.75, n_terms: 20, dev_ndcg10: 0.4802}
+    tuned:   {m: 10, beta: 0.1, n_terms: 50, dev_ndcg10: 0.5074}   # best beta is the smallest tried:
+    note: every positive beta scored below plain TF-IDF, so feedback did not help on this collection
+  hyde:
+    default: {m: 10, beta: 0.75, n_terms: 30, delta: 0.75, dev_ndcg10: 0.5328}
+    tuned:   {m: 10, beta: 0.0, n_terms: 30, delta: 0.35, dev_ndcg10: 0.5862}   # no Rocchio feedback
+    llm: {provider: groq, model: openai/gpt-oss-20b}   # hypothetical listings are replayed from logs
+
 llm:
   provider: gemini                # gemini | openai
   models:                         # check the names against the provider before the first run
