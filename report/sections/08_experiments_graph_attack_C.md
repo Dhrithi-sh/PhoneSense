@@ -119,6 +119,30 @@ queries. The small dev gain did not carry over. The sparse co-review graph is th
 the graph priors fail: kNN edges are built from the same listing text that BM25 and dense
 retrieval already use, so they add no new evidence about relevance.
 
+**The result does not depend on damping or neighbourhood size.** As a sensitivity check (not a
+second round of tuning, which 23 dev queries cannot support) we reran both graph priors with
+$\lambda = 0.1$ for damping $d \in \{0.5, 0.7, 0.85, 0.95\}$ on both graphs, and for
+$k \in \{4, 8, 16, 32\}$ kNN neighbours at $d = 0.85$ (`scripts/build_graph.py --knn-k`,
+`scripts/run_rerank.py --damping`).
+
+*Table 8.5f. Change in test nDCG@10 against tuned BM25 (0.663) for each setting, $\lambda = 0.1$.
+None of the 22 settings is significant (paired randomization test, Holm-corrected over all 22:
+every $p = 1.00$).*
+
+| Graph | Setting | PageRank | Personalized PageRank |
+|---|---|---:|---:|
+| Co-review | $d$ = 0.5 / 0.7 / 0.85 / 0.95 | −0.003 at every $d$ | +0.008 at every $d$ |
+| Co-review + kNN ($k$ = 8) | $d$ = 0.5 / 0.7 / 0.85 / 0.95 | −0.001 / −0.002 / −0.001 / 0.000 | 0.000 at every $d$ |
+| Co-review + kNN, $d$ = 0.85 | $k$ = 4 / 8 / 16 / 32 | −0.002 / −0.001 / −0.002 / −0.001 | +0.001 / 0.000 / 0.000 / 0.000 |
+
+Damping makes no difference on the co-review graph: the prior uses the percentile of each
+phone's PageRank, and the order of the phones does not change between $d = 0.5$ and
+$d = 0.95$. On the kNN graphs every setting stays within 0.002 of tuned BM25 on test, and
+within 0.013 on dev for PageRank (0.004 for personalized PageRank). At this weight,
+personalized PageRank on the kNN graph barely moves the ranking at all, likely because its walk
+spreads over many similar phones so that no single phone gains much. The graph priors' null result is therefore
+not an artefact of one choice of damping or neighbourhood size.
+
 ## 8.5.5 Review-attack study
 
 **Setup** (7.9; `scripts/run_attacks.py`, `results/attacks/`). For each attack type, 15

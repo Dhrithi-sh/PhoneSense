@@ -86,8 +86,8 @@ builds a normal-looking history removes even that.
 **Graph and trust.**
 * The graph has no purchase links: the phone data has no "bought together" field. Co-review
   links leave 61.5% of phones isolated. Semantic kNN edges connect every phone, but they are
-  built from the same listing text the retrievers already use, and they did not help (8.5.4).
-  The kNN neighbourhood size (8) was not tuned.
+  built from the same listing text the retrievers already use, and they did not help (8.5.4),
+  for any damping factor from 0.5 to 0.95 or neighbourhood size from 4 to 32.
 * The trust score can only learn about reviewers who wrote more than one review. With 88.4% of
   reviewers writing once, most reliabilities stay near the 0.5 prior, which limits how much the
   score can differ from a Bayesian average.
