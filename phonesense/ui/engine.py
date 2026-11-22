@@ -128,6 +128,14 @@ class SearchResponse:
     n_allowed: int | None = None  # how many phones pass them
 
 
+def _tuned_prf(method: str) -> dict:
+    """The Rocchio / HyDE settings tuned on dev (``prf.<method>.tuned`` in config.yaml), so the
+    demo shows the same systems as the ablation; empty (class defaults) if not configured."""
+    tuned = get_config().get("prf", {}).get(method, {}).get("tuned") or {}
+    allowed = {"m", "beta", "n_terms"} | ({"delta"} if method == "hyde" else set())
+    return {k: v for k, v in tuned.items() if k in allowed}
+
+
 def describe_filter(node: Mapping) -> str:
     """Readable text for a filter node (CONTRACT 4.4): ``price < 300 AND has_5g == True``."""
     if "field" in node:
@@ -179,7 +187,7 @@ class SearchEngine:
             self.tfidf.fit_index(index)
         else:
             self.tfidf.fit(phones)
-        self.rocchio = RocchioRetriever(self.tfidf)
+        self.rocchio = RocchioRetriever(self.tfidf, **_tuned_prf("rocchio"))
         self._hyde: HydeRetriever | None = None
         self._bm25 = None
         self._phrase = None
@@ -296,8 +304,13 @@ class SearchEngine:
         return self._allowed_cache[key]
 
     def _get_hyde(self) -> HydeRetriever:
+        """HyDE with the settings tuned on dev and the LLM the logged texts came from (so queries
+        already in ``runs/llm_logs/`` are replayed without any key; new queries need the key of
+        that provider in ``.env``)."""
         if self._hyde is None:
-            self._hyde = HydeRetriever(HydeGenerator(LLMClient()), self.tfidf)
+            llm = get_config().get("prf", {}).get("hyde", {}).get("llm", {})
+            client = LLMClient(llm.get("provider"), llm.get("model"))
+            self._hyde = HydeRetriever(HydeGenerator(client), self.tfidf, **_tuned_prf("hyde"))
         return self._hyde
 
     def _retriever(self, key: str):
