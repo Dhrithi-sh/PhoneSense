@@ -22,6 +22,33 @@ documented, and every ported module says "Adapted from our midterm project Dhvan
 | `text/stopwords.py` | `phonesense/index/stopwords.py` | Hindi list replaced by an English list plus a `PROTECTED` set. |
 | `dhvani/rank/vsm.py` (`query_vector`, `cosine_scores`, `search`), `index/scoring.py` (`idf`) | `phonesense/retrieval/tfidf.py` (`TfidfRetriever`) | Same lnc.ltc maths (`1 + log10 tf`, `log10(N/df)`, cosine normalization), term-at-a-time accumulators and heap top-k. Dropped: zone summing, query-expansion weights (phonetic/translation), per-term explanations, `use_idf` switch. Ties now broken by `doc_id` ascending (the midterm broke them by doc id descending via `nlargest`). Implements the shared `Retriever` API. |
 
+## T11 / T05
+
+| Original file | New file | What changed |
+|---------------|----------|--------------|
+| `dhvani/eval/metrics.py` (P/R/F1/AP/nDCG/11-point, `evaluate`) | `phonesense/eval/metrics.py`, `phonesense/eval/evaluate.py` | Same P/R/F1/AP/11-point definitions. The threshold is configurable and 2 (midterm: grade >= 1 on a 0-2 scale); nDCG uses exponential gains 2^g - 1 (midterm: linear). Added RR, R-precision, judged@k. Its file readers/writers were dropped in favour of `phonesense.io`; `evaluate_run` writes the contract's results JSON, filters by split and lists excluded queries. |
+| `dhvani/eval/significance.py` | `phonesense/eval/significance.py` | Same paired randomization test, now vectorized with numpy and seeded from config. The hand-written incomplete-beta t-test was replaced by `scipy.stats.ttest_rel`. Holm-Bonferroni and better/worse/tied counts are new. |
+| `dhvani/eval/experiments.py` (`score_run`, `results_rows`, `significance_rows`, `plot_pr_curves`, `main`) | `phonesense/eval/{evaluate,tables,plots,cli}.py`, `scripts/run_eval.py` | The experiment driver became the CLI (`eval`, `compare`, `table`, `all`, `agree`), Markdown + LaTeX tables with Holm-corrected daggers, and a shared figure style. Stemming / cross-lingual experiment tables were not ported. |
+| `dhvani/rank/bm25.py` | `phonesense/retrieval/bm25.py` | Same formula and non-negative idf. Runs per field on `InvertedIndex` with stored lengths (the midterm recomputed lengths and summed zones with a headline boost *before* saturation). Query weights once/k3 instead of expansion weights. BM25F-lite (weighted sum of per-field BM25) is new. |
+| (none) | `phonesense/eval/agreement.py` | New: Cohen's kappa, linear weighted kappa, `agreement_report` for T09b. |
+| (none) | `scripts/tune_bm25.py`, `scripts/run_baselines.py` | New: dev-only k1/b and field-weight grid, heatmaps, `bm25.tuned` in config.yaml; baseline runs + table. |
+
+## T06 / T07
+
+| Original file | New file | What changed |
+|---------------|----------|--------------|
+| `index/search.py` (`and_search`, `intersect_postings`, `build_skip_pointers`) | `phonesense/retrieval/boolean.py` | Same smallest-first AND with sqrt(n) skip pointers, now on int doc-id lists with comparison counts and a no-skip mode for the benchmark. The OR / NOT / parentheses parser (left-to-right precedence) is new. |
+| `index/search.py` (`phrase_search`, `proximity_search`) | `phonesense/retrieval/positional.py` | Same consecutive-offset phrase check and windowed proximity, now with stopword-gap offsets from the analyzer, match counts, candidate docs from the skip intersection, any field. `PhraseBoostRetriever` is new. |
+| `dhvani/rank/filters.py` (idea only: filter before taking the top k) | `phonesense/retrieval/filters.py` | New for phone specs: Kleene evaluator for the contract's filter syntax, rule-based constraint parser, `FilteredRetriever` (pre / post). |
+| (none) | `scripts/tune_phrase.py`, `scripts/run_t06_t07.py`, `scripts/bench_boolean.py` | New: dev-only phrase-weight tuning, filtered/phrase runs with comparison and constraint subset, skip-pointer benchmark. |
+
+## T22 / final assembly
+
+| Original file | New file | What changed |
+|---------------|----------|--------------|
+| `dhvani/eval/experiments.py` (`run_experiments`, `wins_and_losses`, `plot_pr_curves`) | `scripts/ablation.py`, `ablation.yaml` | The midterm's experiment grid became a config-driven ablation over every team member's runs: pending rows, Holm across rows, coverage flags, dev-only best-system choice, incremental table, bootstrap CIs, failure cases. |
+| (none) | `scripts/report_numbers.py`, `scripts/reproduce.py`, `scripts/make_submission.py` | New: generated report snippets, one-command reproduction, submission ZIP with dry run and checklist. |
+
 ## Not ported (don't fit English phone listings)
 
 `text/normalize.py`, `text/stem.py`, `text/aggressive_stem.py`, `text/auto_stem.py`
@@ -33,8 +60,5 @@ transliteration), `dhvani/crawl/` (news crawler), recency tiers and `g(d)` in
 
 | Task | Original | Notes |
 |------|----------|-------|
-| T05 BM25 | `dhvani/rank/bm25.py` | Needs `idx.df`, `idx.postings`, `idx.doc_len`, `idx.avg_doc_len` (all available per field, so BM25F is possible). |
-| T07 phrase / proximity | `index/search.py` (`phrase_search`, `proximity_search`), `dhvani/rank/scoring.py` (`smallest_window`) | Positions are in every posting; stopword gaps are kept identically for documents and queries. |
 | T07 tolerant retrieval | `dhvani/query/{kgram,editdist}.py` | Use `idx.vocabulary(field)`. |
-| T11 evaluation | `dhvani/eval/{metrics,significance}.py` | Adapt to `phonesense.io.read_run` / `read_qrels` and the `Results` schema. |
 | Efficiency | `dhvani/rank/speedups.py` (index elimination, champion lists, impact ordering) | Optional extra for the efficiency table. |

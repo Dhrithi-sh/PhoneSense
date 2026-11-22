@@ -1,0 +1,21 @@
+# Demo look (B, C): system font stack, softer corners, one blue accent. Colours are set per
+# mode so the app keeps following the viewer's light/dark setting.
+[theme]
+font = "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif"
+headingFont = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif"
+baseRadius = "0.75rem"
+
+[theme.light]
+primaryColor = "#007AFF"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F5F5F7"
+textColor = "#1D1D1F"
+
+[theme.dark]
+primaryColor = "#0A84FF"
+backgroundColor = "#111113"
+secondaryBackgroundColor = "#1C1C1E"
+textColor = "#F5F5F7"
+
+[client]
+toolbarMode = "minimal"
