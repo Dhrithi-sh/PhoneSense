@@ -125,21 +125,26 @@ class TfidfRetriever(Retriever):
         norm = math.sqrt(sum(w * w for w in raw.values()))
         return {t: w / norm for t, w in raw.items()} if norm > 0 else {}
 
-    def score_all(self, text: str) -> dict[int, float]:
-        """Term-at-a-time accumulators ``{internal doc: score}`` for every matching doc."""
+    def score_all(self, text: str, allowed: set[int] | None = None) -> dict[int, float]:
+        """Term-at-a-time accumulators ``{internal doc: score}`` for every matching doc.
+
+        ``allowed`` (internal doc ids) restricts scoring to those docs (pre-filtering, T06).
+        """
         index = self._require_index()
         acc: dict[int, float] = defaultdict(float)
         for term, wq in self.query_weights(text).items():
             for p in index.postings(term, self.field):
+                if allowed is not None and p.doc not in allowed:
+                    continue
                 acc[p.doc] += wq * _log_tf(p.tf) / self._norms[p.doc]
         return acc
 
-    def score_text(self, text: str, k: int = 100) -> Ranking:
+    def score_text(self, text: str, k: int = 100, allowed: set[int] | None = None) -> Ranking:
         """Top ``k`` ``(doc_id, score)`` for a free-text query, ties by doc_id ascending."""
         index = self._require_index()
         if k <= 0:
             return []
-        acc = self.score_all(text)
+        acc = self.score_all(text, allowed)
         top = heapq.nsmallest(k, acc.items(), key=lambda kv: (-kv[1], index.doc_id(kv[0])))
         return [(index.doc_id(d), s) for d, s in top]
 

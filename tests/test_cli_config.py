@@ -16,7 +16,7 @@ def test_cli_accepts_fixtures():
     res = run_cli("--run", "tests/fixtures/sample.run",
                   "--qrels", "tests/fixtures/sample_qrels.txt")
     assert res.returncode == 0, res.stderr
-    assert "Inputs are valid" in res.stdout and "not implemented yet" in res.stdout
+    assert "Inputs are valid" in res.stdout
 
 
 def test_cli_rejects_invalid(tmp_path):

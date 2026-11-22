@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 
 from phonesense.config import get_config, get_path
-from phonesense.index import InvertedIndex, StaleIndexError, index_path
+from phonesense.index import InvertedIndex, StaleIndexError, open_index
 from phonesense.io import Ranking, read_phones, read_queries
 from phonesense.retrieval.base import Retriever, run_retriever
 from phonesense.retrieval.tfidf import TfidfRetriever
@@ -42,25 +42,6 @@ class _Timed(Retriever):
         out = self.inner.search(query, k)
         self.latencies.append(time.perf_counter() - t0)
         return out
-
-
-def _load_index(sample: bool) -> tuple[InvertedIndex, bool]:
-    path = index_path(sample)
-    if (
-        not sample
-        and not (path / "meta.json").exists()
-        and (index_path(True) / "meta.json").exists()
-    ):
-        print(
-            "note: full index not built; using the sample index (run `make index` for the full one)"
-        )
-        path, sample = index_path(True), True
-    if not (path / "meta.json").exists():
-        flag = " --sample" if sample else ""
-        raise FileNotFoundError(
-            f"no index at {path}. Build it first: python scripts/build_index.py{flag}"
-        )
-    return InvertedIndex.load(path), sample
 
 
 def _titles(index: InvertedIndex, sample: bool) -> dict[str, str]:
@@ -105,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 1
     try:
-        index, sample = _load_index(args.sample)
+        index, sample = open_index(args.sample)
     except (FileNotFoundError, StaleIndexError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
