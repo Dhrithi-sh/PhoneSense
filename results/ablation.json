@@ -1,0 +1,1688 @@
+{
+  "reference": "bm25_tuned",
+  "selection_metric": "nDCG@10",
+  "qrels": "C:\\Users\\dhrit\\PhoneSense\\qrels\\qrels.txt",
+  "best_overall": {
+    "run": "bm25_tuned",
+    "dev": 0.6004308225148306,
+    "test": 0.6627267068117546
+  },
+  "rows": {
+    "test": [
+      {
+        "label": "TF-IDF lnc.ltc",
+        "owner": "A",
+        "group": "Lexical",
+        "run": "tfidf_lnc.ltc",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.3749999999999999,
+          "R@10": 0.5900647759103641,
+          "MAP": 0.4853904238554658,
+          "nDCG@10": 0.5435568864351878,
+          "RR": 0.672883064516129,
+          "judged@10": 0.78125
+        },
+        "n_queries": 16,
+        "low_coverage": false,
+        "significant": []
+      },
+      {
+        "label": "BM25 (k1=1.2, b=0.75)",
+        "owner": "A",
+        "group": "Lexical",
+        "run": "bm25_default",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.36874999999999997,
+          "R@10": 0.6091007236227824,
+          "MAP": 0.5785234985050262,
+          "nDCG@10": 0.652714891132357,
+          "RR": 0.7581845238095237,
+          "judged@10": 0.6062500000000001
+        },
+        "n_queries": 16,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "BM25 tuned",
+        "owner": "A",
+        "group": "Lexical",
+        "run": "bm25_tuned",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.38125,
+          "R@10": 0.6341007236227824,
+          "MAP": 0.5912251777940256,
+          "nDCG@10": 0.6627267068117546,
+          "RR": 0.755372807017544,
+          "judged@10": 0.61875
+        },
+        "n_queries": 16,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "BM25F tuned",
+        "owner": "A",
+        "group": "Lexical",
+        "run": "bm25f_tuned",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.2625,
+          "R@10": 0.4696603641456582,
+          "MAP": 0.4244069221738421,
+          "nDCG@10": 0.4691085914461235,
+          "RR": 0.7009875899962107,
+          "judged@10": 0.3687499999999999
+        },
+        "n_queries": 16,
+        "low_coverage": true,
+        "significant": [
+          "MAP",
+          "P@10",
+          "R@10",
+          "nDCG@10"
+        ]
+      },
+      {
+        "label": "+ filters",
+        "owner": "A",
+        "group": "+Structure",
+        "run": "bm25_tuned+filters",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.39999999999999997,
+          "R@10": 0.6534459617180205,
+          "MAP": 0.6238142739241328,
+          "nDCG@10": 0.6929528621058096,
+          "RR": 0.8053728070175439,
+          "judged@10": 0.5750000000000001
+        },
+        "n_queries": 16,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "+ phrase",
+        "owner": "A",
+        "group": "+Structure",
+        "run": "bm25_tuned+phrase",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.38125,
+          "R@10": 0.6341007236227824,
+          "MAP": 0.5912251777940256,
+          "nDCG@10": 0.6627267068117546,
+          "RR": 0.755372807017544,
+          "judged@10": 0.61875
+        },
+        "n_queries": 16,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "+ filters + phrase",
+        "owner": "A",
+        "group": "+Structure",
+        "run": "bm25_tuned+filters+phrase",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.39999999999999997,
+          "R@10": 0.6534459617180205,
+          "MAP": 0.6238142739241328,
+          "nDCG@10": 0.6929528621058096,
+          "RR": 0.8053728070175439,
+          "judged@10": 0.5750000000000001
+        },
+        "n_queries": 16,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "Dense",
+        "owner": "B",
+        "group": "Neural",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Rocchio PRF",
+        "owner": "B",
+        "group": "Neural",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "HyDE",
+        "owner": "B",
+        "group": "Neural",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "RRF (BM25, dense)",
+        "owner": "B",
+        "group": "Fusion",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Weighted fusion",
+        "owner": "B",
+        "group": "Fusion",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "PageRank rerank",
+        "owner": "C",
+        "group": "Graph+Trust",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Personalized PR",
+        "owner": "C",
+        "group": "Graph+Trust",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Trust-weighted rerank",
+        "owner": "C",
+        "group": "Graph+Trust",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Best overall: BM25 tuned",
+        "owner": "A",
+        "group": "Best (chosen on dev)",
+        "run": "bm25_tuned",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.38125,
+          "R@10": 0.6341007236227824,
+          "MAP": 0.5912251777940256,
+          "nDCG@10": 0.6627267068117546,
+          "RR": 0.755372807017544,
+          "judged@10": 0.61875
+        },
+        "n_queries": 16,
+        "low_coverage": true,
+        "significant": []
+      }
+    ],
+    "dev": [
+      {
+        "label": "TF-IDF lnc.ltc",
+        "owner": "A",
+        "group": "Lexical",
+        "run": "tfidf_lnc.ltc",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.31739130434782614,
+          "R@10": 0.5213833268181094,
+          "MAP": 0.373500754535735,
+          "nDCG@10": 0.5224204236304772,
+          "RR": 0.5961452789828076,
+          "judged@10": 0.7956521739130435
+        },
+        "n_queries": 23,
+        "low_coverage": false,
+        "significant": []
+      },
+      {
+        "label": "BM25 (k1=1.2, b=0.75)",
+        "owner": "A",
+        "group": "Lexical",
+        "run": "bm25_default",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.26521739130434785,
+          "R@10": 0.5743803298151124,
+          "MAP": 0.4269564722160637,
+          "nDCG@10": 0.5876336192377699,
+          "RR": 0.7143888782167581,
+          "judged@10": 0.6478260869565216
+        },
+        "n_queries": 23,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "BM25 tuned",
+        "owner": "A",
+        "group": "Lexical",
+        "run": "bm25_tuned",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.26521739130434785,
+          "R@10": 0.586155692133953,
+          "MAP": 0.4414369091424773,
+          "nDCG@10": 0.6004308225148306,
+          "RR": 0.7434317171425361,
+          "judged@10": 0.6956521739130433
+        },
+        "n_queries": 23,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "BM25F tuned",
+        "owner": "A",
+        "group": "Lexical",
+        "run": "bm25f_tuned",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.14347826086956522,
+          "R@10": 0.2692794524316263,
+          "MAP": 0.23536818447405808,
+          "nDCG@10": 0.33033518379320903,
+          "RR": 0.4946307111361291,
+          "judged@10": 0.32608695652173914
+        },
+        "n_queries": 23,
+        "low_coverage": true,
+        "significant": [
+          "MAP",
+          "P@10",
+          "R@10",
+          "nDCG@10"
+        ]
+      },
+      {
+        "label": "+ filters",
+        "owner": "A",
+        "group": "+Structure",
+        "run": "bm25_tuned+filters",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.24782608695652175,
+          "R@10": 0.5481560106560106,
+          "MAP": 0.382203950232338,
+          "nDCG@10": 0.5621941107640775,
+          "RR": 0.7061991429534401,
+          "judged@10": 0.5434782608695652
+        },
+        "n_queries": 23,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "+ phrase",
+        "owner": "A",
+        "group": "+Structure",
+        "run": "bm25_tuned+phrase",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.26521739130434785,
+          "R@10": 0.586155692133953,
+          "MAP": 0.4704224163888541,
+          "nDCG@10": 0.5980040655554218,
+          "RR": 0.7724172243889129,
+          "judged@10": 0.6826086956521739
+        },
+        "n_queries": 23,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "+ filters + phrase",
+        "owner": "A",
+        "group": "+Structure",
+        "run": "bm25_tuned+filters+phrase",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.24782608695652175,
+          "R@10": 0.5481560106560106,
+          "MAP": 0.41118945747871477,
+          "nDCG@10": 0.5597673538046688,
+          "RR": 0.7351846501998172,
+          "judged@10": 0.5304347826086956
+        },
+        "n_queries": 23,
+        "low_coverage": true,
+        "significant": []
+      },
+      {
+        "label": "Dense",
+        "owner": "B",
+        "group": "Neural",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Rocchio PRF",
+        "owner": "B",
+        "group": "Neural",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "HyDE",
+        "owner": "B",
+        "group": "Neural",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "RRF (BM25, dense)",
+        "owner": "B",
+        "group": "Fusion",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Weighted fusion",
+        "owner": "B",
+        "group": "Fusion",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "PageRank rerank",
+        "owner": "C",
+        "group": "Graph+Trust",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Personalized PR",
+        "owner": "C",
+        "group": "Graph+Trust",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Trust-weighted rerank",
+        "owner": "C",
+        "group": "Graph+Trust",
+        "run": null,
+        "status": "pending: no run"
+      },
+      {
+        "label": "Best overall: BM25 tuned",
+        "owner": "A",
+        "group": "Best (chosen on dev)",
+        "run": "bm25_tuned",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.26521739130434785,
+          "R@10": 0.586155692133953,
+          "MAP": 0.4414369091424773,
+          "nDCG@10": 0.6004308225148306,
+          "RR": 0.7434317171425361,
+          "judged@10": 0.6956521739130433
+        },
+        "n_queries": 23,
+        "low_coverage": true,
+        "significant": []
+      }
+    ]
+  },
+  "significance": {
+    "test": {
+      "P@10": {
+        "tfidf_lnc.ltc": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.375,
+          "mean_diff": -0.006249999999999999,
+          "p_randomization": 1.0,
+          "t": -0.18655504341276277,
+          "p_ttest": 0.8545091788012278,
+          "better": 3,
+          "worse": 4,
+          "tied": 9,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_default": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.36874999999999997,
+          "mean_diff": -0.0125,
+          "p_randomization": 1.0,
+          "t": -1.0,
+          "p_ttest": 0.3331701359154764,
+          "better": 0,
+          "worse": 1,
+          "tied": 15,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 0.9995104077464292
+        },
+        "bm25f_tuned": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.2625,
+          "mean_diff": -0.11875,
+          "p_randomization": 0.0026997300269973002,
+          "t": -3.230096904360718,
+          "p_ttest": 0.005607358992825333,
+          "better": 0,
+          "worse": 10,
+          "tied": 6,
+          "p_randomization_holm": 0.0161983801619838,
+          "p_ttest_holm": 0.033644153956952
+        },
+        "bm25_tuned+filters": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.39999999999999997,
+          "mean_diff": 0.018749999999999996,
+          "p_randomization": 0.5024497550244975,
+          "t": 1.3789156793307649,
+          "p_ttest": 0.18813706218300877,
+          "better": 2,
+          "worse": 0,
+          "tied": 14,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 0.9406853109150438
+        },
+        "bm25_tuned+phrase": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.38125,
+          "mean_diff": 0.0,
+          "p_randomization": 1.0,
+          "t": 0.0,
+          "p_ttest": 1.0,
+          "better": 0,
+          "worse": 0,
+          "tied": 16,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.39999999999999997,
+          "mean_diff": 0.018749999999999996,
+          "p_randomization": 0.5024497550244975,
+          "t": 1.3789156793307649,
+          "p_ttest": 0.18813706218300877,
+          "better": 2,
+          "worse": 0,
+          "tied": 14,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 0.9406853109150438
+        }
+      },
+      "R@10": {
+        "tfidf_lnc.ltc": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.5900647759103641,
+          "mean_diff": -0.044035947712418304,
+          "p_randomization": 0.3498650134986501,
+          "t": -1.038814128380314,
+          "p_ttest": 0.31534749893365166,
+          "better": 3,
+          "worse": 4,
+          "tied": 9,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 0.946042496800955
+        },
+        "bm25_default": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.6091007236227824,
+          "mean_diff": -0.025,
+          "p_randomization": 1.0,
+          "t": -1.0,
+          "p_ttest": 0.3331701359154764,
+          "better": 0,
+          "worse": 1,
+          "tied": 15,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 0.946042496800955
+        },
+        "bm25f_tuned": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.46966036414565826,
+          "mean_diff": -0.16444035947712418,
+          "p_randomization": 0.0026997300269973002,
+          "t": -2.955673069975619,
+          "p_ttest": 0.009819542575541818,
+          "better": 0,
+          "worse": 10,
+          "tied": 6,
+          "p_randomization_holm": 0.0161983801619838,
+          "p_ttest_holm": 0.05891725545325091
+        },
+        "bm25_tuned+filters": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.6534459617180206,
+          "mean_diff": 0.0193452380952381,
+          "p_randomization": 0.5024497550244975,
+          "t": 1.4589254525405089,
+          "p_ttest": 0.16520793255214095,
+          "better": 2,
+          "worse": 0,
+          "tied": 14,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 0.8260396627607047
+        },
+        "bm25_tuned+phrase": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.6341007236227825,
+          "mean_diff": 0.0,
+          "p_randomization": 1.0,
+          "t": 0.0,
+          "p_ttest": 1.0,
+          "better": 0,
+          "worse": 0,
+          "tied": 16,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.6534459617180206,
+          "mean_diff": 0.0193452380952381,
+          "p_randomization": 0.5024497550244975,
+          "t": 1.4589254525405089,
+          "p_ttest": 0.16520793255214095,
+          "better": 2,
+          "worse": 0,
+          "tied": 14,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 0.8260396627607047
+        }
+      },
+      "MAP": {
+        "tfidf_lnc.ltc": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.48539042385546577,
+          "mean_diff": -0.1058347539385597,
+          "p_randomization": 0.11868813118688132,
+          "t": -1.694485592103743,
+          "p_ttest": 0.11082759836463152,
+          "better": 5,
+          "worse": 9,
+          "tied": 2,
+          "p_randomization_holm": 0.5934406559344065,
+          "p_ttest_holm": 0.41904916509766954
+        },
+        "bm25_default": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.578523498505026,
+          "mean_diff": -0.012701679288999415,
+          "p_randomization": 0.24077592240775922,
+          "t": -1.2637896210673956,
+          "p_ttest": 0.22559367227219349,
+          "better": 3,
+          "worse": 7,
+          "tied": 6,
+          "p_randomization_holm": 0.5934406559344065,
+          "p_ttest_holm": 0.45118734454438697
+        },
+        "bm25f_tuned": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.4244069221738421,
+          "mean_diff": -0.16681825562018343,
+          "p_randomization": 0.005099490050994901,
+          "t": -3.17343685070904,
+          "p_ttest": 0.006297082273766182,
+          "better": 2,
+          "worse": 12,
+          "tied": 2,
+          "p_randomization_holm": 0.030596940305969406,
+          "p_ttest_holm": 0.037782493642597094
+        },
+        "bm25_tuned+filters": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.6238142739241328,
+          "mean_diff": 0.032589096130107284,
+          "p_randomization": 0.1212878712128787,
+          "t": 1.851997197016385,
+          "p_ttest": 0.0838098330195339,
+          "better": 4,
+          "worse": 0,
+          "tied": 12,
+          "p_randomization_holm": 0.5934406559344065,
+          "p_ttest_holm": 0.41904916509766954
+        },
+        "bm25_tuned+phrase": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.5912251777940255,
+          "mean_diff": 0.0,
+          "p_randomization": 1.0,
+          "t": 0.0,
+          "p_ttest": 1.0,
+          "better": 0,
+          "worse": 0,
+          "tied": 16,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.6238142739241328,
+          "mean_diff": 0.032589096130107284,
+          "p_randomization": 0.1212878712128787,
+          "t": 1.851997197016385,
+          "p_ttest": 0.0838098330195339,
+          "better": 4,
+          "worse": 0,
+          "tied": 12,
+          "p_randomization_holm": 0.5934406559344065,
+          "p_ttest_holm": 0.41904916509766954
+        }
+      },
+      "nDCG@10": {
+        "tfidf_lnc.ltc": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.5435568864351878,
+          "mean_diff": -0.11916982037656679,
+          "p_randomization": 0.0268973102689731,
+          "t": -2.533459278283681,
+          "p_ttest": 0.02293741644126072,
+          "better": 7,
+          "worse": 9,
+          "tied": 0,
+          "p_randomization_holm": 0.1344865513448655,
+          "p_ttest_holm": 0.11468708220630361
+        },
+        "bm25_default": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.652714891132357,
+          "mean_diff": -0.010011815679397636,
+          "p_randomization": 0.8815118488151185,
+          "t": -0.6846812244024377,
+          "p_ttest": 0.5039879064209535,
+          "better": 8,
+          "worse": 4,
+          "tied": 4,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25f_tuned": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.4691085914461235,
+          "mean_diff": -0.19361811536563114,
+          "p_randomization": 0.00039996000399960006,
+          "t": -4.192332606418093,
+          "p_ttest": 0.0007849680437601115,
+          "better": 1,
+          "worse": 14,
+          "tied": 1,
+          "p_randomization_holm": 0.0023997600239976003,
+          "p_ttest_holm": 0.004709808262560669
+        },
+        "bm25_tuned+filters": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.6929528621058096,
+          "mean_diff": 0.03022615529405502,
+          "p_randomization": 0.1212878712128787,
+          "t": 1.5538952083850857,
+          "p_ttest": 0.14105128845835277,
+          "better": 4,
+          "worse": 0,
+          "tied": 12,
+          "p_randomization_holm": 0.4851514848515148,
+          "p_ttest_holm": 0.5642051538334111
+        },
+        "bm25_tuned+phrase": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.6627267068117546,
+          "mean_diff": 0.0,
+          "p_randomization": 1.0,
+          "t": 0.0,
+          "p_ttest": 1.0,
+          "better": 0,
+          "worse": 0,
+          "tied": 16,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.6929528621058096,
+          "mean_diff": 0.03022615529405502,
+          "p_randomization": 0.1212878712128787,
+          "t": 1.5538952083850857,
+          "p_ttest": 0.14105128845835277,
+          "better": 4,
+          "worse": 0,
+          "tied": 12,
+          "p_randomization_holm": 0.4851514848515148,
+          "p_ttest_holm": 0.5642051538334111
+        }
+      },
+      "RR": {
+        "tfidf_lnc.ltc": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.672883064516129,
+          "mean_diff": -0.08248974250141483,
+          "p_randomization": 0.2783721627837216,
+          "t": -1.1427759815153924,
+          "p_ttest": 0.2710443694673937,
+          "better": 2,
+          "worse": 5,
+          "tied": 9,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_default": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.7581845238095237,
+          "mean_diff": 0.002811716791979949,
+          "p_randomization": 1.0,
+          "t": 0.27760393908090686,
+          "p_ttest": 0.7851059660068119,
+          "better": 1,
+          "worse": 2,
+          "tied": 13,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25f_tuned": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.7009875899962107,
+          "mean_diff": -0.05438521702133317,
+          "p_randomization": 0.4991500849915009,
+          "t": -0.7550342956471806,
+          "p_ttest": 0.4619197228765374,
+          "better": 3,
+          "worse": 4,
+          "tied": 9,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.8053728070175439,
+          "mean_diff": 0.05,
+          "p_randomization": 1.0,
+          "t": 1.0,
+          "p_ttest": 0.3331701359154764,
+          "better": 1,
+          "worse": 0,
+          "tied": 15,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+phrase": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.7553728070175438,
+          "mean_diff": 0.0,
+          "p_randomization": 1.0,
+          "t": 0.0,
+          "p_ttest": 1.0,
+          "better": 0,
+          "worse": 0,
+          "tied": 16,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.8053728070175439,
+          "mean_diff": 0.05,
+          "p_randomization": 1.0,
+          "t": 1.0,
+          "p_ttest": 0.3331701359154764,
+          "better": 1,
+          "worse": 0,
+          "tied": 15,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        }
+      }
+    },
+    "dev": {
+      "P@10": {
+        "tfidf_lnc.ltc": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.31739130434782614,
+          "mean_diff": 0.05217391304347825,
+          "p_randomization": 0.3721627837216278,
+          "t": 1.0816039296162434,
+          "p_ttest": 0.29114247333366056,
+          "better": 6,
+          "worse": 7,
+          "tied": 10,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_default": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.2652173913043478,
+          "mean_diff": 3.620292471603771e-18,
+          "p_randomization": 1.0,
+          "t": 5.758427691416804e-16,
+          "p_ttest": 0.9999999999999996,
+          "better": 1,
+          "worse": 1,
+          "tied": 21,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25f_tuned": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.14347826086956522,
+          "mean_diff": -0.1217391304347826,
+          "p_randomization": 0.0025997400259974,
+          "t": -3.275113457455173,
+          "p_ttest": 0.0034602800654333697,
+          "better": 1,
+          "worse": 15,
+          "tied": 7,
+          "p_randomization_holm": 0.0155984401559844,
+          "p_ttest_holm": 0.020761680392600217
+        },
+        "bm25_tuned+filters": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.24782608695652175,
+          "mean_diff": -0.017391304347826084,
+          "p_randomization": 0.5606439356064393,
+          "t": -0.8475655413823614,
+          "p_ttest": 0.4058067742210828,
+          "better": 1,
+          "worse": 4,
+          "tied": 18,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+phrase": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.2652173913043478,
+          "mean_diff": 0.0,
+          "p_randomization": 1.0,
+          "t": 0.0,
+          "p_ttest": 1.0,
+          "better": 0,
+          "worse": 0,
+          "tied": 23,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.24782608695652175,
+          "mean_diff": -0.017391304347826084,
+          "p_randomization": 0.5606439356064393,
+          "t": -0.8475655413823614,
+          "p_ttest": 0.4058067742210828,
+          "better": 1,
+          "worse": 4,
+          "tied": 18,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        }
+      },
+      "R@10": {
+        "tfidf_lnc.ltc": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.5213833268181094,
+          "mean_diff": -0.06477236531584356,
+          "p_randomization": 0.45485451454854514,
+          "t": -0.7847299348299827,
+          "p_ttest": 0.4409807467447874,
+          "better": 6,
+          "worse": 7,
+          "tied": 10,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_default": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.5743803298151124,
+          "mean_diff": -0.011775362318840578,
+          "p_randomization": 1.0,
+          "t": -0.7920887939125144,
+          "p_ttest": 0.4367670644597934,
+          "better": 1,
+          "worse": 1,
+          "tied": 21,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25f_tuned": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.2692794524316263,
+          "mean_diff": -0.31687623970232665,
+          "p_randomization": 9.999000099990002e-05,
+          "t": -4.357023171528085,
+          "p_ttest": 0.0002522343639714243,
+          "better": 1,
+          "worse": 15,
+          "tied": 7,
+          "p_randomization_holm": 0.0005999400059994001,
+          "p_ttest_holm": 0.0015134061838285458
+        },
+        "bm25_tuned+filters": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.5481560106560106,
+          "mean_diff": -0.037999681477942346,
+          "p_randomization": 0.18988101189881013,
+          "t": -1.4781192579195679,
+          "p_ttest": 0.1535509263460825,
+          "better": 1,
+          "worse": 4,
+          "tied": 18,
+          "p_randomization_holm": 0.9494050594940506,
+          "p_ttest_holm": 0.7677546317304125
+        },
+        "bm25_tuned+phrase": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.586155692133953,
+          "mean_diff": 0.0,
+          "p_randomization": 1.0,
+          "t": 0.0,
+          "p_ttest": 1.0,
+          "better": 0,
+          "worse": 0,
+          "tied": 23,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.5481560106560106,
+          "mean_diff": -0.037999681477942346,
+          "p_randomization": 0.18988101189881013,
+          "t": -1.4781192579195679,
+          "p_ttest": 0.1535509263460825,
+          "better": 1,
+          "worse": 4,
+          "tied": 18,
+          "p_randomization_holm": 0.9494050594940506,
+          "p_ttest_holm": 0.7677546317304125
+        }
+      },
+      "MAP": {
+        "tfidf_lnc.ltc": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.3735007545357351,
+          "mean_diff": -0.06793615460674218,
+          "p_randomization": 0.39416058394160586,
+          "t": -0.8773538864118499,
+          "p_ttest": 0.38977513446938344,
+          "better": 10,
+          "worse": 13,
+          "tied": 0,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_default": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.4269564722160636,
+          "mean_diff": -0.014480436926413603,
+          "p_randomization": 0.7607239276072393,
+          "t": -0.4108863541344054,
+          "p_ttest": 0.6851305598525241,
+          "better": 3,
+          "worse": 14,
+          "tied": 6,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25f_tuned": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.23536818447405802,
+          "mean_diff": -0.20606872466841925,
+          "p_randomization": 9.999000099990002e-05,
+          "t": -4.628923191173209,
+          "p_ttest": 0.0001298546990513146,
+          "better": 4,
+          "worse": 18,
+          "tied": 1,
+          "p_randomization_holm": 0.0005999400059994001,
+          "p_ttest_holm": 0.0007791281943078876
+        },
+        "bm25_tuned+filters": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.382203950232338,
+          "mean_diff": -0.05923295891013939,
+          "p_randomization": 0.14078592140785923,
+          "t": -1.564435733301778,
+          "p_ttest": 0.13198691109571187,
+          "better": 4,
+          "worse": 5,
+          "tied": 14,
+          "p_randomization_holm": 0.7039296070392962,
+          "p_ttest_holm": 0.6599345554785594
+        },
+        "bm25_tuned+phrase": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.4704224163888541,
+          "mean_diff": 0.028985507246376815,
+          "p_randomization": 1.0,
+          "t": 1.0000000000000004,
+          "p_ttest": 0.32818326188067054,
+          "better": 1,
+          "worse": 0,
+          "tied": 22,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.41118945747871477,
+          "mean_diff": -0.030247451663762574,
+          "p_randomization": 0.5600439956004399,
+          "t": -0.61362739344792,
+          "p_ttest": 0.5457545913947623,
+          "better": 5,
+          "worse": 5,
+          "tied": 13,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        }
+      },
+      "nDCG@10": {
+        "tfidf_lnc.ltc": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.5224204236304772,
+          "mean_diff": -0.07801039888435343,
+          "p_randomization": 0.19288071192880712,
+          "t": -1.3468268374578682,
+          "p_ttest": 0.19174744407595534,
+          "better": 9,
+          "worse": 13,
+          "tied": 1,
+          "p_randomization_holm": 0.8744125587441256,
+          "p_ttest_holm": 0.9128525854580082
+        },
+        "bm25_default": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.58763361923777,
+          "mean_diff": -0.012797203277060618,
+          "p_randomization": 0.2763723627637236,
+          "t": -1.1412178173802714,
+          "p_ttest": 0.266049929385261,
+          "better": 10,
+          "worse": 8,
+          "tied": 5,
+          "p_randomization_holm": 0.8744125587441256,
+          "p_ttest_holm": 0.9128525854580082
+        },
+        "bm25f_tuned": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.330335183793209,
+          "mean_diff": -0.2700956387216216,
+          "p_randomization": 9.999000099990002e-05,
+          "t": -6.098303320501743,
+          "p_ttest": 3.8772318880452895e-06,
+          "better": 3,
+          "worse": 20,
+          "tied": 0,
+          "p_randomization_holm": 0.0005999400059994001,
+          "p_ttest_holm": 2.326339132827174e-05
+        },
+        "bm25_tuned+filters": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.5621941107640775,
+          "mean_diff": -0.03823671175075311,
+          "p_randomization": 0.21337866213378662,
+          "t": -1.2918778403168307,
+          "p_ttest": 0.20980661350685864,
+          "better": 3,
+          "worse": 6,
+          "tied": 14,
+          "p_randomization_holm": 0.8744125587441256,
+          "p_ttest_holm": 0.9128525854580082
+        },
+        "bm25_tuned+phrase": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.5980040655554218,
+          "mean_diff": -0.0024267569594087876,
+          "p_randomization": 0.4998500149985001,
+          "t": -1.0525092907419997,
+          "p_ttest": 0.3039895814170161,
+          "better": 0,
+          "worse": 2,
+          "tied": 21,
+          "p_randomization_holm": 0.8744125587441256,
+          "p_ttest_holm": 0.9128525854580082
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.5597673538046688,
+          "mean_diff": -0.0406634687101619,
+          "p_randomization": 0.17488251174882513,
+          "t": -1.3763216274932397,
+          "p_ttest": 0.18257051709160163,
+          "better": 3,
+          "worse": 8,
+          "tied": 12,
+          "p_randomization_holm": 0.8744125587441256,
+          "p_ttest_holm": 0.9128525854580082
+        }
+      },
+      "RR": {
+        "tfidf_lnc.ltc": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.5961452789828076,
+          "mean_diff": -0.14728643815972858,
+          "p_randomization": 0.10528947105289471,
+          "t": -1.6698721375881538,
+          "p_ttest": 0.10911339306146828,
+          "better": 4,
+          "worse": 10,
+          "tied": 9,
+          "p_randomization_holm": 0.5264473552644735,
+          "p_ttest_holm": 0.5455669653073414
+        },
+        "bm25_default": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.7143888782167581,
+          "mean_diff": -0.029042838925778056,
+          "p_randomization": 0.5838416158384162,
+          "t": -0.5891226162253365,
+          "p_ttest": 0.5617802864169745,
+          "better": 3,
+          "worse": 5,
+          "tied": 15,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25f_tuned": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.4946307111361291,
+          "mean_diff": -0.24880100600640703,
+          "p_randomization": 0.025697430256974303,
+          "t": -2.4125996439395445,
+          "p_ttest": 0.02461925407594964,
+          "better": 3,
+          "worse": 12,
+          "tied": 8,
+          "p_randomization_holm": 0.15418458154184583,
+          "p_ttest_holm": 0.14771552445569783
+        },
+        "bm25_tuned+filters": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.7061991429534402,
+          "mean_diff": -0.03723257418909593,
+          "p_randomization": 0.6148385161483851,
+          "t": -0.6481472507635094,
+          "p_ttest": 0.5235974540730485,
+          "better": 3,
+          "worse": 2,
+          "tied": 18,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+phrase": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.7724172243889129,
+          "mean_diff": 0.028985507246376815,
+          "p_randomization": 1.0,
+          "t": 1.0000000000000004,
+          "p_ttest": 0.32818326188067054,
+          "better": 1,
+          "worse": 0,
+          "tied": 22,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "bm25_tuned+filters+phrase": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.7351846501998169,
+          "mean_diff": -0.008247066942719117,
+          "p_randomization": 0.937006299370063,
+          "t": -0.1266809061355779,
+          "p_ttest": 0.9003436494417507,
+          "better": 4,
+          "worse": 2,
+          "tied": 17,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        }
+      }
+    }
+  },
+  "incremental": {
+    "test": [
+      {
+        "label": "BM25 (k1=1.2, b=0.75)",
+        "owner": "A",
+        "run": "bm25_default",
+        "parent": "tfidf_lnc.ltc",
+        "status": "ok",
+        "delta": 0.10915800469716916,
+        "p": 0.0664933506649335,
+        "wins": 9,
+        "losses": 7,
+        "ties": 0,
+        "n": 16
+      },
+      {
+        "label": "BM25 tuned",
+        "owner": "A",
+        "run": "bm25_tuned",
+        "parent": "bm25_default",
+        "status": "ok",
+        "delta": 0.010011815679397636,
+        "p": 0.8815118488151185,
+        "wins": 4,
+        "losses": 8,
+        "ties": 4,
+        "n": 16
+      },
+      {
+        "label": "BM25F tuned",
+        "owner": "A",
+        "run": "bm25f_tuned",
+        "parent": "bm25_tuned",
+        "status": "ok",
+        "delta": -0.19361811536563114,
+        "p": 0.00039996000399960006,
+        "wins": 1,
+        "losses": 14,
+        "ties": 1,
+        "n": 16
+      },
+      {
+        "label": "+ filters",
+        "owner": "A",
+        "run": "bm25_tuned+filters",
+        "parent": "bm25_tuned",
+        "status": "ok",
+        "delta": 0.03022615529405502,
+        "p": 0.1212878712128787,
+        "wins": 4,
+        "losses": 0,
+        "ties": 12,
+        "n": 16
+      },
+      {
+        "label": "+ phrase",
+        "owner": "A",
+        "run": "bm25_tuned+phrase",
+        "parent": "bm25_tuned",
+        "status": "ok",
+        "delta": 0.0,
+        "p": 1.0,
+        "wins": 0,
+        "losses": 0,
+        "ties": 16,
+        "n": 16
+      },
+      {
+        "label": "+ filters + phrase",
+        "owner": "A",
+        "run": "bm25_tuned+filters+phrase",
+        "parent": "bm25_tuned+phrase",
+        "status": "ok",
+        "delta": 0.03022615529405502,
+        "p": 0.1212878712128787,
+        "wins": 4,
+        "losses": 0,
+        "ties": 12,
+        "n": 16
+      },
+      {
+        "label": "Dense",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "Rocchio PRF",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "HyDE",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "RRF (BM25, dense)",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "Weighted fusion",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "PageRank rerank",
+        "owner": "C",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "Personalized PR",
+        "owner": "C",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "Trust-weighted rerank",
+        "owner": "C",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      }
+    ],
+    "dev": [
+      {
+        "label": "BM25 (k1=1.2, b=0.75)",
+        "owner": "A",
+        "run": "bm25_default",
+        "parent": "tfidf_lnc.ltc",
+        "status": "ok",
+        "delta": 0.0652131956072928,
+        "p": 0.27407259274072593,
+        "wins": 14,
+        "losses": 8,
+        "ties": 1,
+        "n": 23
+      },
+      {
+        "label": "BM25 tuned",
+        "owner": "A",
+        "run": "bm25_tuned",
+        "parent": "bm25_default",
+        "status": "ok",
+        "delta": 0.012797203277060618,
+        "p": 0.2763723627637236,
+        "wins": 8,
+        "losses": 10,
+        "ties": 5,
+        "n": 23
+      },
+      {
+        "label": "BM25F tuned",
+        "owner": "A",
+        "run": "bm25f_tuned",
+        "parent": "bm25_tuned",
+        "status": "ok",
+        "delta": -0.2700956387216216,
+        "p": 9.999000099990002e-05,
+        "wins": 3,
+        "losses": 20,
+        "ties": 0,
+        "n": 23
+      },
+      {
+        "label": "+ filters",
+        "owner": "A",
+        "run": "bm25_tuned+filters",
+        "parent": "bm25_tuned",
+        "status": "ok",
+        "delta": -0.03823671175075311,
+        "p": 0.21337866213378662,
+        "wins": 3,
+        "losses": 6,
+        "ties": 14,
+        "n": 23
+      },
+      {
+        "label": "+ phrase",
+        "owner": "A",
+        "run": "bm25_tuned+phrase",
+        "parent": "bm25_tuned",
+        "status": "ok",
+        "delta": -0.0024267569594087876,
+        "p": 0.4998500149985001,
+        "wins": 0,
+        "losses": 2,
+        "ties": 21,
+        "n": 23
+      },
+      {
+        "label": "+ filters + phrase",
+        "owner": "A",
+        "run": "bm25_tuned+filters+phrase",
+        "parent": "bm25_tuned+phrase",
+        "status": "ok",
+        "delta": -0.03823671175075311,
+        "p": 0.21337866213378662,
+        "wins": 3,
+        "losses": 6,
+        "ties": 14,
+        "n": 23
+      },
+      {
+        "label": "Dense",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "Rocchio PRF",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "HyDE",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "RRF (BM25, dense)",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "Weighted fusion",
+        "owner": "B",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "PageRank rerank",
+        "owner": "C",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "Personalized PR",
+        "owner": "C",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      },
+      {
+        "label": "Trust-weighted rerank",
+        "owner": "C",
+        "run": null,
+        "parent": "bm25_tuned",
+        "status": "pending"
+      }
+    ]
+  },
+  "pending": [
+    {
+      "label": "Dense",
+      "owner": "B",
+      "status": "pending: no run"
+    },
+    {
+      "label": "Rocchio PRF",
+      "owner": "B",
+      "status": "pending: no run"
+    },
+    {
+      "label": "HyDE",
+      "owner": "B",
+      "status": "pending: no run"
+    },
+    {
+      "label": "RRF (BM25, dense)",
+      "owner": "B",
+      "status": "pending: no run"
+    },
+    {
+      "label": "Weighted fusion",
+      "owner": "B",
+      "status": "pending: no run"
+    },
+    {
+      "label": "PageRank rerank",
+      "owner": "C",
+      "status": "pending: no run"
+    },
+    {
+      "label": "Personalized PR",
+      "owner": "C",
+      "status": "pending: no run"
+    },
+    {
+      "label": "Trust-weighted rerank",
+      "owner": "C",
+      "status": "pending: no run"
+    }
+  ],
+  "figures": [
+    "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\ablation_bars.png",
+    "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\ablation_bars.pdf",
+    "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\pr_key_systems.png",
+    "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\pr_key_systems.pdf"
+  ],
+  "key_systems": [
+    [
+      "TF-IDF (tfidf_lnc.ltc)",
+      "tfidf_lnc.ltc"
+    ],
+    [
+      "BM25 tuned (bm25_tuned)",
+      "bm25_tuned"
+    ],
+    [
+      "best structured (bm25_tuned+phrase)",
+      "bm25_tuned+phrase"
+    ]
+  ]
+}

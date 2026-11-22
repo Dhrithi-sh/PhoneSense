@@ -1,0 +1,25 @@
+{
+  "boolean_and": {
+    "index": "full",
+    "N": 7166,
+    "n_queries": 200,
+    "min_df": 20,
+    "repeats": 5,
+    "seed": 42,
+    "vocab_candidates": 3324,
+    "with_skips": {
+      "mean_us": 39.08,
+      "p95_us": 104.32,
+      "mean_comparisons": 212.8,
+      "mean_result_size": 7.43
+    },
+    "without_skips": {
+      "mean_us": 43.51,
+      "p95_us": 158.05,
+      "mean_comparisons": 330.4,
+      "mean_result_size": 7.43
+    },
+    "speedup_mean_latency": 1.113,
+    "comparison_reduction": 0.356
+  }
+}

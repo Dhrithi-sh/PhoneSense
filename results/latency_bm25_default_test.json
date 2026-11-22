@@ -1,0 +1,7 @@
+{
+  "run": "bm25_default_test",
+  "N": 7166,
+  "queries": 18,
+  "mean_ms": 2.5935,
+  "p95_ms": 3.9394
+}

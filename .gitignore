@@ -8,15 +8,18 @@ data/index/
 # Midterm sample corpus holds copyrighted article text: keep it out of git
 legacy/midterm/data/
 
-# Generated outputs
+# Generated outputs. Run files (ids + scores only, no Amazon text) and their filter logs
+# are tracked so teammates and the submission get them; LLM judge logs are not.
 runs/*
 !runs/.gitkeep
+!runs/*.run
+!runs/*.filters.json
+runs/llm_logs/
+# Results JSON (metrics, stats, tuning) is tracked; other generated outputs are not.
+# The hand-check CSVs (with listing text) stay out of git; their scored summary is JSON.
 results/*
 !results/.gitkeep
-# Hand-check labels are human input (not reproducible by a script): commit them once filled.
-!results/handcheck_specs.csv
-!results/handcheck_filter.csv
-!results/handcheck_summary.json
+!results/*.json
 
 # Generated report snippets (scripts/report_numbers.py)
 report/generated/

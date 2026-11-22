@@ -123,6 +123,10 @@ def main(argv: list[str] | None = None) -> int:
         )
     best = _best(grid, objective, {"k1": 1.2, "b": 0.75})
     default = next((r for r in grid if r["k1"] == 1.2 and r["b"] == 0.75), None)
+    if default is None:  # b = 0.75 is not on the 0.1-step grid: score the default separately
+        bm25.set_params(1.2, 0.75)
+        means = score(bm25, queries, qrels, args.k)
+        default = {"k1": 1.2, "b": 0.75, objective: means[objective], "metrics": means}
     print(
         f"best BM25: k1={best['k1']:g} b={best['b']:g} {objective}={best[objective]:.4f}"
         + (f" (default 1.2/0.75: {default[objective]:.4f})" if default else "")
