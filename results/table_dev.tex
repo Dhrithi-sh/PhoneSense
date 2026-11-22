@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Run & P@10 & R@10 & MAP & nDCG@10 & RR & judged@10 \\
+\midrule
+bm25\_default\_dev & 0.265 & 0.574 & 0.427 & 0.588 & 0.714 & 0.648 \\
+bm25\_tuned+filters+phrase\_dev & 0.248 & 0.548 & 0.411 & 0.560 & 0.735 & 0.530 \\
+bm25\_tuned+filters\_dev & 0.248 & 0.548 & 0.382 & 0.562 & 0.706 & 0.543 \\
+bm25\_tuned+pagerank0.1\_dev & 0.248 & 0.566 & 0.434 & 0.582 & 0.739 & 0.648 \\
+bm25\_tuned+phrase\_dev & 0.265 & \textbf{0.586} & \textbf{0.470} & 0.598 & \textbf{0.772} & 0.683 \\
+bm25\_tuned+ppr0.1\_dev & 0.265 & \textbf{0.586} & 0.416 & 0.586 & 0.700 & 0.696 \\
+bm25\_tuned+trust0.2\_dev & 0.257 & 0.572 & 0.428 & 0.590 & 0.711 & 0.665 \\
+bm25\_tuned\_dev & 0.265 & \textbf{0.586} & 0.441 & \textbf{0.600} & 0.743 & 0.696 \\
+bm25f\_tuned\_dev & 0.143$^\dagger$ & 0.269 & 0.235 & 0.330 & 0.495 & 0.326 \\
+tfidf\_lnc.ltc\_dev & \textbf{0.317} & 0.521 & 0.374 & 0.522 & 0.596 & \textbf{0.796} \\
+\bottomrule
+\end{tabular}
+\caption{Retrieval effectiveness. $^\dagger$: $p<0.05$ vs.\ tfidf\_lnc.ltc\_dev (paired randomization test, Holm-corrected).}
+\end{table}

@@ -1,0 +1,11 @@
+{
+  "pytest": "passed",
+  "pytest_summary": "397 passed, 3 skipped in 13.31s",
+  "pytest_output_tail": "",
+  "table_cli": {
+    "status": "passed",
+    "stderr_tail": "latency_bm25_tuned_dev.json: not a results file\nskipping results\\latency_bm25_tuned_test.json: not a results file\nskipping results\\latency_bm25f_tuned_dev.json: not a results file\nskipping results\\latency_bm25f_tuned_test.json: not a results file\nskipping results\\latency_tfidf_lnc.ltc_dev.json: not a results file\nskipping results\\latency_tfidf_lnc.ltc_test.json: not a results file\nskipping results\\phrase_tuning.json: not a results file\nskipping results\\submission_dryrun.json: not a results file\n"
+  },
+  "phonesense_imported_from_zip": true,
+  "passed": true
+}

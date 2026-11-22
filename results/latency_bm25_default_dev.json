@@ -2,6 +2,6 @@
   "run": "bm25_default_dev",
   "N": 7166,
   "queries": 27,
-  "mean_ms": 2.4473,
-  "p95_ms": 4.2407
+  "mean_ms": 2.5412,
+  "p95_ms": 4.4653
 }

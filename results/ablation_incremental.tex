@@ -1,0 +1,53 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llrrr}
+\toprule
+System & Parent & $\Delta$nDCG@10 & $p$ & W/L/T \\
+\midrule
+BM25 (k1=1.2, b=0.75) & tfidf\_lnc.ltc & +0.109 & 0.0665 & 9/7/0 \\
+BM25 tuned & bm25\_default & +0.010 & 0.8815 & 4/8/4 \\
+BM25F tuned & bm25\_tuned & -0.194 & 0.0004 & 1/14/1 \\
++ filters & bm25\_tuned & +0.030 & 0.1213 & 4/0/12 \\
++ phrase & bm25\_tuned & +0.000 & 1.0000 & 0/0/16 \\
++ filters + phrase & bm25\_tuned+phrase & +0.030 & 0.1213 & 4/0/12 \\
+Dense & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+Rocchio PRF & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+HyDE & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+RRF (BM25, dense) & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+Weighted fusion & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+PageRank rerank & bm25\_tuned & -0.003 & 0.7838 & 3/3/10 \\
+Personalized PR & bm25\_tuned & +0.008 & 0.1452 & 6/1/9 \\
+Trust-weighted rerank & bm25\_tuned & +0.011 & 0.0384 & 8/1/7 \\
+\bottomrule
+\end{tabular}
+\caption{Incremental comparisons, test split: each system vs.\ the system it builds on (paired randomization test, uncorrected).}
+\label{tab:ablation-incremental-test}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llrrr}
+\toprule
+System & Parent & $\Delta$nDCG@10 & $p$ & W/L/T \\
+\midrule
+BM25 (k1=1.2, b=0.75) & tfidf\_lnc.ltc & +0.065 & 0.2741 & 14/8/1 \\
+BM25 tuned & bm25\_default & +0.013 & 0.2764 & 8/10/5 \\
+BM25F tuned & bm25\_tuned & -0.270 & 0.0001 & 3/20/0 \\
++ filters & bm25\_tuned & -0.038 & 0.2134 & 3/6/14 \\
++ phrase & bm25\_tuned & -0.002 & 0.4999 & 0/2/21 \\
++ filters + phrase & bm25\_tuned+phrase & -0.038 & 0.2134 & 3/6/14 \\
+Dense & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+Rocchio PRF & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+HyDE & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+RRF (BM25, dense) & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+Weighted fusion & bm25\_tuned & \multicolumn{3}{c}{\emph{pending (B)}} \\
+PageRank rerank & bm25\_tuned & -0.019 & 0.0409 & 2/7/14 \\
+Personalized PR & bm25\_tuned & -0.014 & 0.1207 & 6/5/12 \\
+Trust-weighted rerank & bm25\_tuned & -0.011 & 0.2606 & 4/9/10 \\
+\bottomrule
+\end{tabular}
+\caption{Incremental comparisons, dev split: each system vs.\ the system it builds on (paired randomization test, uncorrected).}
+\label{tab:ablation-incremental-dev}
+\end{table}

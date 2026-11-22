@@ -15,14 +15,14 @@ runs/*
 !runs/*.run
 !runs/*.filters.json
 runs/llm_logs/
-# Results JSON (metrics, stats, tuning) is tracked; other generated outputs are not.
+# Results JSON, Markdown and LaTeX tables are tracked (generated, small, no listing text
+# except product titles in failure_cases.md).
 # The hand-check CSVs (with listing text) stay out of git; their scored summary is JSON.
 results/*
 !results/.gitkeep
 !results/*.json
-
-# Generated report snippets (scripts/report_numbers.py)
-report/generated/
+!results/*.md
+!results/*.tex
 
 # Secrets
 .env
