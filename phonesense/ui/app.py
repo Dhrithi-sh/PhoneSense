@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from phonesense.config import get_path
+from phonesense.config import get_config, get_path
 from phonesense.llm.client import LLMError
 from phonesense.ui.engine import (
     COMPONENTS,
@@ -26,14 +26,19 @@ from phonesense.ui.engine import (
     SearchEngine,
 )
 
-FUSION_LABELS = {"rrf": "RRF (rank-based, k=60)", "linear": "Weighted linear (min-max)"}
+# The RRF constant the engine actually uses (fusion.rrf_k, tuned on dev), so the label matches.
+RRF_K = int((get_config().get("fusion") or {}).get("rrf_k", 60))
+FUSION_LABELS = {"rrf": f"RRF (rank-based, k={RRF_K})", "linear": "Weighted linear (min-max)"}
+# Systems switched on when the page opens: the best system on dev (tuned BM25 + dense, fused).
+# One that cannot run on this machine (e.g. dense without sentence-transformers) starts off.
+DEFAULT_SYSTEMS = ("bm25", "dense")
 
 # One example per query type of the evaluation set (spec, aspect, model, vague), for the demo.
 EXAMPLES = {
-    "Spec": "5G phone under $300",
+    "Spec": "unlocked 5G phone with 128GB storage",
     "Aspect": "phone whose battery lasts two days of heavy use",
-    "Model": "Google Pixel 7a",
-    "Vague": "best phone for a teenager",
+    "Model": "Samsung Galaxy S20 Ultra",
+    "Vague": "simple phone for an elderly parent",
 }
 CAVEATS = (
     "Data: Amazon Reviews 2023 (Cell Phones), prices in USD, phones picked by a heuristic "
@@ -96,9 +101,26 @@ def render_sidebar(engine: SearchEngine) -> tuple[dict[str, bool], str, float, i
             reason = engine.unavailable_reason(key)
             toggles[key] = st.checkbox(
                 LABELS[key],
-                value=(key == "tfidf"),
+                value=(key in DEFAULT_SYSTEMS and reason is None),
                 disabled=reason is not None,
                 help=reason or None,
+                key=f"toggle_{key}",
+            )
+        st.header("Structure")
+        for key, label, help_text in (
+            ("filters", "Boolean spec filters",
+             "Parses numbers from your query (price, RAM, storage, battery, 5G...) and keeps "
+             "only phones that satisfy them. A phone whose value is unknown never passes."),
+            ("phrase", "Phrase boost (BM25)",
+             "Boosts phones that contain your quoted phrase, or a known phrase such as "
+             "night mode. Applies to BM25."),
+        ):
+            reason = engine.unavailable_reason(key)
+            toggles[key] = st.checkbox(
+                label,
+                value=False,
+                disabled=reason is not None,
+                help=reason or help_text,
                 key=f"toggle_{key}",
             )
         st.header("Fusion")
@@ -193,9 +215,15 @@ def render_search_tab(engine, toggles, fusion_method, prior_weight, k) -> None:
     for note in response.notes:
         st.warning(note)
     if not response.results:
-        st.warning("No phone matched. Try different words.")
+        if response.filter_summary:
+            st.caption(f"Filter built from your query: {response.filter_summary} "
+                       f"({response.n_allowed:,} phones pass)")
+        st.warning("No phone matched. Try different words or switch the filters off.")
         return
     st.subheader(f"Top {len(response.results)} results")
+    if response.filter_summary:
+        st.caption(f"Filter built from your query: {response.filter_summary} "
+                   f"({response.n_allowed:,} phones pass)")
     used = ", ".join(LABELS[u] for u in response.used)
     active = [p for p in PRIORS if toggles.get(p) and not engine.unavailable_reason(p)]
     priors = f"  ·  Priors: {', '.join(PRIOR_LABELS[p] for p in active)}" if active else ""

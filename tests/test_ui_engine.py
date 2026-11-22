@@ -361,3 +361,124 @@ def test_linear_fusion_uses_tuned_weights_only_for_the_bm25_dense_pair(engine, m
     assert engine._fuse([a, b], "linear", 10, ["tfidf", "dense"]) == weighted_linear_fusion(
         [a, b], None, depth=10
     )  # other pairs: equal weights
+
+
+# ---------------------------------------------------------------------------- filters and phrase
+
+HAS_FILTERS = importlib.util.find_spec("phonesense.retrieval.filters") is not None
+HAS_POSITIONAL = importlib.util.find_spec("phonesense.retrieval.positional") is not None
+
+
+def test_describe_filter_is_readable():
+    from phonesense.ui.engine import describe_filter
+
+    leaf = {"field": "price", "op": "<", "value": 300}
+    assert describe_filter(leaf) == "price < 300"
+    both = {"and": [leaf, {"field": "has_5g", "op": "==", "value": True}]}
+    assert describe_filter(both) == "price < 300 AND has_5g == True"
+    nested = {"or": [both, {"not": {"field": "os", "op": "==", "value": "ios"}}]}
+    assert describe_filter(nested) == "(price < 300 AND has_5g == True) OR NOT (os == ios)"
+
+
+@pytest.mark.skipif(not HAS_FILTERS, reason="filters module not in this build")
+def test_filters_keep_only_phones_that_satisfy_the_constraint_in_the_query(engine):
+    # fixture: Nova 299.99 USD and 5G; Pebble 449 USD; the third phone has no price
+    plain = engine.search("5G phone under $300", {"tfidf": True})
+    on = engine.search("5G phone under $300", {"tfidf": True, "filters": True})
+    assert "price < 300" in on.filter_summary and "has_5g == True" in on.filter_summary
+    assert on.n_allowed == 1 and ids(on) == ["B0TEST0001"]
+    assert plain.filter_summary is None and plain.n_allowed is None
+
+
+@pytest.mark.skipif(not HAS_FILTERS, reason="filters module not in this build")
+def test_an_unknown_value_never_passes_a_filter(engine):
+    r = engine.search("phone under $500", {"tfidf": True, "filters": True})
+    assert "B0TEST0003" not in ids(r)  # price unknown
+    assert engine.search("phone under $500", {"filters": True}).n_allowed == 2
+
+
+@pytest.mark.skipif(not HAS_FILTERS, reason="filters module not in this build")
+def test_a_query_without_a_constraint_is_not_filtered_and_says_so(engine):
+    r = engine.search("great camera", {"tfidf": True, "filters": True})
+    assert r.filter_summary is None and r.n_allowed is None
+    assert any("No numeric constraint found" in n for n in r.notes)
+
+
+@pytest.mark.skipif(not HAS_FILTERS, reason="filters module not in this build")
+def test_a_filter_nothing_passes_gives_an_empty_page_with_a_note(engine):
+    r = engine.search("phone under $10", {"tfidf": True, "filters": True})
+    assert r.results == [] and any("No phone passes the filter" in n for n in r.notes)
+
+
+@pytest.mark.skipif(not HAS_FILTERS, reason="filters module not in this build")
+def test_the_filter_applies_to_every_selected_system(engine):
+    toggles = {"tfidf": True, "rocchio": True, "fusion": True, "filters": True}
+    if importlib.util.find_spec("phonesense.retrieval.fusion") is None:
+        toggles.pop("fusion")
+    for r in (engine.search("5G phone under $300", toggles),):
+        assert set(ids(r)) <= {"B0TEST0001"}
+
+
+@pytest.mark.skipif(HAS_FILTERS, reason="only meaningful while the filters module is missing")
+def test_missing_filters_are_reported_not_raised(engine):
+    r = engine.search("5G phone under $300", {"tfidf": True, "filters": True})
+    assert r.results and any("Spec filters skipped" in n for n in r.notes)
+
+
+needs_phrase = pytest.mark.skipif(
+    not (HAS_POSITIONAL and HAS_BM25), reason="phrase boost needs BM25 and positional"
+)
+
+
+@needs_phrase
+def test_phrase_boost_wraps_bm25_and_is_labelled(engine):
+    r = engine.search('"compact phone" camera', {"bm25": True, "phrase": True})
+    assert r.used == ["bm25"] and r.results and r.notes == []
+    assert r.results[0].breakdown[0].label == "BM25 (tuned) + phrase boost"
+    assert engine._phrase.name.endswith("+phrase")
+    plain = engine.search('"compact phone" camera', {"bm25": True})
+    assert plain.results[0].breakdown[0].label == "BM25 (tuned)"
+
+
+@needs_phrase
+def test_phrase_boost_without_bm25_says_to_switch_bm25_on(engine):
+    r = engine.search("compact camera", {"tfidf": True, "phrase": True})
+    assert r.used == ["tfidf"] and any("switch BM25 on" in n for n in r.notes)
+
+
+# ---------------------------------------------------------------------------- tuned Rocchio / HyDE
+
+PRF_CFG = {"prf": {
+    "rocchio": {"tuned": {"m": 7, "beta": 0.1, "n_terms": 50, "dev_ndcg10": 0.5}},
+    "hyde": {"tuned": {"m": 10, "beta": 0.0, "n_terms": 30, "delta": 0.35, "dev_ndcg10": 0.6},
+             "llm": {"provider": "groq", "model": "openai/gpt-oss-20b"}},
+}}
+
+
+def test_rocchio_and_hyde_use_the_settings_tuned_on_dev(fixtures, monkeypatch):
+    import phonesense.ui.engine as eng
+
+    seen = {}
+
+    class FakeClient:
+        def __init__(self, provider=None, model=None):
+            seen["llm"] = (provider, model)
+
+    monkeypatch.setattr(eng, "get_config", lambda: PRF_CFG)
+    monkeypatch.setattr(eng, "LLMClient", FakeClient)
+    engine = SearchEngine(read_phones(fixtures / "phones.jsonl"))
+    assert (engine.rocchio.m, engine.rocchio.beta, engine.rocchio.n_terms) == (7, 0.1, 50)
+    hyde = engine._get_hyde()
+    assert (hyde.beta, hyde.delta, hyde.n_terms) == (0.0, 0.35, 30)
+    assert "dev_ndcg10" not in eng._tuned_prf("hyde")  # only constructor arguments are passed
+    # the logged texts came from groq, so that is the provider the UI must ask (replay needs it)
+    assert seen["llm"] == ("groq", "openai/gpt-oss-20b")
+
+
+def test_without_tuned_settings_the_class_defaults_are_used(fixtures, monkeypatch):
+    import phonesense.ui.engine as eng
+
+    monkeypatch.setattr(eng, "get_config", lambda: {})
+    assert eng._tuned_prf("rocchio") == {} and eng._tuned_prf("hyde") == {}
+    engine = SearchEngine(read_phones(fixtures / "phones.jsonl"))
+    assert (engine.rocchio.m, engine.rocchio.beta) == (10, 0.75)
