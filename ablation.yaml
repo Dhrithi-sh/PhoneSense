@@ -1,0 +1,54 @@
+# T22 ablation table definition (read by scripts/ablation.py). Rows appear in this order.
+#
+# run:     run base name without the _dev/_test suffix, or a glob pattern, or a list of
+#          patterns tried in order (teammates' run names carry their parameters, e.g.
+#          dense_all-minilm-l6-v2, rocchio_tfidf_lnc.ltc_m10_b0.75_g0_t20, bm25_tuned+ppr0.2).
+#          If several runs match, the first in sorted order is used and a warning is printed:
+#          pin the exact name here once it is known. A row with no matching run is "pending".
+# exclude: glob patterns that must not match (e.g. keep reranked fusion runs out of the RRF row).
+# parent:  for the incremental table: the row(s) this one builds on. With several parents the
+#          one with the best DEV nDCG@10 is used (never test).
+
+reference: bm25_tuned        # significance baseline (Holm across all rows)
+judged_threshold: 0.7        # rows with judged@10 below this get a double dagger
+metrics: [P@10, R@10, MAP, nDCG@10, RR, judged@10]   # RR is shown as MRR
+selection_metric: nDCG@10    # "best overall" = best DEV value of this metric
+bootstrap_samples: 1000
+
+rows:
+  - {label: "TF-IDF lnc.ltc", run: tfidf_lnc.ltc, owner: A, group: Lexical,
+     description: "SMART lnc.ltc on the text field"}
+  - {label: "BM25 (k1=1.2, b=0.75)", run: bm25_default, owner: A, group: Lexical,
+     description: "Okapi BM25, textbook parameters", parent: tfidf_lnc.ltc}
+  - {label: "BM25 tuned", run: bm25_tuned, owner: A, group: Lexical,
+     description: "k1, b tuned on dev (nDCG@10)", parent: bm25_default}
+  - {label: "BM25F tuned", run: bm25f_tuned, owner: A, group: Lexical,
+     description: "per-field BM25, field weights tuned on dev", parent: bm25_tuned}
+
+  - {label: "+ filters", run: bm25_tuned+filters, owner: A, group: +Structure,
+     description: "Boolean spec pre-filter (queries.jsonl filters, else parser)", parent: bm25_tuned}
+  - {label: "+ phrase", run: bm25_tuned+phrase, owner: A, group: +Structure,
+     description: "phrase-match boost, weight tuned on dev", parent: bm25_tuned}
+  - {label: "+ filters + phrase", run: bm25_tuned+filters+phrase, owner: A, group: +Structure,
+     description: "both", parent: [bm25_tuned+filters, bm25_tuned+phrase]}
+
+  - {label: "Dense", run: ["dense_*"], owner: B, group: Neural,
+     description: "bi-encoder dense retrieval", parent: bm25_tuned}
+  - {label: "Rocchio PRF", run: ["rocchio_bm25*", "rocchio_*"], owner: B, group: Neural,
+     description: "pseudo-relevance feedback (Rocchio)", parent: bm25_tuned}
+  - {label: "HyDE", run: ["hyde_*"], owner: B, group: Neural,
+     description: "LLM hypothetical document + retrieval", parent: bm25_tuned}
+
+  - {label: "RRF (BM25, dense)", run: ["rrf_*"], exclude: ["*+pagerank*", "*+ppr*", "*+trust*"],
+     owner: B, group: Fusion, description: "reciprocal rank fusion",
+     parent: [bm25_tuned, "dense_*"]}
+  - {label: "Weighted fusion", run: ["fusion_linear_*"],
+     exclude: ["*+pagerank*", "*+ppr*", "*+trust*"], owner: B, group: Fusion,
+     description: "linear score fusion, weights tuned on dev", parent: [bm25_tuned, "dense_*"]}
+
+  - {label: "PageRank rerank", run: ["bm25_tuned+pagerank*", "*+pagerank*"], owner: C,
+     group: Graph+Trust, description: "rerank with a co-review PageRank prior", parent: bm25_tuned}
+  - {label: "Personalized PR", run: ["bm25_tuned+ppr*", "*+ppr*"], owner: C, group: Graph+Trust,
+     description: "query-personalized PageRank rerank", parent: bm25_tuned}
+  - {label: "Trust-weighted rerank", run: ["bm25_tuned+trust*", "*+trust*"], owner: C,
+     group: Graph+Trust, description: "reviewer-trust prior rerank", parent: bm25_tuned}

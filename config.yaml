@@ -92,3 +92,44 @@ analyzer:
 retrieval:
   default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)
   tfidf_field: text  # T04 TF-IDF lnc.ltc field: text | title | features | description
+
+# T11 evaluation harness (phonesense/eval/). Binary metrics: grade >= threshold is relevant
+# (must stay equal to schemas.RELEVANCE_THRESHOLD, CONTRACT.md 4.5).
+eval:
+  relevance_threshold: 2
+  permutations: 10000   # paired randomization test (seed = top-level seed)
+  alpha: 0.05
+
+# T05 BM25 (phonesense/retrieval/bm25.py, scripts/tune_bm25.py, scripts/run_baselines.py).
+bm25:
+  default: {k1: 1.2, b: 0.75}
+  query_tf: once        # once (each distinct query term counts 1) | k3
+  k3: 8.0
+  field_weights: {title: 3.0, features: 1.5, description: 1.0}   # BM25F-lite defaults
+  tuning:               # dev queries only; scripts/tune_bm25.py refuses --split test
+    objective: nDCG@10
+    k1_grid: [0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+    b_grid: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    title_grid: [1.0, 2.0, 3.0, 5.0]
+    features_grid: [1.0, 1.5, 2.0]
+  # BEGIN bm25.tuned (written by scripts/tune_bm25.py on dev; do not edit by hand)
+  tuned: null
+  # END bm25.tuned
+
+# T06 Boolean spec filters (phonesense/retrieval/filters.py).
+filters:
+  compact_max_screen_in: 6.2   # "compact" / "small" -> screen_in <= this
+  screen_tolerance_in: 0.2     # "6.5 inch" -> 6.3 <= screen_in <= 6.7
+  small_ram_gb: 16             # a bare "<N>gb" with N below this is RAM, otherwise storage
+  post_depth: 1000             # post-filter mode retrieves this many, then filters
+
+# T07 phrase boost (phonesense/retrieval/positional.py, scripts/tune_phrase.py).
+phrase:
+  weight: 1.0                  # used until phrase.tuned is written
+  weight_grid: [0.5, 1.0, 2.0, 4.0]
+  auto_phrases: [wireless charging, fast charging, battery life, night mode, face unlock,
+                 fingerprint sensor, dual sim, headphone jack, refresh rate, water resistant,
+                 screen protector, unlocked phone]
+  # BEGIN phrase.tuned (written by scripts/tune_phrase.py on dev; do not edit by hand)
+  tuned: null
+  # END phrase.tuned
