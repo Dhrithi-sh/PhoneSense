@@ -1,0 +1,102 @@
+{
+  "settings": {
+    "limit": null,
+    "threshold": 4.0,
+    "min_reviews": 5
+  },
+  "raw_items": 1288490,
+  "filter_decisions": {
+    "rejected:score": 1272433,
+    "kept": 13424,
+    "rejected:min_reviews": 2633
+  },
+  "rejection_signal_counts": {
+    "title_accessory": 1192253,
+    "category": 1021834,
+    "title_for_brand": 789560,
+    "details_compatible_models": 715193,
+    "title_compatible_with": 224232,
+    "title_lot": 128158,
+    "title_watch": 85729,
+    "title_tablet": 54042,
+    "title_basic_phone": 3219,
+    "title_other_device": 1120,
+    "title_not_working_device": 901,
+    "no_title": 71
+  },
+  "phone_candidates": 13424,
+  "duplicate_listings_merged": 2824,
+  "kept_phones": 7166,
+  "raw_review_lines_scanned": 20812945,
+  "review_drops": {
+    "duplicate_content": 585,
+    "duplicate_review_id": 7452,
+    "empty_text": 368
+  },
+  "reviews_kept": 575816,
+  "reviews_pointing_to_missing_doc": 0,
+  "unique_reviewers": 489887,
+  "reviewers_with_2plus_phones": 56227,
+  "reviews_per_phone": {
+    "min": 5.0,
+    "p25": 9.0,
+    "median": 20.0,
+    "p75": 59.0,
+    "p90": 166.0,
+    "p99": 1023.0,
+    "max": 8215.0,
+    "mean": 80.35
+  },
+  "reviews_per_phone_histogram": {
+    "0-4": 0,
+    "5-9": 1921,
+    "10-19": 1581,
+    "20-49": 1639,
+    "50-99": 869,
+    "100-199": 585,
+    "200-499": 387,
+    "500-999": 109,
+    "1000-4999": 71,
+    ">=5000": 4
+  },
+  "spec_coverage_pct": {
+    "ram_gb": 47.6,
+    "storage_gb": 87.5,
+    "battery_mah": 35.7,
+    "screen_in": 78.3,
+    "main_camera_mp": 63.9,
+    "os": 76.1,
+    "has_5g": 93.0,
+    "release_year": 96.7
+  },
+  "brand_count": 332,
+  "top_brands": {
+    "Samsung": 1181,
+    "BLU": 660,
+    "Motorola": 615,
+    "LG": 615,
+    "Nokia": 344,
+    "BlackBerry": 263,
+    "Sony": 252,
+    "Huawei": 241,
+    "HTC": 239,
+    "Apple": 227,
+    "Xiaomi": 147,
+    "Google": 127,
+    "ZTE": 124,
+    "Ulefone": 118,
+    "TracFone": 112
+  },
+  "price_coverage_pct": 22.8,
+  "price_usd": {
+    "min": 11.0,
+    "p25": 80.0,
+    "median": 150.0,
+    "p75": 279.0,
+    "p90": 449.0,
+    "p99": 970.0,
+    "max": 2000.0,
+    "mean": 213.35
+  },
+  "refurbished_phones": 744
+}

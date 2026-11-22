@@ -63,6 +63,27 @@ def get_path(key: str) -> Path:
     return p if p.is_absolute() else repo_root() / p
 
 
+def write_tuned_block(section: str, tuned: dict[str, Any], path: Path | None = None) -> Path:
+    """Replace ``<section>.tuned`` in config.yaml between its BEGIN/END marker comments.
+
+    Used by the dev-only tuning scripts (``tune_bm25.py``, ``tune_phrase.py``). Only the
+    marked block is rewritten, so the rest of the file and its comments stay untouched.
+    """
+    import re
+
+    path = path or config_path()
+    text = path.read_text(encoding="utf-8")
+    sec = re.escape(section)
+    m = re.search(rf"(  # BEGIN {sec}\.tuned[^\n]*\n)(.*?)(  # END {sec}\.tuned)", text, re.DOTALL)
+    if not m:
+        raise ValueError(f"{path}: {section}.tuned marker comments not found; cannot update it")
+    body = yaml.safe_dump({"tuned": tuned}, default_flow_style=None, sort_keys=False, width=100)
+    body = "".join(f"  {line}\n" for line in body.strip().splitlines())
+    path.write_text(text[: m.start(2)] + body + text[m.end(2) :], encoding="utf-8", newline="\n")
+    get_config.cache_clear()
+    return path
+
+
 def get_seed() -> int:
     return int(get_config()["seed"])
 

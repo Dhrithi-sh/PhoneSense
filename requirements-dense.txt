@@ -1,3 +1,3 @@
 # Dense retrieval (owner: B). Install on top of requirements.txt.
+# Search is exact cosine in numpy, so no FAISS is needed for a few thousand phones.
 sentence-transformers>=3.0
-faiss-cpu>=1.8

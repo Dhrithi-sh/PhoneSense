@@ -1,0 +1,268 @@
+{
+  "q01": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "price",
+          "op": "<",
+          "value": 300
+        },
+        {
+          "field": "has_5g",
+          "op": "==",
+          "value": true
+        }
+      ]
+    },
+    "ranker_text": "5G phone under $300",
+    "n_allowed": 156
+  },
+  "q02": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "os",
+          "op": "==",
+          "value": "android"
+        },
+        {
+          "field": "ram_gb",
+          "op": ">=",
+          "value": 8
+        },
+        {
+          "field": "storage_gb",
+          "op": ">=",
+          "value": 256
+        }
+      ]
+    },
+    "ranker_text": "unlocked android phone with at least 8GB RAM and 256GB storage",
+    "n_allowed": 181
+  },
+  "q03": {
+    "source": "queries.jsonl",
+    "filter": {
+      "field": "battery_mah",
+      "op": ">=",
+      "value": 5000
+    },
+    "ranker_text": "phone with a 5000mAh battery or bigger",
+    "n_allowed": 632
+  },
+  "q04": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "os",
+          "op": "==",
+          "value": "ios"
+        },
+        {
+          "field": "storage_gb",
+          "op": ">=",
+          "value": 128
+        },
+        {
+          "field": "price",
+          "op": "<",
+          "value": 500
+        }
+      ]
+    },
+    "ranker_text": "iPhone with 128GB storage under $500",
+    "n_allowed": 14
+  },
+  "q05": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "brand",
+          "op": "==",
+          "value": "Samsung"
+        },
+        {
+          "field": "ram_gb",
+          "op": ">=",
+          "value": 6
+        },
+        {
+          "field": "price",
+          "op": "<",
+          "value": 400
+        }
+      ]
+    },
+    "ranker_text": "samsung phone with 6GB RAM under $400",
+    "n_allowed": 89
+  },
+  "q06": {
+    "source": "queries.jsonl",
+    "filter": {
+      "field": "screen_in",
+      "op": "<",
+      "value": 6
+    },
+    "ranker_text": "compact phone with a screen smaller than 6 inches",
+    "n_allowed": 3803
+  },
+  "q07": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "main_camera_mp",
+          "op": ">=",
+          "value": 50
+        },
+        {
+          "field": "price",
+          "op": "<",
+          "value": 350
+        }
+      ]
+    },
+    "ranker_text": "50MP main camera phone under $350",
+    "n_allowed": 126
+  },
+  "q13": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone with the best camera for night photos",
+    "n_allowed": 7166
+  },
+  "q14": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone whose battery lasts two days of heavy use",
+    "n_allowed": 7166
+  },
+  "q15": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone with very fast charging",
+    "n_allowed": 7166
+  },
+  "q16": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone with a bright sharp screen for watching video",
+    "n_allowed": 7166
+  },
+  "q17": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "rugged durable phone that survives drops",
+    "n_allowed": 7166
+  },
+  "q18": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone with clean software and no bloatware",
+    "n_allowed": 7166
+  },
+  "q19": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone with loud stereo speakers and a headphone jack",
+    "n_allowed": 7166
+  },
+  "q25": {
+    "source": "parser",
+    "filter": {
+      "field": "os",
+      "op": "==",
+      "value": "ios"
+    },
+    "ranker_text": "iphone 13",
+    "n_allowed": 233
+  },
+  "q26": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "Samsung Galaxy A54",
+    "n_allowed": 7166
+  },
+  "q27": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "Google Pixel 7a",
+    "n_allowed": 7166
+  },
+  "q28": {
+    "source": "parser",
+    "filter": {
+      "field": "has_5g",
+      "op": "==",
+      "value": true
+    },
+    "ranker_text": "moto g power",
+    "n_allowed": 547
+  },
+  "q29": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "OnePlus Nord N30",
+    "n_allowed": 7166
+  },
+  "q30": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "Samsung Galaxy S23 Ultra",
+    "n_allowed": 7166
+  },
+  "q31": {
+    "source": "parser",
+    "filter": {
+      "field": "os",
+      "op": "==",
+      "value": "ios"
+    },
+    "ranker_text": "iphone se 2022",
+    "n_allowed": 233
+  },
+  "q36": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "best phone for a teenager",
+    "n_allowed": 7166
+  },
+  "q37": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "good cheap phone",
+    "n_allowed": 7166
+  },
+  "q38": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone for travelling abroad",
+    "n_allowed": 7166
+  },
+  "q39": {
+    "source": "parser",
+    "filter": {
+      "field": "os",
+      "op": "==",
+      "value": "ios"
+    },
+    "ranker_text": "something like iphone but cheaper",
+    "n_allowed": 233
+  },
+  "q40": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "a phone for my mom",
+    "n_allowed": 7166
+  },
+  "q41": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "best value phone",
+    "n_allowed": 7166
+  }
+}

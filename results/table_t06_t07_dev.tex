@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Run & P@10 & MAP & nDCG@10 & judged@10 \\
+\midrule
+bm25\_tuned\_dev & \textbf{0.265} & 0.441 & \textbf{0.600} & \textbf{0.696} \\
+bm25\_tuned+filters\_dev & 0.248 & 0.382 & 0.562 & 0.543 \\
+bm25\_tuned+phrase\_dev & \textbf{0.265} & \textbf{0.470} & 0.598 & 0.683 \\
+bm25\_tuned+filters+phrase\_dev & 0.248 & 0.411 & 0.560 & 0.530 \\
+\bottomrule
+\end{tabular}
+\caption{Retrieval effectiveness. $^\dagger$: $p<0.05$ vs.\ bm25\_tuned\_dev (paired randomization test, Holm-corrected).}
+\end{table}
