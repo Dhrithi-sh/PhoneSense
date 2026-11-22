@@ -6,17 +6,17 @@
 \toprule
 System & Mean & p95 & Queries \\
 \midrule
-bm25\_default\_dev & 2.58 & 5.20 & 27 \\
-bm25\_default\_test & 2.69 & 3.93 & 18 \\
-bm25\_tuned\_dev & 2.38 & 4.14 & 27 \\
-bm25\_tuned\_test & 2.63 & 4.42 & 18 \\
-bm25f\_tuned\_dev & 4.34 & 7.37 & 27 \\
-bm25f\_tuned\_test & 4.84 & 6.96 & 18 \\
-tfidf\_lnc.ltc\_dev & 2.67 & 4.69 & 27 \\
-tfidf\_lnc.ltc\_test & 2.99 & 4.56 & 18 \\
-Boolean AND, with skips & 0.039 & 0.106 & 200 \\
-Boolean AND, without skips & 0.043 & 0.155 & 200 \\
-Skip pointers: comparisons $-$36\%, speed-up 1.123x &  &  &  \\
+bm25\_default\_dev & 6.38 & 11.36 & 27 \\
+bm25\_default\_test & 8.52 & 14.50 & 18 \\
+bm25\_tuned\_dev & 5.35 & 9.64 & 27 \\
+bm25\_tuned\_test & 5.72 & 9.48 & 18 \\
+bm25f\_tuned\_dev & 12.05 & 25.23 & 27 \\
+bm25f\_tuned\_test & 13.48 & 21.23 & 18 \\
+tfidf\_lnc.ltc\_dev & 6.37 & 12.93 & 27 \\
+tfidf\_lnc.ltc\_test & 9.42 & 15.67 & 18 \\
+Boolean AND, with skips & 0.071 & 0.207 & 200 \\
+Boolean AND, without skips & 0.080 & 0.283 & 200 \\
+Skip pointers: comparisons $-$36\%, speed-up 1.129x &  &  &  \\
 \bottomrule
 \end{tabular}
 \caption{Query latency (ms, single thread, pure Python).}

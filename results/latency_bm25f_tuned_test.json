@@ -2,6 +2,6 @@
   "run": "bm25f_tuned_test",
   "N": 7166,
   "queries": 18,
-  "mean_ms": 4.8437,
-  "p95_ms": 6.9634
+  "mean_ms": 13.4816,
+  "p95_ms": 21.2293
 }

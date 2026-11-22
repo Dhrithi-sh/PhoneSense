@@ -143,8 +143,19 @@
         "label": "Dense",
         "owner": "B",
         "group": "Neural",
-        "run": null,
-        "status": "pending: no run"
+        "run": "dense_sentence-transformers-all-minilm-l6-v2",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.19375000000000003,
+          "R@10": 0.380187908496732,
+          "MAP": 0.2910639215914612,
+          "nDCG@10": 0.4171118906388113,
+          "RR": 0.46726190476190477,
+          "judged@10": 0.54375
+        },
+        "n_queries": 16,
+        "low_coverage": true,
+        "significant": []
       },
       {
         "label": "Rocchio PRF",
@@ -427,8 +438,19 @@
         "label": "Dense",
         "owner": "B",
         "group": "Neural",
-        "run": null,
-        "status": "pending: no run"
+        "run": "dense_sentence-transformers-all-minilm-l6-v2",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.17826086956521742,
+          "R@10": 0.3129379678292722,
+          "MAP": 0.25197975841507864,
+          "nDCG@10": 0.4412457951266958,
+          "RR": 0.5392140468227424,
+          "judged@10": 0.5608695652173913
+        },
+        "n_queries": 23,
+        "low_coverage": true,
+        "significant": []
       },
       {
         "label": "Rocchio PRF",
@@ -621,8 +643,8 @@
           "better": 0,
           "worse": 10,
           "tied": 6,
-          "p_randomization_holm": 0.035096490350964904,
-          "p_ttest_holm": 0.07289566690672933
+          "p_randomization_holm": 0.0377962203779622,
+          "p_ttest_holm": 0.07850302589955466
         },
         "bm25_tuned+filters": {
           "metric": "P@10",
@@ -668,6 +690,21 @@
           "tied": 14,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
+        },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.19375,
+          "mean_diff": -0.1875,
+          "p_randomization": 0.010198980101989802,
+          "t": -3.136821663048857,
+          "p_ttest": 0.006786811716106229,
+          "better": 3,
+          "worse": 11,
+          "tied": 2,
+          "p_randomization_holm": 0.13258674132586742,
+          "p_ttest_holm": 0.08822855230938098
         },
         "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
           "metric": "P@10",
@@ -818,8 +855,8 @@
           "better": 0,
           "worse": 10,
           "tied": 6,
-          "p_randomization_holm": 0.035096490350964904,
-          "p_ttest_holm": 0.12765405348204364
+          "p_randomization_holm": 0.0377962203779622,
+          "p_ttest_holm": 0.13747359605758544
         },
         "bm25_tuned+filters": {
           "metric": "R@10",
@@ -863,6 +900,21 @@
           "better": 2,
           "worse": 0,
           "tied": 14,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.380187908496732,
+          "mean_diff": -0.2539128151260504,
+          "p_randomization": 0.12158784121587841,
+          "t": -1.6450972978727074,
+          "p_ttest": 0.12073767118246519,
+          "better": 3,
+          "worse": 11,
+          "tied": 2,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
         },
@@ -1015,8 +1067,8 @@
           "better": 2,
           "worse": 12,
           "tied": 2,
-          "p_randomization_holm": 0.06629337066293371,
-          "p_ttest_holm": 0.08186206955896037
+          "p_randomization_holm": 0.07139286071392861,
+          "p_ttest_holm": 0.08815915183272655
         },
         "bm25_tuned+filters": {
           "metric": "MAP",
@@ -1062,6 +1114,21 @@
           "tied": 12,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
+        },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.2910639215914612,
+          "mean_diff": -0.3001612562025643,
+          "p_randomization": 0.025697430256974303,
+          "t": -2.518806611710331,
+          "p_ttest": 0.023612078059216158,
+          "better": 2,
+          "worse": 13,
+          "tied": 1,
+          "p_randomization_holm": 0.33406659334066596,
+          "p_ttest_holm": 0.3069570147698101
         },
         "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
           "metric": "MAP",
@@ -1182,8 +1249,8 @@
           "better": 7,
           "worse": 9,
           "tied": 0,
-          "p_randomization_holm": 0.268973102689731,
-          "p_ttest_holm": 0.22937416441260722
+          "p_randomization_holm": 0.2958704129587041,
+          "p_ttest_holm": 0.25231158085386796
         },
         "bm25_default": {
           "metric": "nDCG@10",
@@ -1212,8 +1279,8 @@
           "better": 1,
           "worse": 14,
           "tied": 1,
-          "p_randomization_holm": 0.005199480051994801,
-          "p_ttest_holm": 0.010204584568881448
+          "p_randomization_holm": 0.005599440055994401,
+          "p_ttest_holm": 0.01098955261264156
         },
         "bm25_tuned+filters": {
           "metric": "nDCG@10",
@@ -1260,6 +1327,21 @@
           "p_randomization_holm": 0.9703029697030296,
           "p_ttest_holm": 0.9873590192084694
         },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.4171118906388114,
+          "mean_diff": -0.2456148161729433,
+          "p_randomization": 0.031596840315968405,
+          "t": -2.3866996449185436,
+          "p_ttest": 0.030609858514610722,
+          "better": 5,
+          "worse": 11,
+          "tied": 0,
+          "p_randomization_holm": 0.31596840315968405,
+          "p_ttest_holm": 0.3060985851461072
+        },
         "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
           "metric": "nDCG@10",
           "n": 16,
@@ -1272,8 +1354,8 @@
           "better": 6,
           "worse": 9,
           "tied": 1,
-          "p_randomization_holm": 0.22657734226577342,
-          "p_ttest_holm": 0.1611425248830155
+          "p_randomization_holm": 0.24717528247175283,
+          "p_ttest_holm": 0.175791845326926
         },
         "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
           "metric": "nDCG@10",
@@ -1287,8 +1369,8 @@
           "better": 3,
           "worse": 12,
           "tied": 1,
-          "p_randomization_holm": 0.06119388061193881,
-          "p_ttest_holm": 0.04194166618096319
+          "p_randomization_holm": 0.06629337066293371,
+          "p_ttest_holm": 0.04543680502937679
         },
         "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
           "metric": "nDCG@10",
@@ -1457,6 +1539,21 @@
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
         },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.46726190476190477,
+          "mean_diff": -0.28811090225563907,
+          "p_randomization": 0.0765923407659234,
+          "t": -1.9386706205487259,
+          "p_ttest": 0.07159325092660633,
+          "better": 4,
+          "worse": 8,
+          "tied": 4,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
         "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
           "metric": "RR",
           "n": 16,
@@ -1608,8 +1705,8 @@
           "better": 1,
           "worse": 15,
           "tied": 7,
-          "p_randomization_holm": 0.0337966203379662,
-          "p_ttest_holm": 0.044983640850633805
+          "p_randomization_holm": 0.0363963603639636,
+          "p_ttest_holm": 0.048443920916067175
         },
         "bm25_tuned+filters": {
           "metric": "P@10",
@@ -1655,6 +1752,21 @@
           "tied": 18,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
+        },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.1782608695652174,
+          "mean_diff": -0.08695652173913043,
+          "p_randomization": 0.050594940505949405,
+          "t": -2.1786450070817907,
+          "p_ttest": 0.040352954633187256,
+          "better": 6,
+          "worse": 15,
+          "tied": 2,
+          "p_randomization_holm": 0.6577342265773423,
+          "p_ttest_holm": 0.5245884102314343
         },
         "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
           "metric": "P@10",
@@ -1805,8 +1917,8 @@
           "better": 1,
           "worse": 15,
           "tied": 7,
-          "p_randomization_holm": 0.0012998700129987003,
-          "p_ttest_holm": 0.003279046731628516
+          "p_randomization_holm": 0.0013998600139986002,
+          "p_ttest_holm": 0.00353128109559994
         },
         "bm25_tuned+filters": {
           "metric": "R@10",
@@ -1852,6 +1964,21 @@
           "tied": 18,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
+        },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.31293796782927213,
+          "mean_diff": -0.2732177243046808,
+          "p_randomization": 0.011498850114988501,
+          "t": -2.803504860386115,
+          "p_ttest": 0.01035282630925544,
+          "better": 6,
+          "worse": 15,
+          "tied": 2,
+          "p_randomization_holm": 0.1494850514948505,
+          "p_ttest_holm": 0.13458674202032073
         },
         "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
           "metric": "R@10",
@@ -2002,8 +2129,8 @@
           "better": 4,
           "worse": 18,
           "tied": 1,
-          "p_randomization_holm": 0.0012998700129987003,
-          "p_ttest_holm": 0.00168811108766709
+          "p_randomization_holm": 0.0013998600139986002,
+          "p_ttest_holm": 0.0018179657867184043
         },
         "bm25_tuned+filters": {
           "metric": "MAP",
@@ -2049,6 +2176,21 @@
           "tied": 13,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
+        },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.2519797584150786,
+          "mean_diff": -0.18945715072739872,
+          "p_randomization": 0.0065993400659934,
+          "t": -2.91301469614311,
+          "p_ttest": 0.008060816738328036,
+          "better": 6,
+          "worse": 16,
+          "tied": 1,
+          "p_randomization_holm": 0.0857914208579142,
+          "p_ttest_holm": 0.10479061759826447
         },
         "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
           "metric": "MAP",
@@ -2199,8 +2341,8 @@
           "better": 3,
           "worse": 20,
           "tied": 0,
-          "p_randomization_holm": 0.0012998700129987003,
-          "p_ttest_holm": 5.040401454458877e-05
+          "p_randomization_holm": 0.0013998600139986002,
+          "p_ttest_holm": 5.4281246432634055e-05
         },
         "bm25_tuned+filters": {
           "metric": "nDCG@10",
@@ -2246,6 +2388,21 @@
           "tied": 12,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
+        },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.4412457951266958,
+          "mean_diff": -0.1591850273881348,
+          "p_randomization": 0.014298570142985701,
+          "t": -2.659289235395455,
+          "p_ttest": 0.014326367318553477,
+          "better": 5,
+          "worse": 18,
+          "tied": 0,
+          "p_randomization_holm": 0.18588141185881413,
+          "p_ttest_holm": 0.1862427751411952
         },
         "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
           "metric": "nDCG@10",
@@ -2396,8 +2553,8 @@
           "better": 3,
           "worse": 12,
           "tied": 8,
-          "p_randomization_holm": 0.33406659334066596,
-          "p_ttest_holm": 0.3200503029873453
+          "p_randomization_holm": 0.35976402359764026,
+          "p_ttest_holm": 0.34466955706329494
         },
         "bm25_tuned+filters": {
           "metric": "RR",
@@ -2443,6 +2600,21 @@
           "tied": 17,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
+        },
+        "dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.5392140468227424,
+          "mean_diff": -0.20421767031979368,
+          "p_randomization": 0.06179382061793821,
+          "t": -1.945216367444807,
+          "p_ttest": 0.06463931659067369,
+          "better": 4,
+          "worse": 11,
+          "tied": 8,
+          "p_randomization_holm": 0.8033196680331967,
+          "p_ttest_holm": 0.840311115678758
         },
         "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
           "metric": "RR",
@@ -2896,13 +3068,7 @@
       }
     ]
   },
-  "pending": [
-    {
-      "label": "Dense",
-      "owner": "B",
-      "status": "pending: no run"
-    }
-  ],
+  "pending": [],
   "figures": [
     "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\ablation_bars.png",
     "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\ablation_bars.pdf",

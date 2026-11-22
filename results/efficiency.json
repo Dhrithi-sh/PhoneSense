@@ -8,18 +8,18 @@
     "seed": 42,
     "vocab_candidates": 3324,
     "with_skips": {
-      "mean_us": 38.53,
-      "p95_us": 105.76,
+      "mean_us": 71.11,
+      "p95_us": 206.67,
       "mean_comparisons": 212.8,
       "mean_result_size": 7.43
     },
     "without_skips": {
-      "mean_us": 43.25,
-      "p95_us": 154.51,
+      "mean_us": 80.31,
+      "p95_us": 283.26,
       "mean_comparisons": 330.4,
       "mean_result_size": 7.43
     },
-    "speedup_mean_latency": 1.123,
+    "speedup_mean_latency": 1.129,
     "comparison_reduction": 0.356
   }
 }

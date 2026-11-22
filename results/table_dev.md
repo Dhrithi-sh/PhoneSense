@@ -9,6 +9,7 @@
 | bm25_tuned+trust0.2_dev | 0.257 | 0.572 | 0.428 | 0.590 | 0.711 | 0.665 |
 | bm25_tuned_dev | 0.265 | 0.586 | 0.441 | 0.600 | 0.743 | 0.696 |
 | bm25f_tuned_dev | 0.143† | 0.269 | 0.235 | 0.330 | 0.495 | 0.326 |
+| dense_sentence-transformers-all-minilm-l6-v2_dev | 0.178 | 0.313 | 0.252 | 0.441 | 0.539 | 0.561 |
 | fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2_dev | 0.317 | 0.601 | **0.502** | 0.621 | 0.640 | 0.796 |
 | hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35_dev | **0.352** | 0.612 | 0.469 | 0.586 | 0.722 | 0.757 |
 | rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50_dev | 0.313 | 0.485 | 0.370 | 0.507 | 0.589 | 0.787 |
