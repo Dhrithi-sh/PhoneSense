@@ -444,3 +444,41 @@ def test_phrase_boost_wraps_bm25_and_is_labelled(engine):
 def test_phrase_boost_without_bm25_says_to_switch_bm25_on(engine):
     r = engine.search("compact camera", {"tfidf": True, "phrase": True})
     assert r.used == ["tfidf"] and any("switch BM25 on" in n for n in r.notes)
+
+
+# ---------------------------------------------------------------------------- tuned Rocchio / HyDE
+
+PRF_CFG = {"prf": {
+    "rocchio": {"tuned": {"m": 7, "beta": 0.1, "n_terms": 50, "dev_ndcg10": 0.5}},
+    "hyde": {"tuned": {"m": 10, "beta": 0.0, "n_terms": 30, "delta": 0.35, "dev_ndcg10": 0.6},
+             "llm": {"provider": "groq", "model": "openai/gpt-oss-20b"}},
+}}
+
+
+def test_rocchio_and_hyde_use_the_settings_tuned_on_dev(fixtures, monkeypatch):
+    import phonesense.ui.engine as eng
+
+    seen = {}
+
+    class FakeClient:
+        def __init__(self, provider=None, model=None):
+            seen["llm"] = (provider, model)
+
+    monkeypatch.setattr(eng, "get_config", lambda: PRF_CFG)
+    monkeypatch.setattr(eng, "LLMClient", FakeClient)
+    engine = SearchEngine(read_phones(fixtures / "phones.jsonl"))
+    assert (engine.rocchio.m, engine.rocchio.beta, engine.rocchio.n_terms) == (7, 0.1, 50)
+    hyde = engine._get_hyde()
+    assert (hyde.beta, hyde.delta, hyde.n_terms) == (0.0, 0.35, 30)
+    assert "dev_ndcg10" not in eng._tuned_prf("hyde")  # only constructor arguments are passed
+    # the logged texts came from groq, so that is the provider the UI must ask (replay needs it)
+    assert seen["llm"] == ("groq", "openai/gpt-oss-20b")
+
+
+def test_without_tuned_settings_the_class_defaults_are_used(fixtures, monkeypatch):
+    import phonesense.ui.engine as eng
+
+    monkeypatch.setattr(eng, "get_config", lambda: {})
+    assert eng._tuned_prf("rocchio") == {} and eng._tuned_prf("hyde") == {}
+    engine = SearchEngine(read_phones(fixtures / "phones.jsonl"))
+    assert (engine.rocchio.m, engine.rocchio.beta) == (10, 0.75)
