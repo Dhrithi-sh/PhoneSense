@@ -470,7 +470,9 @@ All search logic is in `phonesense/ui/engine.py`; `app.py` only draws.
 
 | Control | What it does |
 |---|---|
-| Systems | TF-IDF, BM25, Rocchio, HyDE, Dense. Grey = not in this build or not usable, hover for why. |
+| Systems | TF-IDF, BM25 (tuned k1/b), Rocchio, HyDE, Dense. Grey = not in this build or not usable, hover for why. |
+| Boolean spec filters | Parses numbers from the query (price, RAM, storage, battery, 5G, "compact") and keeps only phones that satisfy them, for every selected system. A phone whose value is unknown never passes. The page shows the parsed filter and how many phones pass. |
+| Phrase boost | Boosts BM25 for phones that contain a quoted phrase or a known one such as "fast charging". Applies to BM25. |
 | Fuse selected systems | With two or more systems on, merge them with RRF or weighted linear fusion. Off: only the first system is shown, with a note. |
 | Priors + lambda | PageRank and reviewer-trust reorder the top 100: `(1 - lambda) * score + lambda * prior`. |
 | Score breakdown | Under each result: rank and raw score from every selected system, the prior values, and the final score. |
@@ -482,7 +484,9 @@ never shows a stack trace. HyDE needs a key in `.env` for new queries; answers a
 ### Demo script (about 5 minutes)
 
 1. **Spec query.** Click *Spec: 5G phone under $300* with TF-IDF only. Say what it matches
-   (words, not numbers) and open one *Score breakdown*.
+   (words, not numbers) and open one *Score breakdown*. Then switch to BM25 and turn on
+   **Boolean spec filters**: the page shows the filter it parsed (`price < 300 AND has_5g == True`)
+   and how many phones pass, and the top result now satisfies the numbers. Unknown prices never pass.
 2. **Aspect query.** Click *Aspect: ... battery lasts two days*. Turn on **Rocchio**, then **HyDE**:
    the vocabulary gap ("lasts two days" vs "5000mAh") is what feedback and the hypothetical
    listing try to close. Point at the warnings if a system was skipped.

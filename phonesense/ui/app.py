@@ -100,6 +100,23 @@ def render_sidebar(engine: SearchEngine) -> tuple[dict[str, bool], str, float, i
                 help=reason or None,
                 key=f"toggle_{key}",
             )
+        st.header("Structure")
+        for key, label, help_text in (
+            ("filters", "Boolean spec filters",
+             "Parses numbers from your query (price, RAM, storage, battery, 5G...) and keeps "
+             "only phones that satisfy them. A phone whose value is unknown never passes."),
+            ("phrase", "Phrase boost (BM25)",
+             "Boosts phones that contain your quoted phrase, or a known phrase such as "
+             "night mode. Applies to BM25."),
+        ):
+            reason = engine.unavailable_reason(key)
+            toggles[key] = st.checkbox(
+                label,
+                value=False,
+                disabled=reason is not None,
+                help=reason or help_text,
+                key=f"toggle_{key}",
+            )
         st.header("Fusion")
         fusion_reason = engine.unavailable_reason("fusion")
         toggles["fusion"] = st.checkbox(
@@ -171,9 +188,15 @@ def render_search_tab(engine, toggles, fusion_method, prior_weight, k) -> None:
     for note in response.notes:
         st.warning(note)
     if not response.results:
-        st.warning("No phone matched. Try different words.")
+        if response.filter_summary:
+            st.caption(f"Filter built from your query: {response.filter_summary} "
+                       f"({response.n_allowed:,} phones pass)")
+        st.warning("No phone matched. Try different words or switch the filters off.")
         return
     st.subheader(f"Top {len(response.results)} results")
+    if response.filter_summary:
+        st.caption(f"Filter built from your query: {response.filter_summary} "
+                   f"({response.n_allowed:,} phones pass)")
     used = ", ".join(LABELS[u] for u in response.used)
     active = [p for p in PRIORS if toggles.get(p) and not engine.unavailable_reason(p)]
     priors = f"  ·  Priors: {', '.join(PRIOR_LABELS[p] for p in active)}" if active else ""

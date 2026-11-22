@@ -12,8 +12,13 @@ Systems (toggles in the sidebar), in priority order:
               answers, see ``phonesense/llm/client.py``),
 * ``dense``   sentence-embedding cosine search (``phonesense.retrieval.dense``).
 
+Two *modifiers* shape the candidates (A's T06 and T07): ``filters`` parses numeric constraints from
+the query ("under $300", "8GB RAM", "5G") and keeps only the phones that satisfy them, for every
+selected system (a phone whose value is unknown never passes), and ``phrase`` adds a phrase-match
+boost to BM25 (quoted phrases and a few known ones such as "night mode").
+
 Two *priors* can then reorder the top 100 (they never add phones): ``pagerank`` (global
-PageRank of the "bought together" graph, C's T17) and ``trust`` (reviewer-trust phone quality,
+PageRank of the co-review graph, C's T17) and ``trust`` (reviewer-trust phone quality,
 C's T19). Both are in [0, 1]; with both on, their mean is used. The final order is
 ``(1 - lambda) * score_hat + lambda * prior`` (``phonesense.graph.rerank.rerank_with_prior``,
 C's T18), where ``score_hat`` is the ranking's own score min-max scaled to [0, 1].
@@ -119,6 +124,19 @@ class SearchResponse:
     results: list[Result]
     used: list[str]
     notes: list[str] = field(default_factory=list)
+    filter_summary: str | None = None  # the constraints parsed from the query, if filters ran
+    n_allowed: int | None = None  # how many phones pass them
+
+
+def describe_filter(node: Mapping) -> str:
+    """Readable text for a filter node (CONTRACT 4.4): ``price < 300 AND has_5g == True``."""
+    if "field" in node:
+        return f"{node['field']} {node['op']} {node['value']}"
+    if "not" in node:
+        return f"NOT ({describe_filter(node['not'])})"
+    key = "and" if "and" in node else "or"
+    return f" {key.upper()} ".join(f"({describe_filter(n)})" if ("and" in n or "or" in n) else
+                                   describe_filter(n) for n in node[key])
 
 
 def find_phones_file() -> tuple[Path, bool]:
@@ -164,6 +182,8 @@ class SearchEngine:
         self.rocchio = RocchioRetriever(self.tfidf)
         self._hyde: HydeRetriever | None = None
         self._bm25 = None
+        self._phrase = None
+        self._allowed_cache: dict[str, set[str]] = {}
         self._dense = None
         self._unavailable: dict[str, str] = {}
 
@@ -195,6 +215,13 @@ class SearchEngine:
             return "dense retrieval is not in this build"
         if key == "bm25" and importlib.util.find_spec("phonesense.retrieval.bm25") is None:
             return "BM25 is not in this build"
+        if key == "filters" and importlib.util.find_spec("phonesense.retrieval.filters") is None:
+            return "Boolean spec filters are not in this build"
+        if key == "phrase":
+            if importlib.util.find_spec("phonesense.retrieval.positional") is None:
+                return "phrase search is not in this build"
+            if importlib.util.find_spec("phonesense.retrieval.bm25") is None:
+                return "phrase boost needs BM25, which is not in this build"
         if key == "fusion" and importlib.util.find_spec("phonesense.retrieval.fusion") is None:
             return "rank fusion is not in this build"
         if key in PRIORS and importlib.util.find_spec("phonesense.graph.rerank") is None:
@@ -250,6 +277,24 @@ class SearchEngine:
             )
         return self._bm25
 
+    def _get_phrase(self):
+        """BM25 with the phrase-match boost (weight tuned on dev, ``phrase.tuned``)."""
+        if self._phrase is None:
+            module = importlib.import_module("phonesense.retrieval.positional")
+            bm25 = self._get_bm25()
+            self._phrase = module.PhraseBoostRetriever(bm25, name=f"{bm25.name}+phrase")
+        return self._phrase
+
+    def _allowed(self, filt: Mapping) -> set[str]:
+        """doc_ids of the phones that pass ``filt`` (unknown values never pass); cached."""
+        import json
+
+        key = json.dumps(filt, sort_keys=True)
+        if key not in self._allowed_cache:
+            filters = importlib.import_module("phonesense.retrieval.filters")
+            self._allowed_cache[key] = filters.allowed_docs(self._phone_list, filt)
+        return self._allowed_cache[key]
+
     def _get_hyde(self) -> HydeRetriever:
         if self._hyde is None:
             self._hyde = HydeRetriever(HydeGenerator(LLMClient()), self.tfidf)
@@ -272,6 +317,7 @@ class SearchEngine:
         systems: Mapping[str, Ranking] | None = None,
         priors: Mapping[str, Mapping[str, float]] | None = None,
         prior_weight: float = 0.0,
+        labels: Mapping[str, str] | None = None,
     ) -> list[Result]:
         """Turn a final ranking into rows. ``systems`` ({key: that system's own ranking}) fills
         the per-result breakdown: where each selected system put the phone, and its raw score.
@@ -284,7 +330,7 @@ class SearchEngine:
         for rank, (doc_id, score) in enumerate(ranking, start=1):
             p = self.phones[doc_id]
             parts = tuple(
-                SystemScore(key, LABELS[key], *lookup[key].get(doc_id, (None, None)))
+                SystemScore(key, (labels or LABELS)[key], *lookup[key].get(doc_id, (None, None)))
                 for key in lookup
             ) + tuple(
                 SystemScore(key, f"{PRIOR_LABELS[key]} (lambda={prior_weight:g})", None,
@@ -318,10 +364,10 @@ class SearchEngine:
         """Top ``k`` phones for ``text`` using the systems switched on in ``toggles``.
 
         ``toggles`` maps ``tfidf``/``bm25``/``rocchio``/``hyde``/``dense`` (systems),
-        ``fusion`` and ``pagerank``/``trust`` (priors, weight ``prior_weight`` = lambda in
-        [0, 1]) to bool; missing keys count as off, except that TF-IDF is used when nothing is
-        selected. A system or prior that cannot run (missing module or data, no LLM key) is
-        dropped with a note rather than raising.
+        ``fusion``, ``filters``/``phrase`` (modifiers) and ``pagerank``/``trust`` (priors, weight
+        ``prior_weight`` = lambda in [0, 1]) to bool; missing keys count as off, except that
+        TF-IDF is used when nothing is selected. A system, modifier or prior that cannot run
+        (missing module or data, no LLM key) is dropped with a note rather than raising.
         """
         if not 0.0 <= prior_weight <= 1.0:
             raise ValueError(f"prior_weight must be in [0, 1], got {prior_weight}")
@@ -340,11 +386,30 @@ class SearchEngine:
         rankings: dict[str, Ranking] = {}
         wants_priors = [p for p in PRIORS if toggles.get(p)]
         depth = DEPTH if len(wanted) > 1 or wants_priors else k
+
+        allowed, filter_summary = self._resolve_filter(query, toggles, notes)
+        phrase_on = self._phrase_enabled(toggles, wanted, notes)
+        labels = dict(LABELS)
+        if phrase_on:
+            labels["bm25"] = "BM25 (tuned) + phrase boost"
+        # with a filter many hits are dropped, so retrieve deeper and cut after filtering
+        fetch = depth
+        if allowed is not None:
+            filters = importlib.import_module("phonesense.retrieval.filters")
+            fetch = max(depth, int(filters.filters_config().get("post_depth", 1000)))
+
+        def restrict(ranking: Ranking) -> Ranking:
+            if allowed is None:
+                return ranking
+            return [(d, sc) for d, sc in ranking if d in allowed][:depth]
+
         for key in wanted:
             reason = self.unavailable_reason(key)
             if reason is None:
                 try:
-                    rankings[key] = self._retriever(key).search(query, depth)
+                    use_phrase = key == "bm25" and phrase_on
+                    retriever = self._get_phrase() if use_phrase else self._retriever(key)
+                    rankings[key] = restrict(retriever.search(query, fetch))
                     continue
                 except ImportError as exc:  # a missing package will not appear mid-session
                     reason = self._unavailable[key] = str(exc)
@@ -354,7 +419,7 @@ class SearchEngine:
                     reason = f"{type(exc).__name__}: {exc}"
             notes.append(f"{LABELS[key]} skipped: {reason}.")
         if not rankings:  # every chosen system failed: fall back so the page is never empty
-            rankings["tfidf"] = self.tfidf.search(query, depth)
+            rankings["tfidf"] = restrict(self.tfidf.search(query, fetch))
             notes.append("Falling back to TF-IDF.")
 
         used = list(rankings)
@@ -377,9 +442,44 @@ class SearchEngine:
         prior_values: dict[str, Mapping[str, float]] = {}
         if wants_priors:
             final, prior_values = self._apply_priors(final, wants_priors, prior_weight, notes)
+        if allowed is not None and not final:
+            notes.append("No phone passes the filter built from your query.")
         return SearchResponse(
-            self._results(final[:k], shown, prior_values, prior_weight), used, notes
+            self._results(final[:k], shown, prior_values, prior_weight, labels),
+            used, notes, filter_summary, None if allowed is None else len(allowed),
         )
+
+    def _resolve_filter(
+        self, query: Query, toggles: Mapping[str, bool], notes: list[str]
+    ) -> tuple[set[str] | None, str | None]:
+        """Parse the query's numeric constraints and return ``(allowed doc_ids, summary)``;
+        ``(None, None)`` when filters are off, unavailable or the query has no constraint."""
+        if not toggles.get("filters"):
+            return None, None
+        reason = self.unavailable_reason("filters")
+        if reason:
+            notes.append(f"Spec filters skipped: {reason}.")
+            return None, None
+        filters = importlib.import_module("phonesense.retrieval.filters")
+        filt, _residual, _source = filters.resolve_filter(query)
+        if filt is None:
+            notes.append("No numeric constraint found in this query, so nothing was filtered.")
+            return None, None
+        return self._allowed(filt), describe_filter(filt)
+
+    def _phrase_enabled(
+        self, toggles: Mapping[str, bool], wanted: list[str], notes: list[str]
+    ) -> bool:
+        if not toggles.get("phrase"):
+            return False
+        reason = self.unavailable_reason("phrase")
+        if reason:
+            notes.append(f"Phrase boost skipped: {reason}.")
+            return False
+        if "bm25" not in wanted:
+            notes.append("Phrase boost applies to BM25: switch BM25 on to use it.")
+            return False
+        return True
 
     def _apply_priors(
         self, ranking: Ranking, keys: list[str], weight: float, notes: list[str]
