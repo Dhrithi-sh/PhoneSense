@@ -43,7 +43,7 @@ def ablation_env(tmp_path, fixtures):
         BM25Retriever(index=idx, name="bm25_default"),
         bm25,
         FilteredRetriever(bm25, phones),
-        Reverse(bm25, "dense_minilm"),
+        Reverse(bm25, "dense_sentence-transformers-all-minilm-l6-v2"),
     ]
     runs = tmp_path / "runs"
     for split in ("dev", "test"):
@@ -99,7 +99,10 @@ def test_ablation_end_to_end(ablation_env):
     data = json.loads((res / "ablation.json").read_text())
     test_rows = {r["label"]: r for r in data["rows"]["test"]}
     assert test_rows["BM25 tuned"]["status"] == "ok"
-    assert test_rows["Dense"]["run"] == "dense_minilm" and test_rows["Dense"]["status"] == "ok"
+    assert (
+        test_rows["Dense"]["run"] == "dense_sentence-transformers-all-minilm-l6-v2"
+        and test_rows["Dense"]["status"] == "ok"
+    )
     assert test_rows["HyDE"]["status"] == "pending: no run"
     assert test_rows["PageRank rerank"]["owner"] == "C"
     assert {p["owner"] for p in data["pending"]} >= {"A", "B", "C"}
@@ -153,10 +156,21 @@ def test_report_numbers_from_ablation(ablation_env, tmp_path):
     assert _run(_load("ablation"), ablation_env) == 0
     rn = _load("report_numbers")
     out = tmp_path / "gen"
-    assert rn.main(["--results-dir", str(ablation_env["results"]), "--out-dir", str(out),
-                    "--no-readme"]) == 0
-    names = {"dataset_stats.tex", "index_stats.tex", "efficiency.tex", "bm25_tuning.tex",
-             "filters_subset.tex", "numbers.tex", "experiments_retrieval_skeleton.md"}
+    assert (
+        rn.main(
+            ["--results-dir", str(ablation_env["results"]), "--out-dir", str(out), "--no-readme"]
+        )
+        == 0
+    )
+    names = {
+        "dataset_stats.tex",
+        "index_stats.tex",
+        "efficiency.tex",
+        "bm25_tuning.tex",
+        "filters_subset.tex",
+        "numbers.tex",
+        "experiments_retrieval_skeleton.md",
+    }
     assert names <= {p.name for p in out.iterdir()}
     numbers = (out / "numbers.tex").read_text(encoding="utf-8")
     assert r"\newcommand{\bmTunedNDCG}{" in numbers and "% results/ablation.json" in numbers
@@ -176,3 +190,34 @@ def test_readme_summary_markers(tmp_path):
     assert rn.update_readme(res, readme)
     text = readme.read_text()
     assert "| table |" in text and "old" not in text and text.endswith("y\n")
+
+
+def test_ambiguous_run_pattern_is_an_error(ablation_env, tmp_path, capsys):
+    mod = _load("ablation")
+    avail = {"dev": {"dense_a", "dense_b"}, "test": {"dense_a"}}
+    spec = {"rows": [{"label": "Dense", "run": "dense_*", "owner": "B", "group": "Neural"}]}
+    with pytest.raises(
+        mod.AmbiguousRunError, match="matches 2 runs: .*dense_a_dev.run, dense_b_dev.run"
+    ):
+        mod.resolve_rows(spec, avail)
+    # an exact name resolves; no match stays pending
+    spec["rows"][0]["run"] = "dense_b"
+    assert mod.resolve_rows(spec, avail)[0]["base"] == "dense_b"
+    spec["rows"][0]["run"] = "dense_zzz"
+    assert mod.resolve_rows(spec, avail)[0]["base"] is None
+    # main() exits with 2 and lists the candidates
+    runs = ablation_env["runs"]
+    dense = "dense_sentence-transformers-all-minilm-l6-v2"
+    for split in ("dev", "test"):
+        src = (runs / f"{dense}_{split}.run").read_text(encoding="utf-8")
+        (runs / f"dense_other_{split}.run").write_text(
+            src.replace(dense, "dense_other"), encoding="utf-8"
+        )
+    yml = tmp_path / "ablation.yaml"
+    yml.write_text(
+        "reference: bm25_tuned\nmetrics: [nDCG@10, judged@10]\nrows:\n"
+        "  - {label: Dense, run: 'dense_*', owner: B, group: Neural}\n",
+        encoding="utf-8",
+    )
+    assert _run(mod, ablation_env, "--spec", str(yml)) == 2
+    assert "dense_other_dev.run, " + dense + "_dev.run" in capsys.readouterr().err

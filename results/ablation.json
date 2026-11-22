@@ -3,9 +3,9 @@
   "selection_metric": "nDCG@10",
   "qrels": "C:\\Users\\dhrit\\PhoneSense\\qrels\\qrels.txt",
   "best_overall": {
-    "run": "bm25_tuned",
-    "dev": 0.6004308225148306,
-    "test": 0.6627267068117546
+    "run": "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
+    "dev": 0.6416901617144303,
+    "test": 0.6770034516366731
   },
   "rows": {
     "test": [
@@ -80,7 +80,6 @@
         "n_queries": 16,
         "low_coverage": true,
         "significant": [
-          "MAP",
           "P@10",
           "R@10",
           "nDCG@10"
@@ -151,29 +150,73 @@
         "label": "Rocchio PRF",
         "owner": "B",
         "group": "Neural",
-        "run": null,
-        "status": "pending: no run"
+        "run": "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.37499999999999994,
+          "R@10": 0.5624912464985994,
+          "MAP": 0.47579125977291026,
+          "nDCG@10": 0.5261820705737577,
+          "RR": 0.672883064516129,
+          "judged@10": 0.7812499999999999
+        },
+        "n_queries": 16,
+        "low_coverage": false,
+        "significant": []
       },
       {
         "label": "HyDE",
         "owner": "B",
         "group": "Neural",
-        "run": null,
-        "status": "pending: no run"
+        "run": "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.35625,
+          "R@10": 0.5754872782446312,
+          "MAP": 0.5153163436724766,
+          "nDCG@10": 0.5643079120087274,
+          "RR": 0.7174213435374149,
+          "judged@10": 0.7312499999999998
+        },
+        "n_queries": 16,
+        "low_coverage": false,
+        "significant": []
       },
       {
         "label": "RRF (BM25, dense)",
         "owner": "B",
         "group": "Fusion",
-        "run": null,
-        "status": "pending: no run"
+        "run": "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.4124999999999999,
+          "R@10": 0.7240546218487396,
+          "MAP": 0.523598967033313,
+          "nDCG@10": 0.6770034516366731,
+          "RR": 0.6729910714285714,
+          "judged@10": 0.8625
+        },
+        "n_queries": 16,
+        "low_coverage": false,
+        "significant": []
       },
       {
         "label": "Weighted fusion",
         "owner": "B",
         "group": "Fusion",
-        "run": null,
-        "status": "pending: no run"
+        "run": "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.39374999999999993,
+          "R@10": 0.7114933473389357,
+          "MAP": 0.5819803546454828,
+          "nDCG@10": 0.6809886191090398,
+          "RR": 0.8015625,
+          "judged@10": 0.7749999999999999
+        },
+        "n_queries": 16,
+        "low_coverage": false,
+        "significant": []
       },
       {
         "label": "PageRank rerank",
@@ -230,21 +273,21 @@
         "significant": []
       },
       {
-        "label": "Best overall: BM25 tuned",
-        "owner": "A",
+        "label": "Best overall: RRF (BM25, dense)",
+        "owner": "B",
         "group": "Best (chosen on dev)",
-        "run": "bm25_tuned",
+        "run": "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
         "status": "ok",
         "metrics": {
-          "P@10": 0.38125,
-          "R@10": 0.6341007236227824,
-          "MAP": 0.5912251777940256,
-          "nDCG@10": 0.6627267068117546,
-          "RR": 0.755372807017544,
-          "judged@10": 0.61875
+          "P@10": 0.4124999999999999,
+          "R@10": 0.7240546218487396,
+          "MAP": 0.523598967033313,
+          "nDCG@10": 0.6770034516366731,
+          "RR": 0.6729910714285714,
+          "judged@10": 0.8625
         },
         "n_queries": 16,
-        "low_coverage": true,
+        "low_coverage": false,
         "significant": []
       }
     ],
@@ -391,29 +434,73 @@
         "label": "Rocchio PRF",
         "owner": "B",
         "group": "Neural",
-        "run": null,
-        "status": "pending: no run"
+        "run": "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.3130434782608696,
+          "R@10": 0.485414947371469,
+          "MAP": 0.37047111273914285,
+          "nDCG@10": 0.5073925677404535,
+          "RR": 0.5890681404039182,
+          "judged@10": 0.7869565217391303
+        },
+        "n_queries": 23,
+        "low_coverage": false,
+        "significant": []
       },
       {
         "label": "HyDE",
         "owner": "B",
         "group": "Neural",
-        "run": null,
-        "status": "pending: no run"
+        "run": "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.35217391304347834,
+          "R@10": 0.6117994324516064,
+          "MAP": 0.4685568535744203,
+          "nDCG@10": 0.5862257385935938,
+          "RR": 0.722072693811824,
+          "judged@10": 0.7565217391304347
+        },
+        "n_queries": 23,
+        "low_coverage": false,
+        "significant": []
       },
       {
         "label": "RRF (BM25, dense)",
         "owner": "B",
         "group": "Fusion",
-        "run": null,
-        "status": "pending: no run"
+        "run": "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.3304347826086956,
+          "R@10": 0.6204927319057755,
+          "MAP": 0.4773085858222464,
+          "nDCG@10": 0.6416901617144303,
+          "RR": 0.6399930986887509,
+          "judged@10": 0.9086956521739131
+        },
+        "n_queries": 23,
+        "low_coverage": false,
+        "significant": []
       },
       {
         "label": "Weighted fusion",
         "owner": "B",
         "group": "Fusion",
-        "run": null,
-        "status": "pending: no run"
+        "run": "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
+        "status": "ok",
+        "metrics": {
+          "P@10": 0.31739130434782614,
+          "R@10": 0.6007769404508535,
+          "MAP": 0.5017196526486443,
+          "nDCG@10": 0.6214596662464429,
+          "RR": 0.6395962732919255,
+          "judged@10": 0.7956521739130435
+        },
+        "n_queries": 23,
+        "low_coverage": false,
+        "significant": []
       },
       {
         "label": "PageRank rerank",
@@ -470,21 +557,21 @@
         "significant": []
       },
       {
-        "label": "Best overall: BM25 tuned",
-        "owner": "A",
+        "label": "Best overall: RRF (BM25, dense)",
+        "owner": "B",
         "group": "Best (chosen on dev)",
-        "run": "bm25_tuned",
+        "run": "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
         "status": "ok",
         "metrics": {
-          "P@10": 0.26521739130434785,
-          "R@10": 0.586155692133953,
-          "MAP": 0.4414369091424773,
-          "nDCG@10": 0.6004308225148306,
-          "RR": 0.7434317171425361,
-          "judged@10": 0.6956521739130433
+          "P@10": 0.3304347826086956,
+          "R@10": 0.6204927319057755,
+          "MAP": 0.4773085858222464,
+          "nDCG@10": 0.6416901617144303,
+          "RR": 0.6399930986887509,
+          "judged@10": 0.9086956521739131
         },
         "n_queries": 23,
-        "low_coverage": true,
+        "low_coverage": false,
         "significant": []
       }
     ]
@@ -534,8 +621,8 @@
           "better": 0,
           "worse": 10,
           "tied": 6,
-          "p_randomization_holm": 0.024297570242975703,
-          "p_ttest_holm": 0.050466230935428
+          "p_randomization_holm": 0.035096490350964904,
+          "p_ttest_holm": 0.07289566690672933
         },
         "bm25_tuned+filters": {
           "metric": "P@10",
@@ -579,6 +666,66 @@
           "better": 2,
           "worse": 0,
           "tied": 14,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.375,
+          "mean_diff": -0.006250000000000002,
+          "p_randomization": 1.0,
+          "t": -0.16870980440527703,
+          "p_ttest": 0.8682788258673829,
+          "better": 3,
+          "worse": 5,
+          "tied": 8,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.35624999999999996,
+          "mean_diff": -0.025,
+          "p_randomization": 0.5448455154484552,
+          "t": -0.8451542547285167,
+          "p_ttest": 0.41130333972293415,
+          "better": 2,
+          "worse": 6,
+          "tied": 8,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.4125,
+          "mean_diff": 0.03125000000000001,
+          "p_randomization": 0.5447455254474552,
+          "t": 0.7912290475432049,
+          "p_ttest": 0.4411426901340306,
+          "better": 6,
+          "worse": 4,
+          "tied": 6,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "P@10",
+          "n": 16,
+          "mean_baseline": 0.38125,
+          "mean_system": 0.39374999999999993,
+          "mean_diff": 0.012499999999999994,
+          "p_randomization": 0.836016398360164,
+          "t": 0.41522739926869967,
+          "p_ttest": 0.6838539393335146,
+          "better": 6,
+          "worse": 4,
+          "tied": 6,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
         },
@@ -671,8 +818,8 @@
           "better": 0,
           "worse": 10,
           "tied": 6,
-          "p_randomization_holm": 0.024297570242975703,
-          "p_ttest_holm": 0.08837588317987637
+          "p_randomization_holm": 0.035096490350964904,
+          "p_ttest_holm": 0.12765405348204364
         },
         "bm25_tuned+filters": {
           "metric": "R@10",
@@ -716,6 +863,66 @@
           "better": 2,
           "worse": 0,
           "tied": 14,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.5624912464985994,
+          "mean_diff": -0.07160947712418302,
+          "p_randomization": 0.20687931206879312,
+          "t": -1.3786016837347,
+          "p_ttest": 0.1882319185761329,
+          "better": 3,
+          "worse": 5,
+          "tied": 8,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.5754872782446312,
+          "mean_diff": -0.05861344537815127,
+          "p_randomization": 0.0984901509849015,
+          "t": -1.7731855679076176,
+          "p_ttest": 0.09649788126269802,
+          "better": 2,
+          "worse": 6,
+          "tied": 8,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.7240546218487396,
+          "mean_diff": 0.08995389822595706,
+          "p_randomization": 0.3732626737326267,
+          "t": 0.8956014124913564,
+          "p_ttest": 0.38461285816682533,
+          "better": 6,
+          "worse": 4,
+          "tied": 6,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "R@10",
+          "n": 16,
+          "mean_baseline": 0.6341007236227825,
+          "mean_system": 0.7114933473389355,
+          "mean_diff": 0.07739262371615313,
+          "p_randomization": 0.45685431456854314,
+          "t": 0.7791407166896727,
+          "p_ttest": 0.44801542724404886,
+          "better": 6,
+          "worse": 4,
+          "tied": 6,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
         },
@@ -778,8 +985,8 @@
           "better": 5,
           "worse": 9,
           "tied": 2,
-          "p_randomization_holm": 0.9495050494950505,
-          "p_ttest_holm": 0.6704786641562712
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         },
         "bm25_default": {
           "metric": "MAP",
@@ -793,8 +1000,8 @@
           "better": 3,
           "worse": 7,
           "tied": 6,
-          "p_randomization_holm": 0.9631036896310369,
-          "p_ttest_holm": 0.9023746890887739
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         },
         "bm25f_tuned": {
           "metric": "MAP",
@@ -808,8 +1015,8 @@
           "better": 2,
           "worse": 12,
           "tied": 2,
-          "p_randomization_holm": 0.04589541045895411,
-          "p_ttest_holm": 0.056673740463895644
+          "p_randomization_holm": 0.06629337066293371,
+          "p_ttest_holm": 0.08186206955896037
         },
         "bm25_tuned+filters": {
           "metric": "MAP",
@@ -823,8 +1030,8 @@
           "better": 4,
           "worse": 0,
           "tied": 12,
-          "p_randomization_holm": 0.9495050494950505,
-          "p_ttest_holm": 0.6704786641562712
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         },
         "bm25_tuned+phrase": {
           "metric": "MAP",
@@ -853,8 +1060,68 @@
           "better": 4,
           "worse": 0,
           "tied": 12,
-          "p_randomization_holm": 0.9495050494950505,
-          "p_ttest_holm": 0.6704786641562712
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.4757912597729103,
+          "mean_diff": -0.11543391802111526,
+          "p_randomization": 0.10088991100889912,
+          "t": -1.7987982383848495,
+          "p_ttest": 0.09219957356616106,
+          "better": 5,
+          "worse": 8,
+          "tied": 3,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.5153163436724767,
+          "mean_diff": -0.07590883412154883,
+          "p_randomization": 0.1260873912608739,
+          "t": -1.6436529771989554,
+          "p_ttest": 0.12103864982098685,
+          "better": 5,
+          "worse": 8,
+          "tied": 3,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.523598967033313,
+          "mean_diff": -0.0676262107607126,
+          "p_randomization": 0.30796920307969206,
+          "t": -1.033286425620755,
+          "p_ttest": 0.3178427828070122,
+          "better": 6,
+          "worse": 9,
+          "tied": 1,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "MAP",
+          "n": 16,
+          "mean_baseline": 0.5912251777940255,
+          "mean_system": 0.5819803546454828,
+          "mean_diff": -0.009244823148542677,
+          "p_randomization": 0.8363163683631637,
+          "t": -0.22650126002538115,
+          "p_ttest": 0.823869230208889,
+          "better": 8,
+          "worse": 6,
+          "tied": 2,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         },
         "bm25_tuned+pagerank0.1": {
           "metric": "MAP",
@@ -898,8 +1165,8 @@
           "better": 6,
           "worse": 4,
           "tied": 6,
-          "p_randomization_holm": 0.9495050494950505,
-          "p_ttest_holm": 0.6704786641562712
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         }
       },
       "nDCG@10": {
@@ -915,8 +1182,8 @@
           "better": 7,
           "worse": 9,
           "tied": 0,
-          "p_randomization_holm": 0.2151784821517848,
-          "p_ttest_holm": 0.18349933153008577
+          "p_randomization_holm": 0.268973102689731,
+          "p_ttest_holm": 0.22937416441260722
         },
         "bm25_default": {
           "metric": "nDCG@10",
@@ -945,8 +1212,8 @@
           "better": 1,
           "worse": 14,
           "tied": 1,
-          "p_randomization_holm": 0.0035996400359964006,
-          "p_ttest_holm": 0.007064712393841003
+          "p_randomization_holm": 0.005199480051994801,
+          "p_ttest_holm": 0.010204584568881448
         },
         "bm25_tuned+filters": {
           "metric": "nDCG@10",
@@ -960,8 +1227,8 @@
           "better": 4,
           "worse": 0,
           "tied": 12,
-          "p_randomization_holm": 0.7277272272772722,
-          "p_ttest_holm": 0.7052564422917639
+          "p_randomization_holm": 0.9703029697030296,
+          "p_ttest_holm": 0.9873590192084694
         },
         "bm25_tuned+phrase": {
           "metric": "nDCG@10",
@@ -990,8 +1257,68 @@
           "better": 4,
           "worse": 0,
           "tied": 12,
-          "p_randomization_holm": 0.7277272272772722,
-          "p_ttest_holm": 0.7052564422917639
+          "p_randomization_holm": 0.9703029697030296,
+          "p_ttest_holm": 0.9873590192084694
+        },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.5261820705737577,
+          "mean_diff": -0.13654463623799706,
+          "p_randomization": 0.020597940205979402,
+          "t": -2.7579722979659835,
+          "p_ttest": 0.014649320443910499,
+          "better": 6,
+          "worse": 9,
+          "tied": 1,
+          "p_randomization_holm": 0.22657734226577342,
+          "p_ttest_holm": 0.1611425248830155
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.5643079120087274,
+          "mean_diff": -0.0984187948030272,
+          "p_randomization": 0.005099490050994901,
+          "t": -3.460578448555602,
+          "p_ttest": 0.003495138848413599,
+          "better": 3,
+          "worse": 12,
+          "tied": 1,
+          "p_randomization_holm": 0.06119388061193881,
+          "p_ttest_holm": 0.04194166618096319
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.6770034516366731,
+          "mean_diff": 0.014276744824918405,
+          "p_randomization": 0.8206179382061793,
+          "t": 0.2271472746478569,
+          "p_ttest": 0.8233759961949088,
+          "better": 8,
+          "worse": 8,
+          "tied": 0,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "nDCG@10",
+          "n": 16,
+          "mean_baseline": 0.6627267068117546,
+          "mean_system": 0.6809886191090398,
+          "mean_diff": 0.01826191229728512,
+          "p_randomization": 0.6772322767723228,
+          "t": 0.41052848286559995,
+          "p_ttest": 0.6872224872876646,
+          "better": 10,
+          "worse": 6,
+          "tied": 0,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         },
         "bm25_tuned+pagerank0.1": {
           "metric": "nDCG@10",
@@ -1020,8 +1347,8 @@
           "better": 6,
           "worse": 1,
           "tied": 9,
-          "p_randomization_holm": 0.7277272272772722,
-          "p_ttest_holm": 0.6930650432613015
+          "p_randomization_holm": 0.9703029697030296,
+          "p_ttest_holm": 0.924086724348402
         },
         "bm25_tuned+trust0.2": {
           "metric": "nDCG@10",
@@ -1035,8 +1362,8 @@
           "better": 8,
           "worse": 1,
           "tied": 7,
-          "p_randomization_holm": 0.26877312268773124,
-          "p_ttest_holm": 0.43366860309572264
+          "p_randomization_holm": 0.34556544345565443,
+          "p_ttest_holm": 0.5575739182659292
         }
       },
       "RR": {
@@ -1127,6 +1454,66 @@
           "better": 1,
           "worse": 0,
           "tied": 15,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.672883064516129,
+          "mean_diff": -0.08248974250141483,
+          "p_randomization": 0.2783721627837216,
+          "t": -1.1427759815153924,
+          "p_ttest": 0.2710443694673937,
+          "better": 2,
+          "worse": 5,
+          "tied": 9,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.7174213435374149,
+          "mean_diff": -0.0379514634801289,
+          "p_randomization": 0.3808619138086191,
+          "t": -1.0933384273425761,
+          "p_ttest": 0.2914934095543944,
+          "better": 1,
+          "worse": 3,
+          "tied": 12,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.6729910714285714,
+          "mean_diff": -0.08238173558897244,
+          "p_randomization": 0.270972902709729,
+          "t": -1.1219106091476836,
+          "p_ttest": 0.2795393352037718,
+          "better": 3,
+          "worse": 6,
+          "tied": 7,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "RR",
+          "n": 16,
+          "mean_baseline": 0.7553728070175438,
+          "mean_system": 0.8015625,
+          "mean_diff": 0.04618969298245615,
+          "p_randomization": 0.31116888311168883,
+          "t": 1.2797369847255038,
+          "p_ttest": 0.22007761649958946,
+          "better": 3,
+          "worse": 2,
+          "tied": 11,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
         },
@@ -1221,8 +1608,8 @@
           "better": 1,
           "worse": 15,
           "tied": 7,
-          "p_randomization_holm": 0.023397660233976603,
-          "p_ttest_holm": 0.031142520588900328
+          "p_randomization_holm": 0.0337966203379662,
+          "p_ttest_holm": 0.044983640850633805
         },
         "bm25_tuned+filters": {
           "metric": "P@10",
@@ -1268,6 +1655,66 @@
           "tied": 18,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
+        },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.3130434782608696,
+          "mean_diff": 0.04782608695652176,
+          "p_randomization": 0.45625437456254375,
+          "t": 0.8911524811333201,
+          "p_ttest": 0.3824903509006324,
+          "better": 7,
+          "worse": 6,
+          "tied": 10,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.35217391304347834,
+          "mean_diff": 0.08695652173913043,
+          "p_randomization": 0.06459354064593541,
+          "t": 1.9697894676175958,
+          "p_ttest": 0.061580372035527665,
+          "better": 8,
+          "worse": 4,
+          "tied": 11,
+          "p_randomization_holm": 0.7751224877512248,
+          "p_ttest_holm": 0.6773840923908043
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.33043478260869563,
+          "mean_diff": 0.06521739130434782,
+          "p_randomization": 0.11588841115888411,
+          "t": 1.7893605353547737,
+          "p_ttest": 0.08733427860521095,
+          "better": 10,
+          "worse": 4,
+          "tied": 9,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 0.8733427860521095
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "P@10",
+          "n": 23,
+          "mean_baseline": 0.2652173913043478,
+          "mean_system": 0.3173913043478261,
+          "mean_diff": 0.05217391304347827,
+          "p_randomization": 0.074992500749925,
+          "t": 2.083200909033323,
+          "p_ttest": 0.049063936759959674,
+          "better": 9,
+          "worse": 4,
+          "tied": 10,
+          "p_randomization_holm": 0.824917508249175,
+          "p_ttest_holm": 0.5887672411195161
         },
         "bm25_tuned+pagerank0.1": {
           "metric": "P@10",
@@ -1358,8 +1805,8 @@
           "better": 1,
           "worse": 15,
           "tied": 7,
-          "p_randomization_holm": 0.0008999100089991002,
-          "p_ttest_holm": 0.0022701092757428185
+          "p_randomization_holm": 0.0012998700129987003,
+          "p_ttest_holm": 0.003279046731628516
         },
         "bm25_tuned+filters": {
           "metric": "R@10",
@@ -1403,6 +1850,66 @@
           "better": 1,
           "worse": 4,
           "tied": 18,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.485414947371469,
+          "mean_diff": -0.10074074476248389,
+          "p_randomization": 0.32116788321167883,
+          "t": -1.021095054011389,
+          "p_ttest": 0.3183073761363267,
+          "better": 7,
+          "worse": 6,
+          "tied": 10,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.6117994324516064,
+          "mean_diff": 0.02564374031765337,
+          "p_randomization": 0.7192280771922808,
+          "t": 0.37597745179965975,
+          "p_ttest": 0.710534857203803,
+          "better": 8,
+          "worse": 4,
+          "tied": 11,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.6204927319057755,
+          "mean_diff": 0.03433703977182239,
+          "p_randomization": 0.6297370262973703,
+          "t": 0.5114815708998123,
+          "p_ttest": 0.6141095055360846,
+          "better": 10,
+          "worse": 4,
+          "tied": 9,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "R@10",
+          "n": 23,
+          "mean_baseline": 0.586155692133953,
+          "mean_system": 0.6007769404508535,
+          "mean_diff": 0.014621248316900488,
+          "p_randomization": 0.8373162683731626,
+          "t": 0.2536900109477352,
+          "p_ttest": 0.8020908868296189,
+          "better": 9,
+          "worse": 4,
+          "tied": 10,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
         },
@@ -1495,8 +2002,8 @@
           "better": 4,
           "worse": 18,
           "tied": 1,
-          "p_randomization_holm": 0.0008999100089991002,
-          "p_ttest_holm": 0.0011686922914618315
+          "p_randomization_holm": 0.0012998700129987003,
+          "p_ttest_holm": 0.00168811108766709
         },
         "bm25_tuned+filters": {
           "metric": "MAP",
@@ -1510,8 +2017,8 @@
           "better": 4,
           "worse": 5,
           "tied": 14,
-          "p_randomization_holm": 0.7277272272772722,
-          "p_ttest_holm": 0.7919214665742712
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         },
         "bm25_tuned+phrase": {
           "metric": "MAP",
@@ -1543,6 +2050,66 @@
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
         },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.3704711127391429,
+          "mean_diff": -0.07096579640333436,
+          "p_randomization": 0.40475952404759524,
+          "t": -0.85804223514983,
+          "p_ttest": 0.4001209076294827,
+          "better": 11,
+          "worse": 12,
+          "tied": 0,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.4685568535744202,
+          "mean_diff": 0.02711994443194289,
+          "p_randomization": 0.7192280771922808,
+          "t": 0.36772585757423953,
+          "p_ttest": 0.7165917663950904,
+          "better": 13,
+          "worse": 10,
+          "tied": 0,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.4773085858222464,
+          "mean_diff": 0.035871676679769114,
+          "p_randomization": 0.46835316468353166,
+          "t": 0.7418510583672232,
+          "p_ttest": 0.4660242866283176,
+          "better": 10,
+          "worse": 10,
+          "tied": 3,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "MAP",
+          "n": 23,
+          "mean_baseline": 0.4414369091424773,
+          "mean_system": 0.5017196526486442,
+          "mean_diff": 0.060282743506166976,
+          "p_randomization": 0.1625837416258374,
+          "t": 1.4487584826921993,
+          "p_ttest": 0.1615094485379938,
+          "better": 10,
+          "worse": 9,
+          "tied": 4,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
         "bm25_tuned+pagerank0.1": {
           "metric": "MAP",
           "n": 23,
@@ -1555,8 +2122,8 @@
           "better": 2,
           "worse": 10,
           "tied": 11,
-          "p_randomization_holm": 0.43995600439956006,
-          "p_ttest_holm": 0.610977723501786
+          "p_randomization_holm": 0.6599340065993401,
+          "p_ttest_holm": 0.916466585252679
         },
         "bm25_tuned+ppr0.1": {
           "metric": "MAP",
@@ -1570,8 +2137,8 @@
           "better": 3,
           "worse": 6,
           "tied": 14,
-          "p_randomization_holm": 0.7125287471252875,
-          "p_ttest_holm": 0.674860431889421
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         },
         "bm25_tuned+trust0.2": {
           "metric": "MAP",
@@ -1585,8 +2152,8 @@
           "better": 6,
           "worse": 9,
           "tied": 8,
-          "p_randomization_holm": 0.7277272272772722,
-          "p_ttest_holm": 0.914501386563046
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         }
       },
       "nDCG@10": {
@@ -1632,8 +2199,8 @@
           "better": 3,
           "worse": 20,
           "tied": 0,
-          "p_randomization_holm": 0.0008999100089991002,
-          "p_ttest_holm": 3.4895086992407605e-05
+          "p_randomization_holm": 0.0012998700129987003,
+          "p_ttest_holm": 5.040401454458877e-05
         },
         "bm25_tuned+filters": {
           "metric": "nDCG@10",
@@ -1680,6 +2247,66 @@
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
         },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.5073925677404535,
+          "mean_diff": -0.09303825477437716,
+          "p_randomization": 0.1785821417858214,
+          "t": -1.3911511011683277,
+          "p_ttest": 0.178089828961961,
+          "better": 10,
+          "worse": 12,
+          "tied": 1,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.5862257385935937,
+          "mean_diff": -0.014205083921236839,
+          "p_randomization": 0.7737226277372263,
+          "t": -0.2926408162955629,
+          "p_ttest": 0.772538973225659,
+          "better": 9,
+          "worse": 13,
+          "tied": 1,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.6416901617144303,
+          "mean_diff": 0.041259339199599634,
+          "p_randomization": 0.2323767623237676,
+          "t": 1.2337135579899956,
+          "p_ttest": 0.23032808989866138,
+          "better": 11,
+          "worse": 10,
+          "tied": 2,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "nDCG@10",
+          "n": 23,
+          "mean_baseline": 0.6004308225148306,
+          "mean_system": 0.6214596662464429,
+          "mean_diff": 0.021028843731612352,
+          "p_randomization": 0.44175582441755823,
+          "t": 0.781799569018217,
+          "p_ttest": 0.44266558752881285,
+          "better": 12,
+          "worse": 10,
+          "tied": 1,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
         "bm25_tuned+pagerank0.1": {
           "metric": "nDCG@10",
           "n": 23,
@@ -1692,8 +2319,8 @@
           "better": 2,
           "worse": 7,
           "tied": 14,
-          "p_randomization_holm": 0.3271672832716728,
-          "p_ttest_holm": 0.9395315163210896
+          "p_randomization_holm": 0.49075092490750927,
+          "p_ttest_holm": 1.0
         },
         "bm25_tuned+ppr0.1": {
           "metric": "nDCG@10",
@@ -1707,8 +2334,8 @@
           "better": 6,
           "worse": 5,
           "tied": 12,
-          "p_randomization_holm": 0.8448155184481552,
-          "p_ttest_holm": 0.9395315163210896
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         },
         "bm25_tuned+trust0.2": {
           "metric": "nDCG@10",
@@ -1739,8 +2366,8 @@
           "better": 4,
           "worse": 10,
           "tied": 9,
-          "p_randomization_holm": 0.8423157684231577,
-          "p_ttest_holm": 0.8729071444917462
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
         },
         "bm25_default": {
           "metric": "RR",
@@ -1769,8 +2396,8 @@
           "better": 3,
           "worse": 12,
           "tied": 8,
-          "p_randomization_holm": 0.23127687231276872,
-          "p_ttest_holm": 0.22157328668354676
+          "p_randomization_holm": 0.33406659334066596,
+          "p_ttest_holm": 0.3200503029873453
         },
         "bm25_tuned+filters": {
           "metric": "RR",
@@ -1814,6 +2441,66 @@
           "better": 4,
           "worse": 2,
           "tied": 17,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.5890681404039182,
+          "mean_diff": -0.15436357673861786,
+          "p_randomization": 0.11198880111988802,
+          "t": -1.6447585482287768,
+          "p_ttest": 0.11423430540253465,
+          "better": 4,
+          "worse": 10,
+          "tied": 9,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.722072693811824,
+          "mean_diff": -0.0213590233307119,
+          "p_randomization": 0.7928207179282072,
+          "t": -0.26616558980577776,
+          "p_ttest": 0.7925903045239885,
+          "better": 5,
+          "worse": 5,
+          "tied": 13,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.6399930986887509,
+          "mean_diff": -0.10343861845378527,
+          "p_randomization": 0.11578842115788421,
+          "t": -1.6446598414372435,
+          "p_ttest": 0.11425482528046689,
+          "better": 3,
+          "worse": 8,
+          "tied": 12,
+          "p_randomization_holm": 1.0,
+          "p_ttest_holm": 1.0
+        },
+        "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2": {
+          "metric": "RR",
+          "n": 23,
+          "mean_baseline": 0.7434317171425361,
+          "mean_system": 0.6395962732919255,
+          "mean_diff": -0.10383544385061069,
+          "p_randomization": 0.1461853814618538,
+          "t": -1.511447958383477,
+          "p_ttest": 0.14490634242575343,
+          "better": 3,
+          "worse": 8,
+          "tied": 12,
           "p_randomization_holm": 1.0,
           "p_ttest_holm": 1.0
         },
@@ -1946,39 +2633,56 @@
         "n": 16
       },
       {
-        "label": "Dense",
-        "owner": "B",
-        "run": null,
-        "parent": "bm25_tuned",
-        "status": "pending"
-      },
-      {
         "label": "Rocchio PRF",
         "owner": "B",
-        "run": null,
-        "parent": "bm25_tuned",
-        "status": "pending"
+        "run": "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50",
+        "parent": "tfidf_lnc.ltc",
+        "status": "ok",
+        "delta": -0.01737481586143025,
+        "p": 0.0862913708629137,
+        "wins": 4,
+        "losses": 9,
+        "ties": 3,
+        "n": 16
       },
       {
         "label": "HyDE",
         "owner": "B",
-        "run": null,
-        "parent": "bm25_tuned",
-        "status": "pending"
+        "run": "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35",
+        "parent": "tfidf_lnc.ltc",
+        "status": "ok",
+        "delta": 0.020751025573539597,
+        "p": 0.4654534546545345,
+        "wins": 8,
+        "losses": 8,
+        "ties": 0,
+        "n": 16
       },
       {
         "label": "RRF (BM25, dense)",
         "owner": "B",
-        "run": null,
+        "run": "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
         "parent": "bm25_tuned",
-        "status": "pending"
+        "status": "ok",
+        "delta": 0.014276744824918405,
+        "p": 0.8206179382061793,
+        "wins": 8,
+        "losses": 8,
+        "ties": 0,
+        "n": 16
       },
       {
         "label": "Weighted fusion",
         "owner": "B",
-        "run": null,
+        "run": "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
         "parent": "bm25_tuned",
-        "status": "pending"
+        "status": "ok",
+        "delta": 0.01826191229728512,
+        "p": 0.6772322767723228,
+        "wins": 10,
+        "losses": 6,
+        "ties": 0,
+        "n": 16
       },
       {
         "label": "PageRank rerank",
@@ -2100,39 +2804,56 @@
         "n": 23
       },
       {
-        "label": "Dense",
-        "owner": "B",
-        "run": null,
-        "parent": "bm25_tuned",
-        "status": "pending"
-      },
-      {
         "label": "Rocchio PRF",
         "owner": "B",
-        "run": null,
-        "parent": "bm25_tuned",
-        "status": "pending"
+        "run": "rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50",
+        "parent": "tfidf_lnc.ltc",
+        "status": "ok",
+        "delta": -0.015027855890023733,
+        "p": 0.42755724427557246,
+        "wins": 8,
+        "losses": 8,
+        "ties": 7,
+        "n": 23
       },
       {
         "label": "HyDE",
         "owner": "B",
-        "run": null,
-        "parent": "bm25_tuned",
-        "status": "pending"
+        "run": "hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35",
+        "parent": "tfidf_lnc.ltc",
+        "status": "ok",
+        "delta": 0.06380531496311659,
+        "p": 0.037196280371962806,
+        "wins": 15,
+        "losses": 7,
+        "ties": 1,
+        "n": 23
       },
       {
         "label": "RRF (BM25, dense)",
         "owner": "B",
-        "run": null,
+        "run": "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
         "parent": "bm25_tuned",
-        "status": "pending"
+        "status": "ok",
+        "delta": 0.041259339199599634,
+        "p": 0.2323767623237676,
+        "wins": 11,
+        "losses": 10,
+        "ties": 2,
+        "n": 23
       },
       {
         "label": "Weighted fusion",
         "owner": "B",
-        "run": null,
+        "run": "fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2",
         "parent": "bm25_tuned",
-        "status": "pending"
+        "status": "ok",
+        "delta": 0.021028843731612352,
+        "p": 0.44175582441755823,
+        "wins": 12,
+        "losses": 10,
+        "ties": 1,
+        "n": 23
       },
       {
         "label": "PageRank rerank",
@@ -2180,33 +2901,15 @@
       "label": "Dense",
       "owner": "B",
       "status": "pending: no run"
-    },
-    {
-      "label": "Rocchio PRF",
-      "owner": "B",
-      "status": "pending: no run"
-    },
-    {
-      "label": "HyDE",
-      "owner": "B",
-      "status": "pending: no run"
-    },
-    {
-      "label": "RRF (BM25, dense)",
-      "owner": "B",
-      "status": "pending: no run"
-    },
-    {
-      "label": "Weighted fusion",
-      "owner": "B",
-      "status": "pending: no run"
     }
   ],
   "figures": [
     "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\ablation_bars.png",
     "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\ablation_bars.pdf",
     "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\pr_key_systems.png",
-    "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\pr_key_systems.pdf"
+    "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\pr_key_systems.pdf",
+    "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\delta_best_vs_bm25.png",
+    "C:\\Users\\dhrit\\PhoneSense\\report\\figures\\delta_best_vs_bm25.pdf"
   ],
   "key_systems": [
     [
@@ -2220,6 +2923,10 @@
     [
       "best structured (bm25_tuned+phrase)",
       "bm25_tuned+phrase"
+    ],
+    [
+      "best neural/fusion (rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2)",
+      "rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2"
     ]
   ]
 }

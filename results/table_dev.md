@@ -4,11 +4,15 @@
 | bm25_tuned+filters+phrase_dev | 0.248 | 0.548 | 0.411 | 0.560 | 0.735 | 0.530 |
 | bm25_tuned+filters_dev | 0.248 | 0.548 | 0.382 | 0.562 | 0.706 | 0.543 |
 | bm25_tuned+pagerank0.1_dev | 0.248 | 0.566 | 0.434 | 0.582 | 0.739 | 0.648 |
-| bm25_tuned+phrase_dev | 0.265 | **0.586** | **0.470** | 0.598 | **0.772** | 0.683 |
-| bm25_tuned+ppr0.1_dev | 0.265 | **0.586** | 0.416 | 0.586 | 0.700 | 0.696 |
+| bm25_tuned+phrase_dev | 0.265 | 0.586 | 0.470 | 0.598 | **0.772** | 0.683 |
+| bm25_tuned+ppr0.1_dev | 0.265 | 0.586 | 0.416 | 0.586 | 0.700 | 0.696 |
 | bm25_tuned+trust0.2_dev | 0.257 | 0.572 | 0.428 | 0.590 | 0.711 | 0.665 |
-| bm25_tuned_dev | 0.265 | **0.586** | 0.441 | **0.600** | 0.743 | 0.696 |
+| bm25_tuned_dev | 0.265 | 0.586 | 0.441 | 0.600 | 0.743 | 0.696 |
 | bm25f_tuned_dev | 0.143† | 0.269 | 0.235 | 0.330 | 0.495 | 0.326 |
-| tfidf_lnc.ltc_dev (baseline) | **0.317** | 0.521 | 0.374 | 0.522 | 0.596 | **0.796** |
+| fusion_linear_w55-45_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2_dev | 0.317 | 0.601 | **0.502** | 0.621 | 0.640 | 0.796 |
+| hyde_tfidf_lnc.ltc_m10_b0_g0_t30_d0.35_dev | **0.352** | 0.612 | 0.469 | 0.586 | 0.722 | 0.757 |
+| rocchio_tfidf_lnc.ltc_m10_b0.1_g0_t50_dev | 0.313 | 0.485 | 0.370 | 0.507 | 0.589 | 0.787 |
+| rrf_k5_bm25_tuned+dense_sentence-transformers-all-minilm-l6-v2_dev | 0.330 | **0.620** | 0.477 | **0.642** | 0.640 | **0.909** |
+| tfidf_lnc.ltc_dev (baseline) | 0.317 | 0.521 | 0.374 | 0.522 | 0.596 | 0.796 |
 
 † p < 0.05 vs. tfidf_lnc.ltc_dev (paired randomization test, 10000 permutations, Holm-corrected). n = 23 queries.

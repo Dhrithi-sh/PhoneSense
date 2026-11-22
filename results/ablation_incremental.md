@@ -8,11 +8,10 @@
 | + filters | bm25_tuned | +0.030 | 0.1213 | 4 / 0 / 12 |
 | + phrase | bm25_tuned | +0.000 | 1.0000 | 0 / 0 / 16 |
 | + filters + phrase | bm25_tuned+phrase | +0.030 | 0.1213 | 4 / 0 / 12 |
-| Dense | bm25_tuned | pending (B) | - | - |
-| Rocchio PRF | bm25_tuned | pending (B) | - | - |
-| HyDE | bm25_tuned | pending (B) | - | - |
-| RRF (BM25, dense) | bm25_tuned | pending (B) | - | - |
-| Weighted fusion | bm25_tuned | pending (B) | - | - |
+| Rocchio PRF | tfidf_lnc.ltc | -0.017 | 0.0863 | 4 / 9 / 3 |
+| HyDE | tfidf_lnc.ltc | +0.021 | 0.4655 | 8 / 8 / 0 |
+| RRF (BM25, dense) | bm25_tuned | +0.014 | 0.8206 | 8 / 8 / 0 |
+| Weighted fusion | bm25_tuned | +0.018 | 0.6772 | 10 / 6 / 0 |
 | PageRank rerank | bm25_tuned | -0.003 | 0.7838 | 3 / 3 / 10 |
 | Personalized PR | bm25_tuned | +0.008 | 0.1452 | 6 / 1 / 9 |
 | Trust-weighted rerank | bm25_tuned | +0.011 | 0.0384 | 8 / 1 / 7 |
@@ -29,11 +28,10 @@ p: paired randomization test (two-sided, 10,000 permutations, uncorrected). W/L/
 | + filters | bm25_tuned | -0.038 | 0.2134 | 3 / 6 / 14 |
 | + phrase | bm25_tuned | -0.002 | 0.4999 | 0 / 2 / 21 |
 | + filters + phrase | bm25_tuned+phrase | -0.038 | 0.2134 | 3 / 6 / 14 |
-| Dense | bm25_tuned | pending (B) | - | - |
-| Rocchio PRF | bm25_tuned | pending (B) | - | - |
-| HyDE | bm25_tuned | pending (B) | - | - |
-| RRF (BM25, dense) | bm25_tuned | pending (B) | - | - |
-| Weighted fusion | bm25_tuned | pending (B) | - | - |
+| Rocchio PRF | tfidf_lnc.ltc | -0.015 | 0.4276 | 8 / 8 / 7 |
+| HyDE | tfidf_lnc.ltc | +0.064 | 0.0372 | 15 / 7 / 1 |
+| RRF (BM25, dense) | bm25_tuned | +0.041 | 0.2324 | 11 / 10 / 2 |
+| Weighted fusion | bm25_tuned | +0.021 | 0.4418 | 12 / 10 / 1 |
 | PageRank rerank | bm25_tuned | -0.019 | 0.0409 | 2 / 7 / 14 |
 | Personalized PR | bm25_tuned | -0.014 | 0.1207 | 6 / 5 / 12 |
 | Trust-weighted rerank | bm25_tuned | -0.011 | 0.2606 | 4 / 9 / 10 |
