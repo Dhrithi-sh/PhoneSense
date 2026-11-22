@@ -7,9 +7,29 @@ completed (a task counts only when its code, tests and run files exist and are p
 
 | Member | Name | GitHub | Completed WU | Task IDs | Report sections written |
 |---|---|---|---|---|---|
-| A | | | | | |
+| A | Dhrithi Shashibushan | Dhrithi-sh | All assigned tasks completed (details below) | T01, T02, T03, T04, T05, T06, T07, T11, T22; final assembly | Abstract; Dataset; Experiments: test collection and protocol, main results, lexical baselines and tuning, filters, efficiency, failure cases; dev-split appendix; Methodology parts for BM25, filters and evaluation; report assembly |
 | B | Palleti Viraja | virajapalleti | 30.5 (details below) | T08, T12, T13, T14, T15, T09a, T09b, L-B, T23; T24 in progress | Introduction, Literature Review, Objective, Proposed Model (drafts: result numbers still to fill) |
 | C | Rishit Kamboj | rishitkam | 44.5 (details below) | T16, T17, T18, T19, T20, T21, T25, L-C, R-C1, R-C2, R-C3; R-C4 in progress | Methodology; Experiments 8.5 (graph, trust, reranking, kNN and sensitivity studies, attacks); Conclusions and Limitations; References |
+
+## Member A: details
+
+| Task | Status | Where |
+|---|---|---|
+| T01 repository, environment, shared data/IO contract | done, merged (PR #1) | `CONTRACT.md`, `phonesense/schemas.py`, `phonesense/io.py`, `phonesense/retrieval/base.py` |
+| T02 data pipeline (1,288,490 raw items to 7,166 phones and 575,816 reviews) | done, merged (PR #1). The hand-check sheets were generated but not filled in, so no filter or parser accuracy is reported | `phonesense/data/`, `scripts/build_data.py`, `results/data_stats.json` |
+| T03 positional inverted index (ported from the midterm), VByte compression, skip pointers | done, merged (PR #1) | `phonesense/index/`, `legacy/PORTING.md` |
+| T04 TF-IDF lnc.ltc | done, merged (PR #1) | `phonesense/retrieval/tfidf.py` |
+| T05 BM25, BM25F, dev-only tuning (k1 = 1.2, b = 0.9) | done, merged (PRs #5, #19) | `phonesense/retrieval/bm25.py`, `scripts/tune_bm25.py`, `runs/bm25*` |
+| T06 three-valued Boolean spec filters and constraint parser | done, merged (PRs #5, #19) | `phonesense/retrieval/filters.py`, `runs/bm25_tuned+filters*` |
+| T07 Boolean, phrase and proximity search, phrase boost | done, merged (PRs #5, #19) | `phonesense/retrieval/boolean.py`, `phonesense/retrieval/positional.py`, `scripts/bench_boolean.py` |
+| T11 evaluation harness: metrics, paired significance tests with Holm correction, agreement, tables, CLI | done, merged (PR #5) | `phonesense/eval/` |
+| T22 ablation over all members' runs, report numbers, one-command reproduction, submission package | done, merged (PRs #5, #19) | `scripts/ablation.py`, `ablation.yaml`, `scripts/report_numbers.py`, `scripts/reproduce.py`, `scripts/make_submission.py` |
+| Report: abstract, dataset, retrieval experiments, dev-split appendix, assembly | done | final report PDF |
+
+Work beyond the plan: the private data repository and its releases for sharing the processed
+data, validation of every teammate run file against the contract before it entered the
+ablation, merging the pull requests into `main` (resolving the `config.yaml` conflicts of PRs #3
+and #11), and the report build from the section files.
 
 ## Member B: details
 
