@@ -1,7 +1,7 @@
 # Conclusions and Limitations
 
-> Report section R-C3 (owner C). Items marked `[TBD]` are filled from the frozen ablation table
-> (owner A) and the kappa result (owner B); everything else is final.
+> Report section R-C3 (owner C). Numbers come from the ablation tables (`results/ablation_*.md`,
+> owner A), the kappa result (`results/kappa.json`, owner B) and sections 8.5.1-8.5.5.
 
 ## Conclusions
 
@@ -10,12 +10,23 @@ measured each of its components separately. Going back to the contributions list
 Introduction:
 
 1. **Test collection.** We wrote 45 phone queries of four types (spec, aspect, model, vague),
-   split 27 dev / 18 test, and labelled pooled results on a 0-3 scale with an LLM judge whose
-   agreement with human labels is Cohen's kappa `[TBD]`.
-2. **Retrieval comparison.** On the test queries the best system reaches nDCG@10 `[TBD]`,
-   against 0.663 for tuned BM25. `[TBD: one sentence on which component helped most and
-   which did not help, from the add-one and leave-one-out tables.]`
-3. **HyDE with Rocchio weighting.** `[TBD: effect on nDCG@10 versus plain Rocchio.]`
+   split 27 dev / 18 test, and labelled pooled results on a 0-3 scale with an LLM judge. On 89
+   test pairs labelled by all of us, its agreement with the human grades is Cohen's kappa 0.26
+   over the four grades (0.49 quadratic-weighted, 0.39 for relevant versus not relevant): fair,
+   not strong. Scoring the systems with the human grades instead leaves their order unchanged
+   (Kendall's tau = 1.00).
+2. **Retrieval comparison.** The system chosen on dev, reciprocal rank fusion of tuned BM25 and
+   dense retrieval, reaches nDCG@10 0.677 on the test queries, against 0.663 for tuned BM25. The
+   highest test score, 0.693, comes from BM25 with Boolean spec filters, which had scored below
+   tuned BM25 on dev. Fusing BM25 with dense retrieval helped on both splits (RRF +0.042 on dev
+   and +0.014 on test, weighted fusion +0.021 and +0.018), while field-weighted BM25F was much
+   worse (-0.194 on test, the only significant difference in the table). With 16 test queries,
+   no other difference from tuned BM25 is significant after Holm correction.
+3. **HyDE with Rocchio weighting.** Tuning on dev set the Rocchio feedback weight to 0 and the
+   HyDE weight to 0.35, so the final system expands the query with the generated document only.
+   It beats tuned Rocchio on both splits (nDCG@10 0.586 against 0.507 on dev, 0.564 against
+   0.526 on test) and plain TF-IDF (0.564 against 0.544 on test), but the gain over TF-IDF is
+   not significant (p = 0.47).
 4. **Graph and trust signals.**
    * The co-review graph links only 38.5% of the phones, because 88.4% of reviewers wrote a
      single review. PageRank on it acts as a popularity signal: its top phones are the most
@@ -35,8 +46,8 @@ Introduction:
    shows its score breakdown, and the attack tab lets a viewer inject fake reviews and watch the
    ranking change live.
 
-Taken together, the classic signals carry most of the retrieval quality `[TBD: confirm from
-ablation]`. The reputation work gives a clearer negative result than a positive one: a
+Taken together, the classic signals carry most of the retrieval quality: on the test queries
+no system beats tuned BM25 by more than 0.03 nDCG@10, and none does so significantly. The reputation work gives a clearer negative result than a positive one: a
 HITS-style trust score helps a little against naive fake reviews, and an attacker who first
 builds a normal-looking history removes even that.
 
@@ -49,15 +60,24 @@ builds a normal-looking history removes even that.
   hand-labelled sample, but some accessories and some missing phones remain.
 * Specifications were parsed from free-text listings; fields that could not be parsed are
   unknown, so Boolean filters cannot match those phones.
+* **Most phones have no price.** The source metadata gives no price for 5,531 of the 7,166
+  phones (77%). This is missing in the data, not a parsing failure: Amazon only records a price
+  for listings on sale when the snapshot was taken, so 92% of phones first listed in 2014 or
+  earlier have none, against 32% of those listed in 2021-2023. A price filter can therefore
+  only match about a quarter of the collection, and dev query q04 has no relevant phone for
+  this reason. Prices from the 2018 release of the same dataset could fill some of the gaps by
+  product id, at the cost of mixing years.
 
 **Evaluation.**
 * 45 queries (18 for testing) is a small set. Many differences between systems are not
   statistically significant, and the significance markers in the ablation table should be read
   with that in mind.
-* Relevance labels come from an LLM judge checked against a small human-labelled sample. Where
-  the judge and humans disagree, the scores inherit its errors.
-* Only pooled results were judged. A phone that no pooled system retrieved counts as not
-  relevant, which favours the systems in the pool and makes scores for other systems lower
+* Relevance labels come from an LLM judge checked against 89 human-labelled pairs. Agreement is
+  only fair (kappa 0.26; where they differ, the humans were usually more lenient), so absolute
+  scores inherit the judge's errors: with the human grades, test nDCG@10 is 0.04-0.07 lower.
+  The order of the systems, which is what the conclusions rest on, did not change.
+* Only pooled results were judged, to depth 5 (depth 10 for queries with no relevant phone).
+  A phone that no pooled system retrieved counts as not relevant, which favours the systems in the pool and makes scores for other systems lower
   bounds (reported as judged@10 in the ablation table).
 
 **Graph and trust.**
