@@ -243,6 +243,17 @@ B0TEST0001	B0TEST0002	1.0
 ```
 * Directed rows. An undirected co-review graph writes both directions.
 * `weight` is a finite float > 0. No self-loops. No duplicate (src, dst) pairs.
+* Written by `scripts/build_graph.py` (T16). Edge types, merged by summing the weight of a
+  repeated (src, dst) pair:
+  * **co-review**: at least `graph.co_review_min_shared` reviewers rated both phones; weight
+    `min(shared, 5) / 5`; both directions.
+  * **kNN** (only with `--embeddings`): `dst` is one of `src`'s `graph.knn_k` most
+    cosine-similar phones; weight = cosine similarity.
+  * No co-purchase edges: phones.jsonl has no `bought_together` field.
+* Phones with no edge do not appear in the file. Pass every `doc_id` to
+  `phonesense.graph.pagerank.load_graph(doc_ids=...)` so they still get a PageRank score.
+* Rerankers use `pagerank_scores(doc_ids)` -> `{doc_id: score in [0, 1]}` (percentile of
+  global PageRank) or `personalized_pagerank(graph, seeds)`.
 
 `data/processed/reviewer_trust.tsv` [`reviewer_trust`]
 ```
@@ -250,6 +261,13 @@ user_id	trust
 AE7K2QLXDZ4P	0.92
 ```
 * `trust` is a float in [0, 1] (1 = fully trusted). One row per `user_id`.
+* Written by `scripts/build_trust.py` (T19). `trust` is the reviewer's **reliability**: how
+  closely their ratings agree with the trust-weighted quality of the phones they rated,
+  shrunk toward `trust.prior_reliability` (0.5) for reviewers with few reviews. A new
+  account with one review sits near 0.5, never at 0 or 1. Formulas: docstring of
+  `phonesense/trust/trust.py`.
+* The phone-level score for ranking is not stored in a file: call
+  `phonesense.trust.trust.trust_scores(reviews)` -> `{doc_id: score in [0, 1]}`.
 
 C may add columns or change semantics, but must update this section, the schema and the
 fixtures in the same PR. The paths stay the same.

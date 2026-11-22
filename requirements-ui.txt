@@ -1,2 +1,2 @@
 # Demo UI (owners: B, C). Install on top of requirements.txt.
-streamlit>=1.38
+streamlit>=1.67   # tested with 1.67; the attack tab uses st.metric(delta_arrow=...)
