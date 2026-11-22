@@ -1,8 +1,7 @@
 # Proposed Model
 
-> **Status: draft (owner: B).** Formulas and parameters live in the Methodology section; this
-> section explains how the pieces fit and why. Items that depend on final results are marked
-> `[TBD]`.
+> **Status: final text (owner: B).** Formulas and parameters live in the Methodology section;
+> this section explains how the pieces fit and why. Results are in the Experiments sections.
 
 ![PhoneSense pipeline](../figures/pipeline.png)
 
@@ -41,7 +40,7 @@ every stage with the same metrics.
 | Lexical (TF-IDF lnc.ltc, BM25) | Exact-term matching over the index. | Strong on model names and spec words ("Pixel 7a", "5000mAh"). |
 | Dense retrieval | Cosine similarity between query and phone embeddings. | Finds phones that say the same thing in other words. |
 | Rocchio feedback | Treats the top results of a first pass as relevant and adds their terms to the query. | Cheap query refinement; the risk is drift when the first pass is wrong. |
-| HyDE-style expansion | An LLM writes a hypothetical listing; its terms are weighted in with Rocchio. | Bridges the vocabulary gap ("lasts two days" versus "6000mAh"). Only reweights terms, so invented specs never reach the user. |
+| HyDE-style expansion | An LLM writes a hypothetical listing; its terms are weighted into the query (a Rocchio-style term weighting; on dev the best setting uses these terms alone, with the feedback weight at 0). | Bridges the vocabulary gap ("lasts two days" versus "6000mAh"). Only reweights terms, so invented specs never reach the user. |
 | Rank fusion (RRF, weighted linear) | Merges the rankings of the selected systems. | Systems fail on different queries; fusion uses ranks, so scores need no calibration. |
 | Boolean spec filters | Keeps only phones that satisfy numeric constraints; unknown values never pass. | "Under $300 with 8 GB RAM" is a constraint, not a word match. |
 | Prior rerank (PageRank, trust) | `(1 - lambda) * score + lambda * prior` on the top 100; never adds phones. | Uses information that text does not contain: which phones the same people review, and which ratings to trust. |
@@ -56,22 +55,31 @@ flagged.
 
 45 queries (spec, aspect, model, vague) are split into 27 dev and 18 test. For each query we
 **pool** the top results of every system, an LLM judge grades them 0-3, and people grade a
-shared sample so that agreement can be measured (Cohen's kappa). Final qrels use the human grade
-where one exists. All settings are tuned on dev; test is used once per final configuration.
-Metrics are P@5, P@10, R@10, R@100, F1, MAP and nDCG@10, with a paired test and an add-one /
-leave-one-out ablation `[results TBD]`.
+shared sample so that agreement can be measured (Cohen's kappa 0.26, or 0.39 for relevant versus
+not, on 89 pairs). `qrels.txt` stays the LLM labels: replacing 50 of them with human grades would
+grade part of the test set with a more lenient standard, so the human sample is used as a
+validity check and a sensitivity check (the order of the systems is unchanged with human grades).
+All settings are tuned on dev; test is used once per final configuration. Metrics are P@5, P@10,
+R@10, R@100, F1, MAP and nDCG@10, with a paired randomization test (Holm-corrected) and an
+incremental ablation. On the 16 scored test queries tuned BM25 reaches nDCG@10 0.663 and
+reciprocal rank fusion of BM25 and dense 0.677; only BM25F differs significantly from tuned BM25
+(it is worse).
 
 ## 5. Design decisions and trade-offs
 
 * **Own code for the core IR** (TF-IDF, BM25, fusion, PageRank, Rocchio): the course asks for it,
   and it keeps every score explainable. Libraries are used only to cross-check in tests.
-* **Fusion by rank (RRF) as the default**, because it needs no tuning of score scales; the
-  weighted linear variant is tuned on dev and reported next to it.
+* **Fusion by rank (RRF) as the default**, because it needs no calibration of score scales. Its
+  constant still has to be tuned: the published k = 60 scored about 0.44 on dev against 0.64 for k = 5,
+  because the dense ranking is weak and a large k lets agreement on low ranks outvote the top of
+  BM25. The weighted linear variant (0.55 BM25, 0.45 dense) is tuned on dev and reported next to it.
 * **LLM output never becomes a document.** HyDE text only reweights query terms, and the buying
   guide may only restate listed facts. This limits, but does not remove, the risk of invented
   content.
-* **Honest about unknowns.** A missing spec is `null`, a filter never matches on `null`, and the
-  judge is told that an unknown spec cannot be assumed to satisfy a requirement.
+* **Honest about unknowns.** A missing spec is `null` and a filter never matches on `null`. The
+  judge treats a spec the listing does not state as *unconfirmed*: never a 0 for that alone, but
+  never a 3 either (a first prompt that zeroed such phones was fixed, since only 23% of phones state
+  a price).
 * **Everything replayable.** Every LLM call is logged and replayed, so a rerun gives the same
   numbers and does not need an API key.
 
@@ -79,11 +87,14 @@ leave-one-out ablation `[results TBD]`.
 
 Existing ideas we implement and compare: TF-IDF, BM25, Rocchio, dense retrieval with sentence
 encoders, HyDE, RRF, PageRank. Weighting HyDE's expansion terms with Rocchio for a sparse
-retriever is **not ours**: Jedidi and Lin (2025) proposed and evaluated it, and we apply their
-idea to phone search `[verify the details against the paper before describing our variant]`.
+retriever is **not ours**: Jedidi and Lin (2025) proposed and evaluated it (their abstract: feedback
+algorithms such as Rocchio extract and weight the expansion terms of the HyDE document for sparse
+retrievers like BM25), and we apply that idea to phone search. We read their abstract, not the full
+paper, so the details of their experiments are not described here.
 
 What we contribute is the **combination and evaluation on a spec-heavy, review-rich product
 domain**: all of these rankers on one test collection with graded labels and a measured judge
 agreement, an ablation of what each adds, a reviewer-trust score evaluated under simulated
 attacks (own design, inspired by HITS), and a demo that exposes every component. We do not claim
-a new retrieval model `[confirm against results]`.
+a new retrieval model, and the results agree: on the test queries no system beats tuned BM25 by more
+than 0.03 nDCG@10, and none does so significantly.

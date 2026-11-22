@@ -1,7 +1,7 @@
 # 1. Introduction
 
-> **Status: first draft (owner: B).** Numbers marked `[TBD]` are filled in after Gate 3, when
-> results are frozen. Nothing in this section may state a result we have not measured.
+> **Status: final text (owner: B).** Every number below is from the frozen results: settings
+> tuned on the dev queries, test run once (`results/ablation_*.md`, `results/kappa.json`).
 
 ## 1.1 Motivation
 
@@ -37,22 +37,32 @@ against human labels, supplies the relevance judgements we evaluate with.
 
 ## 1.4 Contributions
 
-We list only what we can show; numbers in brackets are filled in at Gate 3 from the frozen
-results. None of the retrieval ideas below is new; the contribution is how they are combined,
-measured and made explainable.
+We list only what we can show. None of the retrieval ideas below is new; the contribution is
+how they are combined, measured and made explainable. Test numbers are nDCG@10 on the 16 of the
+18 test queries that have a relevant phone (the other two are excluded for every system).
 
 1. **A phone-search test collection**: 45 queries of four types (spec, aspect, model, vague),
    split into 27 dev and 18 test queries, with graded 0-3 judgements from an LLM judge and a
-   human-labelled sample on which agreement is measured (Cohen's kappa `[TBD]`).
+   human-labelled sample on which agreement is measured: on 89 pairs the judge agrees with the
+   human grades with Cohen's kappa 0.26 over the four grades (0.49 quadratic-weighted, 0.39 for
+   relevant versus not relevant), which is fair, not strong. Scoring the systems with the human
+   grades instead leaves their order unchanged.
 2. **A controlled comparison** of lexical (TF-IDF, BM25), dense, feedback-based and fused
-   retrieval on that collection, with an add-one and leave-one-out ablation showing what each
-   component adds `[TBD]`.
+   retrieval on that collection, with an ablation showing what each component adds. Fusing tuned
+   BM25 with dense retrieval gives 0.677 (reciprocal rank fusion) and 0.681 (weighted) against
+   0.663 for tuned BM25 on test, a gain that is not statistically significant; field-weighted BM25F
+   is significantly worse than BM25. No system beats tuned BM25 by more than 0.03.
 3. **An application of HyDE with Rocchio term weighting to phone search**, following Jedidi and
    Lin (2025), with every LLM call logged and replayable so that results do not depend on an
-   API key `[effect on nDCG@10 TBD]`.
+   API key. Tuned on dev, the best setting uses the generated listing alone (the Rocchio feedback
+   weight went to 0): 0.564 on test against 0.544 for plain TF-IDF, not significant. Rocchio
+   feedback on its own did not help (0.526).
 4. **A reviewer-trust score and a fake-review attack study** (bad-mouthing and ballot stuffing,
-   simulated) comparing it with raw, Bayesian and helpful-vote averages `[TBD]`, and the effect of
-   graph and trust priors on ranking quality `[TBD]`.
+   simulated) comparing it with raw, Bayesian and helpful-vote averages. It reduces how many
+   stars a phone gains or loses against plain fake accounts, but is worse than the raw average
+   against accounts that first copy the consensus. As ranking priors on tuned BM25, PageRank,
+   personalized PageRank and reviewer trust change test nDCG@10 by -0.003, +0.008 and +0.011,
+   none significant.
 5. **An explainable demo**: per-component switches, a per-result score breakdown, and an optional
    buying guide that may only restate listed facts and flags figures it cannot find in the data.
 
