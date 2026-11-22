@@ -34,9 +34,10 @@ pairs, written as 30,646 directed edges (`scripts/build_graph.py`,
 
 The graph is sparse because few reviewers rate more than one phone (8.5.1). Isolated phones
 still receive the teleport share of PageRank, so every phone has a score, but the prior
-can only separate the 38.5% of phones that are linked. Adding the semantic kNN edges (7.5),
-which need the dense embeddings, would connect every phone; this run uses co-review edges
-only.
+can only separate the 38.5% of phones that are linked. Section 8.5.4 also tests a second graph
+that adds the semantic kNN edges (7.5): each phone is linked to its 8 nearest neighbours by
+cosine similarity of the dense embeddings. That graph has 85,883 directed edges, no isolated
+phone and a single connected component of all 7,166 phones.
 
 As a sanity check, the phones with the highest PageRank are widely reviewed, long-selling
 models: the Samsung Galaxy S3 Mini (5,437 ratings), the BLU Advance 5.5 HD (3,960) and the
@@ -90,6 +91,33 @@ PageRank and trust pull in phones that were never judged, so their share of judg
 the top 10 falls (0.65 and 0.67 against 0.70 on dev), and those phones count as non-relevant.
 The dev losses for those two priors are therefore partly an artefact of pooling; personalized
 PageRank, which keeps the judged share at 0.70, is not affected.
+
+**Connecting every phone does not help.** To test whether the 61.5% of isolated phones explain
+the null result, we reran the two graph priors on the co-review + kNN graph (8.5.2), choosing
+$\lambda$ on dev from the same grid and running test once (`scripts/build_graph.py
+--embeddings`, `scripts/run_rerank.py --tag`).
+
+*Table 8.5e. Graph priors on the co-review graph and on the co-review + kNN graph. $p$ is the
+paired randomization test against tuned BM25, Holm-corrected over the two kNN rows.*
+
+| System | $\lambda$ | Dev nDCG@10 | Test nDCG@10 | Test $\Delta$ | $p$ (Holm) | Better / worse queries |
+|---|---:|---:|---:|---:|---:|---:|
+| BM25 tuned | – | 0.600 | 0.663 | – | – | – |
+| + PageRank, co-review | 0.1 | 0.582 | 0.660 | −0.003 | – | 3 / 3 |
+| + PageRank, co-review + kNN | 0.1 | 0.589 | 0.662 | −0.001 | 0.96 | 6 / 4 |
+| + Personalized PageRank, co-review | 0.1 | 0.586 | 0.671 | +0.008 | – | 6 / 1 |
+| + Personalized PageRank, co-review + kNN | 0.5 | 0.603 | 0.636 | −0.026 | 0.005 | 1 / 10 |
+
+Global PageRank is unchanged: its top phones are still the same widely reviewed models, and
+test nDCG@10 moves by 0.001. Personalized PageRank on the kNN graph is the only prior in this
+study that scored above tuned BM25 on dev (+0.003, at $\lambda = 0.5$, the largest weight
+tried), but on test the same setting is significantly worse: −0.026 nDCG@10, worse on 10 of the
+16 queries. With kNN edges the walk spreads from a query's top results to similar listings and
+brings about one new phone per query into the top 10, many of them unjudged (judged@10 falls
+from 0.62 to 0.59 on test), so pooling explains part of the loss, though not a loss on 10 of 16
+queries. The small dev gain did not carry over. The sparse co-review graph is therefore not why
+the graph priors fail: kNN edges are built from the same listing text that BM25 and dense
+retrieval already use, so they add no new evidence about relevance.
 
 ## 8.5.5 Review-attack study
 
