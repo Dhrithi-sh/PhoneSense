@@ -54,14 +54,42 @@ the quarter of reviews written by repeat reviewers.
 
 ## 8.5.4 Effect of the priors on ranking
 
-**[pending: needs relevance labels.]** The rows "PageRank rerank", "Personalized PR" and
-"Trust-weighted rerank" of the ablation table (8.3) report P@10, MAP and nDCG@10 for BM25
-reranked with each prior, with $\lambda$ tuned on the dev queries and applied once to the
-test queries. Until the labels exist, we can only report how much the priors reorder
-results. On the 27 dev queries with untuned BM25 and $\lambda = 0.2$, each prior changes on
-average 4 to 5 of the top-10 positions per query. The top result stays the same for 25 of 27
-queries with global PageRank, 26 of 27 with trust, and 19 of 27 with personalized PageRank,
-which reacts most because its prior is built from each query's own top results.
+Each prior reranks the tuned BM25 run ($k_1 = 1.2$, $b = 0.9$; 8.3) with
+$s' = (1-\lambda)\,\hat s + \lambda\,p$ (7.8). $\lambda$ was chosen from
+$\{0.1, 0.2, 0.3, 0.5\}$ by nDCG@10 on the dev queries, and the test queries were run once with
+the chosen value (`scripts/run_rerank.py`). Queries with no relevant phone are left out of the
+averages (4 dev, 2 test; 8.1), leaving 23 dev and 16 test queries.
+
+*Table 8.5d. Reranking tuned BM25 with each prior. $\Delta$ is the change in nDCG@10 against
+tuned BM25; $p$ is the paired randomization test, Holm-corrected over the three priors. No
+difference is significant at 0.05.*
+
+| System | $\lambda$ | Dev nDCG@10 | Test P@10 | Test MAP | Test nDCG@10 | Test $\Delta$ | $p$ (Holm) | Better / worse queries |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| BM25 tuned | – | 0.600 | 0.381 | 0.591 | 0.663 | – | – | – |
+| + PageRank | 0.1 | 0.582 | 0.375 | 0.594 | 0.660 | −0.003 | 0.78 | 3 / 3 |
+| + Personalized PageRank | 0.1 | 0.586 | 0.381 | 0.598 | 0.671 | +0.008 | 0.29 | 6 / 1 |
+| + Reviewer trust | 0.2 | 0.590 | 0.381 | 0.604 | 0.674 | +0.011 | 0.12 | 8 / 1 |
+
+**The priors neither help nor hurt measurably.** On dev, every prior and every $\lambda$
+scored below tuned BM25, and accuracy fell steadily as $\lambda$ grew (at $\lambda = 0.5$,
+nDCG@10 drops to 0.49-0.56). On test, with the dev-chosen weights, trust and personalized
+PageRank come out slightly ahead and global PageRank slightly behind. The test gains are small,
+they reverse the dev result, and none survives the correction for three comparisons (trust's
+unadjusted $p$ is 0.04), so we read them as noise on 16 queries rather than as an
+improvement.
+
+**What the priors change.** At the chosen weights the priors reorder results more than they
+replace them. Trust changes 4.3 of the top-10 positions per dev query (4.9 on test) but brings
+only about one new phone into the top 10; global PageRank never changes the top result on dev
+or test; personalized PageRank only reshuffles phones BM25 already ranked in the top 10
+(0.1 new phones per query), because its seeds are those same results.
+
+**Pooling favours the baseline.** The reranked runs were not in the judging pool (8.1). Global
+PageRank and trust pull in phones that were never judged, so their share of judged phones in
+the top 10 falls (0.65 and 0.67 against 0.70 on dev), and those phones count as non-relevant.
+The dev losses for those two priors are therefore partly an artefact of pooling; personalized
+PageRank, which keeps the judged share at 0.70, is not affected.
 
 ## 8.5.5 Review-attack study
 

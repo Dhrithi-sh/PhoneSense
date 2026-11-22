@@ -13,14 +13,15 @@ Introduction:
    split 27 dev / 18 test, and labelled pooled results on a 0-3 scale with an LLM judge whose
    agreement with human labels is Cohen's kappa `[TBD]`.
 2. **Retrieval comparison.** On the test queries the best system reaches nDCG@10 `[TBD]`,
-   against `[TBD]` for tuned BM25. `[TBD: one sentence on which component helped most and
+   against 0.663 for tuned BM25. `[TBD: one sentence on which component helped most and
    which did not help, from the add-one and leave-one-out tables.]`
 3. **HyDE with Rocchio weighting.** `[TBD: effect on nDCG@10 versus plain Rocchio.]`
 4. **Graph and trust signals.**
    * The co-review graph links only 38.5% of the phones, because 88.4% of reviewers wrote a
      single review. PageRank on it acts as a popularity signal: its top phones are the most
-     widely reviewed models. As a reranking prior at $\lambda = 0.2$ it changes 4 to 5 of the
-     top-10 positions per query; whether that helps relevance is `[TBD]`.
+     widely reviewed models. As reranking priors on tuned BM25, global PageRank, personalized
+     PageRank and reviewer trust change test nDCG@10 by −0.003, +0.008 and +0.011; none of
+     these differences is significant, and on dev all three were slightly worse than BM25.
    * The reviewer-trust score converges in 9 iterations and moves phone quality by only 0.09
      stars on average away from the Bayesian average, because only the quarter of reviews
      written by repeat reviewers carry information about reliability.
@@ -85,7 +86,8 @@ builds a normal-looking history removes even that.
 * LLM-based components (HyDE, the judge, the buying guide) depend on one external model and its
   version. All calls are logged and can be replayed, but a different model would give different
   labels and expansions.
-* The reranking weight $\lambda$ is a single value chosen on 27 dev queries.
+* The reranking weight $\lambda$ is a single value per prior, chosen on 23 dev queries (the
+  4 with no relevant phone drop out), and the reranked runs were not part of the judging pool.
 
 ## Future work
 
