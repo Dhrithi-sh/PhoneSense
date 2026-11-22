@@ -11,7 +11,7 @@ reviews and reviewers) better than plain ranking, while keeping retrieval qualit
 Information Retrieval final project. Deadline: **Sat 21 Nov 2026**. Submission: a ZIP of
 this repo plus the report.
 
-All file formats and interfaces are defined in **[CONTRACT.md](CONTRACT.md)**. Read it first.
+All file formats and interfaces are defined in **[CONTRACT.md](CONTRACT.md)**.
 
 ## Team
 
