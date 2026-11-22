@@ -113,7 +113,14 @@ bm25:
     title_grid: [1.0, 2.0, 3.0, 5.0]
     features_grid: [1.0, 1.5, 2.0]
   # BEGIN bm25.tuned (written by scripts/tune_bm25.py on dev; do not edit by hand)
-  tuned: null
+  tuned:
+    k1: 1.2
+    b: 0.9
+    field_weights: {title: 1.0, features: 1.0, description: 1.0}
+    objective: nDCG@10
+    dev_bm25: 0.6004
+    dev_bm25f: 0.3303
+    n_dev_queries: 27
   # END bm25.tuned
 
 # T06 Boolean spec filters (phonesense/retrieval/filters.py).
@@ -131,5 +138,5 @@ phrase:
                  fingerprint sensor, dual sim, headphone jack, refresh rate, water resistant,
                  screen protector, unlocked phone]
   # BEGIN phrase.tuned (written by scripts/tune_phrase.py on dev; do not edit by hand)
-  tuned: null
+  tuned: {weight: 0.5, objective: nDCG@10, dev_score: 0.598, dev_score_w0: 0.6004, n_dev_queries_with_phrases: 2}
   # END phrase.tuned

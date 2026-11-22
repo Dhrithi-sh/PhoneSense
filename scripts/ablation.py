@@ -87,15 +87,41 @@ def match_bases(patterns: Any, avail: dict[str, set[str]], exclude: Any = ()) ->
     return []
 
 
+def match_bases_all(patterns: Any, avail: dict[str, set[str]], exclude: Any = ()) -> list[str]:
+    """Every base matching the first pattern that matches anything, in either split."""
+    every = avail["dev"] | avail["test"]
+    for pat in _patterns(patterns):
+        hits = sorted(
+            b
+            for b in every
+            if fnmatch.fnmatchcase(b, pat)
+            and not any(fnmatch.fnmatchcase(b, e) for e in _patterns(exclude))
+        )
+        if hits:
+            return hits
+    return []
+
+
+class AmbiguousRunError(ValueError):
+    """A row's ``run`` matches more than one run file in a split."""
+
+
 def resolve_rows(spec: dict, avail: dict[str, set[str]]) -> list[dict[str, Any]]:
+    """Attach the run base name to each row.
+
+    No match -> ``base = None`` (the row is pending). More than one matching file in the same
+    split -> :class:`AmbiguousRunError` listing the candidates (pin the exact name in
+    ablation.yaml); the table must never depend on sort order.
+    """
     rows = []
     for row in spec["rows"]:
         hits = match_bases(row["run"], avail, row.get("exclude"))
-        if len(hits) > 1:
-            print(
-                f"warning: row {row['label']!r} matches {hits}; using {hits[0]} "
-                "(pin the exact name in ablation.yaml)",
-                file=sys.stderr,
+        every = match_bases_all(row["run"], avail, row.get("exclude"))
+        if len(every) > 1:
+            files = ", ".join(f"{h}_{s}.run" for s in SPLITS for h in every if h in avail[s])
+            raise AmbiguousRunError(
+                f"row {row['label']!r} (run: {row['run']!r}) matches {len(every)} runs: "
+                f"{files}. Pin the exact run name in ablation.yaml."
             )
         rows.append({**row, "base": hits[0] if hits else None})
     return rows
@@ -598,7 +624,13 @@ def main(argv: list[str] | None = None) -> int:
     results_dir = args.results_dir or get_path("results_dir")
     queries_path = args.queries or get_path("queries")
     avail = available_runs(runs_dir)
-    rows = resolve_rows(spec, avail)
+    try:
+        rows = resolve_rows(spec, avail)
+    except AmbiguousRunError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
+    for r in rows:
+        print(f"  {r['label']:24s} -> {r['base'] or 'PENDING (no matching run)'}")
     bases = list(dict.fromkeys(r["base"] for r in rows if r["base"]))
     try:
         qrels_path = resolve_qrels_path(args.qrels)
