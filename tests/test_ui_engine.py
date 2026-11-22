@@ -180,63 +180,48 @@ def test_fused_breakdown_lists_every_selected_system(engine):
         assert [p.key for p in res.breakdown] == ["tfidf", "rocchio"]
 
 
-# ---------------------------------------------------------------------------- BM25 hook
+# ---------------------------------------------------------------------------- BM25 toggle
+
+HAS_BM25 = importlib.util.find_spec("phonesense.retrieval.bm25") is not None
 
 
-@pytest.fixture
-def fake_bm25(monkeypatch):
-    """Install a stand-in ``phonesense.retrieval.bm25`` module with one Retriever class."""
-    import sys
-    import types
-    from importlib.machinery import ModuleSpec
+@pytest.mark.skipif(not HAS_BM25, reason="BM25 module not in this build")
+def test_bm25_toggle_runs_the_real_retriever_with_the_tuned_settings(engine):
+    from phonesense.config import get_config
 
-    from phonesense.retrieval.base import Retriever
-
-    def install(*class_names, use_index=True):
-        module = types.ModuleType("phonesense.retrieval.bm25")
-        module.__spec__ = ModuleSpec("phonesense.retrieval.bm25", None)
-        for name in class_names:
-            body = {"name": "bm25_fake", "fit": lambda self, phones: None,
-                    "search": lambda self, query, k=100: [("B0TEST0002", 3.5)]}
-            if use_index:
-                body["fit_index"] = lambda self, index: setattr(self, "got_index", index)
-            cls = type(name, (Retriever,), body)
-            cls.__module__ = module.__name__
-            setattr(module, name, cls)
-        monkeypatch.setitem(sys.modules, "phonesense.retrieval.bm25", module)
-        return module
-
-    return install
+    r = engine.search("compact camera battery", {"bm25": True})
+    assert r.used == ["bm25"] and r.notes == [] and r.results
+    tuned = get_config().get("bm25", {}).get("tuned")
+    bm25 = engine._bm25
+    if tuned:
+        assert (bm25.k1, bm25.b, bm25.name) == (tuned["k1"], tuned["b"], "bm25_tuned")
+    assert bm25.index is engine.tfidf.index  # shares our index
 
 
-def test_bm25_toggle_uses_the_retriever_found_in_the_module(engine, fake_bm25):
-    fake_bm25("Bm25Retriever")
-    assert engine.unavailable_reason("bm25") is None
-    r = engine.search("compact camera", {"bm25": True})
-    assert r.used == ["bm25"] and r.notes == []
-    assert [x.doc_id for x in r.results] == ["B0TEST0002"] and r.results[0].score == 3.5
-    assert engine._bm25.got_index is engine.tfidf.index  # shares our index when it can
+@pytest.mark.skipif(not HAS_BM25, reason="BM25 module not in this build")
+def test_bm25_falls_back_to_the_textbook_defaults_without_tuned_settings(engine, monkeypatch):
+    import phonesense.ui.engine as eng
+
+    monkeypatch.setattr(eng, "get_config", lambda: {"bm25": {"default": {"k1": 1.5, "b": 0.5}}})
+    engine.search("compact camera battery", {"bm25": True})
+    assert (engine._bm25.k1, engine._bm25.b, engine._bm25.name) == (1.5, 0.5, "bm25_default")
 
 
-def test_bm25_without_fit_index_is_fitted_on_the_phones(engine, fake_bm25):
-    fake_bm25("Bm25Retriever", use_index=False)
-    assert engine.search("compact camera", {"bm25": True}).used == ["bm25"]
+@pytest.mark.skipif(not HAS_BM25, reason="BM25 module not in this build")
+def test_bm25_and_tfidf_can_be_fused_and_both_appear_in_the_breakdown(engine):
+    if importlib.util.find_spec("phonesense.retrieval.fusion") is None:
+        pytest.skip("fusion module not in this build")
+    toggles = {"tfidf": True, "bm25": True, "fusion": True}
+    r = engine.search("compact camera battery", toggles)
+    assert r.used == ["tfidf", "bm25"]
+    assert all([p.key for p in res.breakdown] == ["tfidf", "bm25"] for res in r.results)
 
 
-def test_bm25_module_with_two_retrievers_is_skipped_with_a_note(engine, fake_bm25):
-    fake_bm25("BM25A", "BM25B")
-    r = engine.search("compact camera", {"bm25": True})
-    assert r.used == ["tfidf"] and any("found 2" in n for n in r.notes)
-
-
-@pytest.mark.skipif(
-    importlib.util.find_spec("phonesense.retrieval.bm25") is not None,
-    reason="only meaningful while BM25 is missing",
-)
+@pytest.mark.skipif(HAS_BM25, reason="only meaningful while BM25 is missing")
 def test_missing_bm25_is_reported_not_raised(engine):
     assert "not in this build" in engine.unavailable_reason("bm25")
     r = engine.search("compact camera", {"bm25": True})
-    assert r.used == ["tfidf"] and any("BM25 skipped" in n for n in r.notes)
+    assert r.used == ["tfidf"] and any("BM25" in n for n in r.notes)
 
 
 # ---------------------------------------------------------------------------- priors
@@ -339,3 +324,40 @@ def test_an_unexpected_error_in_one_system_is_a_note_not_a_crash(engine):
     only = engine.search("compact camera", {"rocchio": True})
     assert only.used == ["tfidf"] and any("Falling back to TF-IDF" in n for n in only.notes)
     assert engine.unavailable_reason("rocchio") is None  # a runtime failure is retried next time
+
+
+# ---------------------------------------------------------------------------- tuned fusion
+
+
+@pytest.mark.skipif(not HAS_FUSION, reason="fusion module not in this build")
+def test_fusion_uses_the_dev_tuned_rrf_constant_from_the_config(engine, monkeypatch):
+    import phonesense.ui.engine as eng
+    from phonesense.retrieval.fusion import reciprocal_rank_fusion
+
+    a = [("d1", 3.0), ("d2", 2.0), ("d3", 1.0)]
+    b = [("d3", 0.9), ("d2", 0.5), ("d1", 0.1)]
+    monkeypatch.setattr(eng, "get_config", lambda: {"fusion": {"rrf_k": 5}})
+    assert engine._fuse([a, b], "rrf", 10, ["tfidf", "rocchio"]) == reciprocal_rank_fusion(
+        [a, b], 5, depth=10
+    )
+    monkeypatch.setattr(eng, "get_config", lambda: {})  # no config: the published default
+    assert engine._fuse([a, b], "rrf", 10, ["tfidf", "rocchio"]) == reciprocal_rank_fusion(
+        [a, b], 60, depth=10
+    )
+
+
+@pytest.mark.skipif(not HAS_FUSION, reason="fusion module not in this build")
+def test_linear_fusion_uses_tuned_weights_only_for_the_bm25_dense_pair(engine, monkeypatch):
+    import phonesense.ui.engine as eng
+    from phonesense.retrieval.fusion import weighted_linear_fusion
+
+    a = [("d1", 3.0), ("d2", 2.0), ("d3", 1.0)]
+    b = [("d3", 0.9), ("d2", 0.5), ("d1", 0.1)]
+    cfg = {"fusion": {"tuned": {"linear": {"weights": [0.9, 0.1]}}}}
+    monkeypatch.setattr(eng, "get_config", lambda: cfg)
+    assert engine._fuse([a, b], "linear", 10, ["bm25", "dense"]) == weighted_linear_fusion(
+        [a, b], [0.9, 0.1], depth=10
+    )
+    assert engine._fuse([a, b], "linear", 10, ["tfidf", "dense"]) == weighted_linear_fusion(
+        [a, b], None, depth=10
+    )  # other pairs: equal weights
