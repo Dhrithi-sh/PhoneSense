@@ -17,7 +17,7 @@ help on this task, including how well the ranking holds up against fake reviews.
 | O1 | Create a reproducible test collection: 45 queries of four types (spec, aspect, model, vague), a fixed dev/test split, and graded relevance judgements (0-3) from an LLM judge whose agreement with people is measured (Cohen's kappa). | Experiments: test collection |
 | O2 | Implement and compare lexical retrieval (TF-IDF lnc.ltc, BM25), dense retrieval, Rocchio feedback and HyDE-style expansion with the same metrics (P@5, P@10, R@10, R@100, F1, MAP, nDCG@10). | Experiments: retrieval |
 | O3 | Combine the rankers with rank fusion (RRF, weighted linear) and measure what each component adds (add-one and leave-one-out ablation). | Experiments: fusion and ablation |
-| O4 | Add graph and reputation priors (PageRank over the "bought together" graph, reviewer-trust score) and measure their effect on ranking quality. | Experiments: graph |
+| O4 | Add graph and reputation priors (PageRank over the co-review graph, reviewer-trust score) and measure their effect on ranking quality. | Experiments: graph |
 | O5 | Measure how much simulated fake reviews (bad-mouthing, ballot stuffing) move a phone under raw average, Bayesian average, helpful-vote average and reviewer trust. | Experiments: attacks |
 | O6 | Deliver a demo with per-component toggles and a per-result score breakdown, so every ranking can be explained. | Proposed model: demo |
 

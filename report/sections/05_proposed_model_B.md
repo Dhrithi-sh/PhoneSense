@@ -28,8 +28,9 @@ every stage with the same metrics.
 2. **Positional inverted index** over the phone text (title, features, description), with
    document lengths and a forward index. The same text analysis is used for phones and queries.
 3. **Sentence embeddings** of every phone, cached on disk, for dense retrieval.
-4. **Phone graph** from "bought together" links and nearest neighbours in embedding space, for
-   PageRank.
+4. **Phone graph** from co-review links (two phones rated by at least two of the same
+   reviewers), for PageRank. Nearest-neighbour edges in embedding space are supported but not
+   used in the final run.
 5. **Reviewer trust**: an iterative score in which phone quality and reviewer reliability
    reinforce each other, compared with the raw, Bayesian and helpful-vote averages.
 
@@ -43,7 +44,7 @@ every stage with the same metrics.
 | HyDE-style expansion | An LLM writes a hypothetical listing; its terms are weighted in with Rocchio. | Bridges the vocabulary gap ("lasts two days" versus "6000mAh"). Only reweights terms, so invented specs never reach the user. |
 | Rank fusion (RRF, weighted linear) | Merges the rankings of the selected systems. | Systems fail on different queries; fusion uses ranks, so scores need no calibration. |
 | Boolean spec filters | Keeps only phones that satisfy numeric constraints; unknown values never pass. | "Under $300 with 8 GB RAM" is a constraint, not a word match. |
-| Prior rerank (PageRank, trust) | `(1 - lambda) * score + lambda * prior` on the top 100; never adds phones. | Uses information that text does not contain: what is bought together, and which ratings to trust. |
+| Prior rerank (PageRank, trust) | `(1 - lambda) * score + lambda * prior` on the top 100; never adds phones. | Uses information that text does not contain: which phones the same people review, and which ratings to trust. |
 
 Every stage can be switched on and off in the demo, and every result shows a **score
 breakdown** (rank and raw score from each selected system, plus the prior values), so a ranking

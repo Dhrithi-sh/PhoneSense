@@ -30,7 +30,7 @@ BOXES = {
     "prep": (2.2, 5.0, 2.0, 0.9, "Phone filter +\nspec parsing", "A"),
     "index": (4.5, 5.0, 1.9, 0.9, "Positional\ninverted index", "A"),
     "emb": (6.7, 5.0, 1.9, 0.9, "Sentence\nembeddings (cache)", "B"),
-    "graph": (9.0, 5.0, 2.1, 0.9, "Phone graph\n(bought together, kNN)", "C"),
+    "graph": (9.0, 5.0, 2.1, 0.9, "Phone graph\n(co-review)", "C"),
     "trustb": (11.5, 5.0, 2.0, 0.9, "Reviewer trust\n(HITS-style)", "C"),
     # ---- online lane
     "query": (0.2, 2.9, 1.5, 0.9, "User query", "io"),
