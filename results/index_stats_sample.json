@@ -1,0 +1,57 @@
+{
+  "index": "sample",
+  "phones_path": "C:\\Users\\dhrit\\PhoneSense\\data\\processed\\sample\\phones.jsonl",
+  "index_dir": "C:\\Users\\dhrit\\PhoneSense\\data\\index\\sample",
+  "format_version": 1,
+  "analyzer": {
+    "version": 1,
+    "stopwords": true,
+    "stem": true,
+    "stemmer": "porter"
+  },
+  "analyzer_hash": "c51ccdbd0e2d1dab",
+  "N": 500,
+  "vocab_size": {
+    "title": 1375,
+    "features": 3327,
+    "description": 5003,
+    "text": 6373
+  },
+  "total_postings": {
+    "title": 6993,
+    "features": 27549,
+    "description": 36130,
+    "text": 61423
+  },
+  "total_positions": {
+    "title": 7215,
+    "features": 34191,
+    "description": 67856,
+    "text": 109262
+  },
+  "avg_doc_len": {
+    "title": 14.43,
+    "features": 68.382,
+    "description": 135.712,
+    "text": 218.524
+  },
+  "build_seconds": 0.753,
+  "save_seconds": 0.176,
+  "load_seconds": 0.21,
+  "size_bytes": {
+    "vbyte": {
+      "postings": 569665,
+      "lexicon": 376671,
+      "meta": 13140,
+      "total": 959476
+    },
+    "uncompressed_uint32": {
+      "postings": 1930856,
+      "lexicon": 395261,
+      "meta": 13139,
+      "total": 2339256
+    },
+    "on_disk_total": 959476
+  },
+  "postings_compression_ratio": 3.389
+}

@@ -1,0 +1,7 @@
+{
+  "run": "tfidf_lnc.ltc_test",
+  "N": 7166,
+  "queries": 18,
+  "mean_ms": 9.4241,
+  "p95_ms": 15.6685
+}

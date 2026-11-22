@@ -3,6 +3,34 @@
 
 seed: 42
 
+# C: reviewer trust (T19, phonesense/trust/trust.py). Kept near the top so that blocks other
+# members append at the end of this file merge without conflicts.
+trust:
+  bayesian_prior_weight: 10   # C: phone prior weight, also used by the Bayesian baseline
+  prior_strength: 3.0         # c: reviews it takes to outweigh the reviewer prior
+  prior_reliability: 0.5      # r0: reliability of a brand-new account
+  max_iterations: 50
+  tol: 1.0e-6
+
+# C: phone graph and PageRank (T16, T17; phonesense/graph/).
+graph:
+  damping: 0.85               # d = 1 - epsilon
+  tol: 1.0e-8                 # stop when the L1 change is below this
+  knn_k: 8                    # kNN edges per phone (needs dense embeddings)
+  co_review_min_shared: 2     # reviewers who must have rated both phones
+
+# C: attack experiments (T20, T21; phonesense/attacks/, scripts/run_attacks.py).
+attacks:
+  sizes_percent: [0, 1, 5, 10, 20, 50, 100]   # fake reviews as % of the target's reviews
+  seeds: [1, 2, 3, 4, 5]
+  targets_per_kind: 15        # targets per attack kind and seed
+  min_target_reviews: 20      # phones with fewer reviews are never targets
+
+# C: prior reranking (T18; phonesense/graph/rerank.py, scripts/run_rerank.py).
+rerank:
+  lambdas: [0.1, 0.2, 0.3, 0.5]   # weight of the prior; tune on dev runs only
+  ppr_seeds: 10                    # top results that seed personalized PageRank
+
 dataset:
   name: amazon_reviews_2023          # McAuley Lab, Amazon Reviews 2023
   source: McAuley-Lab/Amazon-Reviews-2023
@@ -53,7 +81,8 @@ paths:
   handcheck_specs: results/handcheck_specs.csv
   handcheck_filter: results/handcheck_filter.csv
   handcheck_summary: results/handcheck_summary.json
-  llm_logs: runs/llm_logs         # committed: every LLM call is logged here (GUIDE 7)
+  llm_logs: runs/llm_logs         # gitignored: the logs hold listing text (team-only data), kept in the private data repo
+  dense_cache: .cache/dense
 
 # T03 text analysis (phonesense/index/analyzer.py). Used for documents AND queries; changing
 # any of these makes saved indexes stale (rebuild with scripts/build_index.py --force).
@@ -63,6 +92,20 @@ analyzer:
   stemmer: porter     # porter (NLTK algorithm, no download) | light (plural-only S-stemmer)
 
 # ---- B: LLM (T09, T15). Keys live in .env (see .env.example), never here. ----
+# ---- B: query expansion, tuned on the 27 DEV queries with scripts/tune_prf.py (T14, T15) ----
+# nDCG@10 with the harness (queries without a relevant phone excluded). Test was run once with
+# these settings. Both beat or approach their TF-IDF base only partly: see the dev numbers.
+prf:
+  tfidf_dev_ndcg10: 0.5224          # the base both build on (plain TF-IDF lnc.ltc)
+  rocchio:
+    default: {m: 10, beta: 0.75, n_terms: 20, dev_ndcg10: 0.4802}
+    tuned:   {m: 10, beta: 0.1, n_terms: 50, dev_ndcg10: 0.5074}   # best beta is the smallest tried:
+    note: every positive beta scored below plain TF-IDF, so feedback did not help on this collection
+  hyde:
+    default: {m: 10, beta: 0.75, n_terms: 30, delta: 0.75, dev_ndcg10: 0.5328}
+    tuned:   {m: 10, beta: 0.0, n_terms: 30, delta: 0.35, dev_ndcg10: 0.5862}   # no Rocchio feedback
+    llm: {provider: groq, model: openai/gpt-oss-20b}   # hypothetical listings are replayed from logs
+
 llm:
   provider: gemini                # gemini | openai
   models:                         # check the names against the provider before the first run
@@ -74,3 +117,72 @@ llm:
 retrieval:
   default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)
   tfidf_field: text  # T04 TF-IDF lnc.ltc field: text | title | features | description
+
+# T11 evaluation harness (phonesense/eval/). Binary metrics: grade >= threshold is relevant
+# (must stay equal to schemas.RELEVANCE_THRESHOLD, CONTRACT.md 4.5).
+eval:
+  relevance_threshold: 2
+  permutations: 10000   # paired randomization test (seed = top-level seed)
+  alpha: 0.05
+
+# T05 BM25 (phonesense/retrieval/bm25.py, scripts/tune_bm25.py, scripts/run_baselines.py).
+bm25:
+  default: {k1: 1.2, b: 0.75}
+  query_tf: once        # once (each distinct query term counts 1) | k3
+  k3: 8.0
+  field_weights: {title: 3.0, features: 1.5, description: 1.0}   # BM25F-lite defaults
+  tuning:               # dev queries only; scripts/tune_bm25.py refuses --split test
+    objective: nDCG@10
+    k1_grid: [0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+    b_grid: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    title_grid: [1.0, 2.0, 3.0, 5.0]
+    features_grid: [1.0, 1.5, 2.0]
+  # BEGIN bm25.tuned (written by scripts/tune_bm25.py on dev; do not edit by hand)
+  tuned:
+    k1: 1.2
+    b: 0.9
+    field_weights: {title: 1.0, features: 1.0, description: 1.0}
+    objective: nDCG@10
+    dev_bm25: 0.6004
+    dev_bm25f: 0.3303
+    n_dev_queries: 27
+  # END bm25.tuned
+
+# T06 Boolean spec filters (phonesense/retrieval/filters.py).
+filters:
+  compact_max_screen_in: 6.2   # "compact" / "small" -> screen_in <= this
+  screen_tolerance_in: 0.2     # "6.5 inch" -> 6.3 <= screen_in <= 6.7
+  small_ram_gb: 16             # a bare "<N>gb" with N below this is RAM, otherwise storage
+  post_depth: 1000             # post-filter mode retrieves this many, then filters
+
+# T07 phrase boost (phonesense/retrieval/positional.py, scripts/tune_phrase.py).
+phrase:
+  weight: 1.0                  # used until phrase.tuned is written
+  weight_grid: [0.5, 1.0, 2.0, 4.0]
+  auto_phrases: [wireless charging, fast charging, battery life, night mode, face unlock,
+                 fingerprint sensor, dual sim, headphone jack, refresh rate, water resistant,
+                 screen protector, unlocked phone]
+  # BEGIN phrase.tuned (written by scripts/tune_phrase.py on dev; do not edit by hand)
+  tuned: {weight: 0.5, objective: nDCG@10, dev_score: 0.598, dev_score_w0: 0.6004, n_dev_queries_with_phrases: 2}
+  # END phrase.tuned
+
+# ---- B: dense retrieval (T12) ----
+dense:
+  model: sentence-transformers/all-MiniLM-L6-v2
+  batch_size: 64
+  cache_dir: .cache/dense     # git-ignored (.cache/); keyed by model + collection hash
+
+# ---- B: rank fusion (T13). Tune on dev queries only; test is used once per final setting. ----
+fusion:
+  method: rrf        # rrf | linear (min-max normalised weighted sum)
+  rrf_k: 5           # RRF constant, tuned on dev for BM25 tuned + dense (60 is the published default)
+  depth: 100         # documents taken from each system before fusing (<= 100)
+  weights: null      # per-system weights, null = equal; tuned linear weights are under tuned.linear
+  # Tuned on the 27 DEV queries with scripts/tune_fusion.py (nDCG@10, gain 2^g-1, the tuner's own
+  # computation over queries with any graded phone). Test was not used. Written by hand from
+  # results/fusion_dev.json; re-tune if the systems or the qrels change.
+  tuned:
+    systems: [bm25_tuned, dense_sentence-transformers-all-minilm-l6-v2]   # order of the weights
+    alone_dev_ndcg10: {bm25_tuned: 0.6060, dense: 0.4690}
+    rrf: {k: 5, dev_ndcg10: 0.6422, k60_dev_ndcg10: 0.4390}   # k=60 is much worse here
+    linear: {weights: [0.55, 0.45], dev_ndcg10: 0.6215, equal_weights_dev_ndcg10: 0.6103}

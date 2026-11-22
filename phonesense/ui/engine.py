@@ -6,7 +6,7 @@ ranking into displayable results lives here.
 Systems (toggles in the sidebar), in priority order:
 
 * ``tfidf``   TF-IDF lnc.ltc (always available),
-* ``bm25``    BM25 (``phonesense.retrieval.bm25``, T05; picked up automatically once it exists),
+* ``bm25``    BM25 with the k1 and b tuned on dev (``phonesense.retrieval.bm25``, T05),
 * ``rocchio`` TF-IDF + Rocchio pseudo-relevance feedback,
 * ``hyde``    Rocchio + an LLM-written hypothetical listing (needs a key in ``.env`` or logged
               answers, see ``phonesense/llm/client.py``),
@@ -38,12 +38,11 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from phonesense.config import get_path
+from phonesense.config import get_config, get_path
 from phonesense.index import InvertedIndex, index_path
 from phonesense.io import Ranking, read_phones
 from phonesense.llm.buying_guide import BuyingGuide, GuideResult
 from phonesense.llm.client import LLMClient, LLMError
-from phonesense.retrieval.base import Retriever
 from phonesense.retrieval.hyde import HydeGenerator, HydeRetriever
 from phonesense.retrieval.rocchio import RocchioRetriever
 from phonesense.retrieval.tfidf import TfidfRetriever
@@ -96,7 +95,7 @@ class Result:
 COMPONENTS = ("tfidf", "bm25", "rocchio", "hyde", "dense")  # priority order
 LABELS = {
     "tfidf": "TF-IDF",
-    "bm25": "BM25",
+    "bm25": "BM25 (tuned)",
     "rocchio": "Rocchio feedback",
     "hyde": "HyDE expansion",
     "dense": "Dense (embeddings)",
@@ -240,30 +239,17 @@ class SearchEngine:
         return self._dense
 
     def _get_bm25(self):
-        """Instantiate the BM25 retriever from ``phonesense.retrieval.bm25``.
-
-        The module is written by A (T05). We do not depend on its class name: we take the
-        ``Retriever`` subclass defined in it, build it without arguments and share our index
-        when it can use one (``fit_index``, like ``TfidfRetriever``), else fit it on the phones.
-        """
+        """BM25 with the k1 and b tuned on dev (``bm25.tuned`` in config.yaml, T05), or the
+        textbook defaults if nothing is tuned. Shares our index, so nothing is re-read."""
         if self._bm25 is None:
             module = importlib.import_module("phonesense.retrieval.bm25")
-            classes = [
-                obj for obj in vars(module).values()
-                if isinstance(obj, type) and issubclass(obj, Retriever)
-                and obj is not Retriever and obj.__module__ == module.__name__
-            ]
-            if len(classes) != 1:
-                found = len(classes)
-                raise ImportError(
-                    f"expected one Retriever class in phonesense.retrieval.bm25, found {found}"
-                )
-            retriever = classes[0]()
-            if hasattr(retriever, "fit_index"):
-                retriever.fit_index(self.tfidf.index)
-            else:
-                retriever.fit(self._phone_list)
-            self._bm25 = retriever
+            cfg = get_config().get("bm25", {})
+            tuned = cfg.get("tuned")
+            params = tuned or cfg.get("default") or {"k1": 1.2, "b": 0.75}
+            self._bm25 = module.BM25Retriever(
+                params["k1"], params["b"], index=self.tfidf.index,
+                name="bm25_tuned" if tuned else "bm25_default",
+            )
         return self._bm25
 
     def write_guide(self, query_text: str, results: list[Result]) -> GuideResult:
@@ -319,11 +305,17 @@ class SearchEngine:
                               p.avg_rating, p.rating_count, score, parts))
         return out
 
-    def _fuse(self, rankings: list[Ranking], method: str, k: int) -> Ranking:
+    def _fuse(self, rankings: list[Ranking], method: str, k: int, used: list[str]) -> Ranking:
+        """Fuse with the settings tuned on dev (``fusion`` block of config.yaml): the RRF constant,
+        and for linear fusion the tuned weights when exactly BM25 and dense are fused (the pair
+        they were tuned for), otherwise equal weights."""
         fusion = importlib.import_module("phonesense.retrieval.fusion")
+        cfg = get_config().get("fusion", {})
         if method == "linear":
-            return fusion.weighted_linear_fusion(rankings, depth=k)
-        return fusion.reciprocal_rank_fusion(rankings, depth=k)
+            tuned = (cfg.get("tuned") or {}).get("linear", {}).get("weights")
+            weights = tuned if tuned and used == ["bm25", "dense"] else None
+            return fusion.weighted_linear_fusion(rankings, weights, depth=k)
+        return fusion.reciprocal_rank_fusion(rankings, int(cfg.get("rrf_k", 60)), depth=k)
 
     def search(
         self,
@@ -382,7 +374,7 @@ class SearchEngine:
         else:
             fusion_reason = self.unavailable_reason("fusion")
             if toggles.get("fusion") and fusion_reason is None:
-                final = self._fuse([rankings[u] for u in used], fusion_method, depth)
+                final = self._fuse([rankings[u] for u in used], fusion_method, depth, used)
             else:
                 why = "fusion is off" if fusion_reason is None else f"{fusion_reason}"
                 notes.append(
