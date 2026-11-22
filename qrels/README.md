@@ -64,11 +64,21 @@ wrong parsed specs shown to the judge (for example `release_year=2021` for a lis
 With 89 pairs, one human per pair and instructions that mirror the judge's rubric, the estimate
 is noisy and probably flattering; say so in the report.
 
-**`qrels.txt` is still the LLM labels only.** Replacing the LLM grade with the human grade on these
-89 pairs (50 would change) would grade part of the test set with a different, more lenient
-standard than the rest. Options: keep `qrels.txt` = `llm.txt` and report the human sample as a
-validity check plus a sensitivity analysis (do the system rankings change if the 89 pairs use the
-human grades?), or merge with `python scripts/kappa.py --merge`. The team decides.
+**Decision: `qrels.txt` stays the LLM labels only** (option A). Replacing the LLM grade with the
+human grade on these 89 pairs (50 of them would change) would grade part of the test set with a
+different, more lenient standard than the rest. The human sample is used as a validity check
+(the kappa above) and as a sensitivity check:
+
+**Sensitivity check.** All final runs (TF-IDF, BM25 default and tuned, dense, Rocchio, HyDE,
+RRF, weighted fusion) were scored on the test queries twice: with the LLM labels, and with the
+89 human grades replacing the LLM grades on those pairs. The system order by nDCG@10 is
+**identical** (all 28 pairs of systems keep their order, Kendall tau = 1.00). Absolute nDCG@10 is
+about 0.04 to 0.07 lower with the human grades; part of that is because two queries (q11, q23)
+gain a relevant phone and start to count (n = 18 instead of 16), so it mixes label and query-set
+effects. Conclusion for the report: the comparison between systems does not depend on which label
+set is used, the absolute numbers do. Reproduce with `python scripts/kappa.py` and the harness
+(`python -m phonesense.eval.cli eval ...`) using a copy of `llm.txt` with the grades of
+`human.txt` written over it.
 
 ## LLM call logs
 
