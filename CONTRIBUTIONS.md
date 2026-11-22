@@ -35,6 +35,9 @@ analysis and a label-sensitivity check, and tuning of Rocchio, HyDE and fusion o
 
 ## Member C: details
 
+A detailed write-up, with the methods, full result tables and how to reproduce them, is in
+[docs/contributions_C.md](docs/contributions_C.md).
+
 ### Summary
 
 PhoneSense combines three things: classic IR, neural IR, and trust-aware graph ranking. I was
