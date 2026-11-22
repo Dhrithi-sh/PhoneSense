@@ -36,6 +36,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--embeddings", type=Path, default=None)
     ap.add_argument("--toy", action="store_true", help="use seeded toy reviews; write nothing")
+    ap.add_argument("--knn-k", type=int, default=None,
+                    help="kNN edges per phone (default: graph.knn_k)")
     ap.add_argument("--out", type=Path, default=None,
                     help="edges file to write (default: paths.graph_edges)")
     ap.add_argument("--stats-out", type=Path, default=None,
@@ -55,7 +57,8 @@ def main() -> None:
         reviews = io.read_reviews(reviews_path)
     embeddings = load_embeddings(args.embeddings) if args.embeddings else None
 
-    edges, graph, stats = build_graph(doc_ids, reviews, embeddings, knn_k=cfg["knn_k"],
+    knn_k = args.knn_k or cfg["knn_k"]
+    edges, graph, stats = build_graph(doc_ids, reviews, embeddings, knn_k=knn_k,
                                       co_review_min_shared=cfg["co_review_min_shared"])
     pr = pagerank(graph, damping=cfg["damping"], tol=cfg["tol"])
     stats["pagerank_top10"] = sorted(pr, key=lambda d: (-pr[d], d))[:10]
