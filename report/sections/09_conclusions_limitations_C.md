@@ -60,15 +60,24 @@ builds a normal-looking history removes even that.
   hand-labelled sample, but some accessories and some missing phones remain.
 * Specifications were parsed from free-text listings; fields that could not be parsed are
   unknown, so Boolean filters cannot match those phones.
+* **Most phones have no price.** The source metadata gives no price for 5,531 of the 7,166
+  phones (77%). This is missing in the data, not a parsing failure: Amazon only records a price
+  for listings on sale when the snapshot was taken, so 92% of phones first listed in 2014 or
+  earlier have none, against 32% of those listed in 2021-2023. A price filter can therefore
+  only match about a quarter of the collection, and dev query q04 has no relevant phone for
+  this reason. Prices from the 2018 release of the same dataset could fill some of the gaps by
+  product id, at the cost of mixing years.
 
 **Evaluation.**
 * 45 queries (18 for testing) is a small set. Many differences between systems are not
   statistically significant, and the significance markers in the ablation table should be read
   with that in mind.
-* Relevance labels come from an LLM judge checked against a small human-labelled sample. Where
-  the judge and humans disagree, the scores inherit its errors.
-* Only pooled results were judged. A phone that no pooled system retrieved counts as not
-  relevant, which favours the systems in the pool and makes scores for other systems lower
+* Relevance labels come from an LLM judge checked against 89 human-labelled pairs. Agreement is
+  only fair (kappa 0.26; where they differ, the humans were usually more lenient), so absolute
+  scores inherit the judge's errors: with the human grades, test nDCG@10 is 0.04-0.07 lower.
+  The order of the systems, which is what the conclusions rest on, did not change.
+* Only pooled results were judged, to depth 5 (depth 10 for queries with no relevant phone).
+  A phone that no pooled system retrieved counts as not relevant, which favours the systems in the pool and makes scores for other systems lower
   bounds (reported as judged@10 in the ablation table).
 
 **Graph and trust.**
