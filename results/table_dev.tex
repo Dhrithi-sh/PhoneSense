@@ -1,0 +1,25 @@
+\begin{table}[t]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Run & P@10 & R@10 & MAP & nDCG@10 & RR & judged@10 \\
+\midrule
+bm25\_default\_dev & 0.265 & 0.574 & 0.427 & 0.588 & 0.714 & 0.648 \\
+bm25\_tuned+filters+phrase\_dev & 0.248 & 0.548 & 0.411 & 0.560 & 0.735 & 0.530 \\
+bm25\_tuned+filters\_dev & 0.248 & 0.548 & 0.382 & 0.562 & 0.706 & 0.543 \\
+bm25\_tuned+pagerank0.1\_dev & 0.248 & 0.566 & 0.434 & 0.582 & 0.739 & 0.648 \\
+bm25\_tuned+phrase\_dev & 0.265 & 0.586 & 0.470 & 0.598 & \textbf{0.772} & 0.683 \\
+bm25\_tuned+ppr0.1\_dev & 0.265 & 0.586 & 0.416 & 0.586 & 0.700 & 0.696 \\
+bm25\_tuned+trust0.2\_dev & 0.257 & 0.572 & 0.428 & 0.590 & 0.711 & 0.665 \\
+bm25\_tuned\_dev & 0.265 & 0.586 & 0.441 & 0.600 & 0.743 & 0.696 \\
+bm25f\_tuned\_dev & 0.143$^\dagger$ & 0.269 & 0.235 & 0.330 & 0.495 & 0.326 \\
+dense\_sentence-transformers-all-minilm-l6-v2\_dev & 0.178 & 0.313 & 0.252 & 0.441 & 0.539 & 0.561 \\
+fusion\_linear\_w55-45\_bm25\_tuned+dense\_sentence-transformers-all-minilm-l6-v2\_dev & 0.317 & 0.601 & \textbf{0.502} & 0.621 & 0.640 & 0.796 \\
+hyde\_tfidf\_lnc.ltc\_m10\_b0\_g0\_t30\_d0.35\_dev & \textbf{0.352} & 0.612 & 0.469 & 0.586 & 0.722 & 0.757 \\
+rocchio\_tfidf\_lnc.ltc\_m10\_b0.1\_g0\_t50\_dev & 0.313 & 0.485 & 0.370 & 0.507 & 0.589 & 0.787 \\
+rrf\_k5\_bm25\_tuned+dense\_sentence-transformers-all-minilm-l6-v2\_dev & 0.330 & \textbf{0.620} & 0.477 & \textbf{0.642} & 0.640 & \textbf{0.909} \\
+tfidf\_lnc.ltc\_dev & 0.317 & 0.521 & 0.374 & 0.522 & 0.596 & 0.796 \\
+\bottomrule
+\end{tabular}
+\caption{Retrieval effectiveness. $^\dagger$: $p<0.05$ vs.\ tfidf\_lnc.ltc\_dev (paired randomization test, Holm-corrected).}
+\end{table}

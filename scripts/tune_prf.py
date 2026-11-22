@@ -24,9 +24,8 @@ import json
 import sys
 from pathlib import Path
 
-from phonesense.eval.evaluate import evaluate_rankings
-
 from phonesense.config import get_path
+from phonesense.eval.evaluate import evaluate_rankings
 from phonesense.index import InvertedIndex, index_path
 from phonesense.io import read_qrels, read_queries
 from phonesense.llm.client import LLMClient
