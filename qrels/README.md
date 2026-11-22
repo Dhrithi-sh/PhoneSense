@@ -40,12 +40,35 @@ and report them as "no relevant phone in the collection"**, not as failures of a
 
 So dev has 23 of 27 and test 16 of 18 queries that count.
 
-## Human labels (still to do)
+## Human labels and agreement
 
-Everyone labels a disjoint third of the same 90-pair sample drawn from the test pool, without
-seeing the LLM grade, then `python scripts/label_sheet.py import --sheet <file>` merges the
-grades into `human.txt` and `python scripts/kappa.py --merge` reports agreement and writes the
-final `qrels.txt`.
+Three people each labelled a disjoint third (30 pairs) of one 90-pair sample drawn from the test
+pool, without seeing the LLM grade. `human.txt` holds 89 of them (one pair is left out because an
+example in the labelling instructions gave its answer away). `results/kappa.json` has the numbers.
+
+| Measure (89 pairs, 18 test queries) | Value |
+|---|---|
+| exact agreement | 0.44 |
+| Cohen's kappa, 4 grades | 0.26 |
+| quadratic-weighted kappa | 0.49 |
+| kappa, relevant (grade >= 2) vs not | 0.39 |
+
+Confusion (rows LLM 0-3, columns human 0-3): `[10 5 4 4] [7 8 9 9] [0 2 4 7] [1 0 2 17]`.
+
+**Reading it.** Agreement is fair to moderate, not strong. Where they differ, the humans are
+usually more lenient than the LLM (the LLM gave 0 or 1 where a human gave 2 or 3 in 16 of the 18
+pairs that differ by two grades or more). It happens mostly on aspect and vague queries
+("strong signal reception", "does everything well", "will not break the bank"), where the LLM wants
+evidence in the listing and people give credit for plausibility. A few LLM errors come from
+wrong parsed specs shown to the judge (for example `release_year=2021` for a listing titled 2023).
+With 89 pairs, one human per pair and instructions that mirror the judge's rubric, the estimate
+is noisy and probably flattering; say so in the report.
+
+**`qrels.txt` is still the LLM labels only.** Replacing the LLM grade with the human grade on these
+89 pairs (50 would change) would grade part of the test set with a different, more lenient
+standard than the rest. Options: keep `qrels.txt` = `llm.txt` and report the human sample as a
+validity check plus a sensitivity analysis (do the system rankings change if the 89 pairs use the
+human grades?), or merge with `python scripts/kappa.py --merge`. The team decides.
 
 ## LLM call logs
 
