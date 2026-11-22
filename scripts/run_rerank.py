@@ -34,6 +34,8 @@ def main() -> None:
     ap.add_argument("--graph", type=Path, default=None, help="default: graph_edges path")
     ap.add_argument("--reviews", type=Path, default=None, help="default: reviews path")
     ap.add_argument("--out-dir", type=Path, default=None, help="default: runs_dir")
+    ap.add_argument("--tag", default=None,
+                    help="run-name tag before lambda (default: the prior name), e.g. knnpr")
     args = ap.parse_args()
 
     cfg = get_config()
@@ -71,7 +73,7 @@ def main() -> None:
                              damping=g["damping"], tol=g["tol"])
         else:
             out = rerank_with_prior(rankings, prior, lam)
-        name = reranked_run_name(base_name, f"{args.prior}{lam:g}")
+        name = reranked_run_name(base_name, f"{args.tag or args.prior}{lam:g}")
         path = io.write_rankings(out_dir / f"{name}.run", out, name)
         print(f"wrote {path}")
 

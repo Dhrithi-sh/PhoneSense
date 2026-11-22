@@ -36,6 +36,10 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--embeddings", type=Path, default=None)
     ap.add_argument("--toy", action="store_true", help="use seeded toy reviews; write nothing")
+    ap.add_argument("--out", type=Path, default=None,
+                    help="edges file to write (default: paths.graph_edges)")
+    ap.add_argument("--stats-out", type=Path, default=None,
+                    help="stats file to write (default: results/graph_stats.json)")
     args = ap.parse_args()
     cfg = get_config()["graph"]
 
@@ -59,11 +63,12 @@ def main() -> None:
     print(json.dumps(stats, indent=2))
     if args.toy:
         return
-    io.write_graph_edges(get_path("graph_edges"), edges)
-    out = get_path("results_dir") / "graph_stats.json"
+    edges_out = args.out or get_path("graph_edges")
+    io.write_graph_edges(edges_out, edges)
+    out = args.stats_out or get_path("results_dir") / "graph_stats.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(stats, indent=2) + "\n", encoding="utf-8")
-    print(f"wrote {get_path('graph_edges')} and {out}")
+    print(f"wrote {edges_out} and {out}")
 
 
 if __name__ == "__main__":

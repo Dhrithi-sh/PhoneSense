@@ -33,6 +33,9 @@ Introduction:
      widely reviewed models. As reranking priors on tuned BM25, global PageRank, personalized
      PageRank and reviewer trust change test nDCG@10 by −0.003, +0.008 and +0.011; none of
      these differences is significant, and on dev all three were slightly worse than BM25.
+     Adding kNN edges connects every phone but does not help either: global PageRank is
+     unchanged on test, and personalized PageRank, the only prior ahead of BM25 on dev, is
+     significantly worse on test (−0.026, p = 0.005).
    * The reviewer-trust score converges in 9 iterations and moves phone quality by only 0.09
      stars on average away from the Bayesian average, because only the quarter of reviews
      written by repeat reviewers carry information about reliability.
@@ -81,9 +84,10 @@ builds a normal-looking history removes even that.
   bounds (reported as judged@10 in the ablation table).
 
 **Graph and trust.**
-* The graph uses co-review links only. The phone data has no "bought together" field, and the
-  semantic kNN edges were not built for the final run, so 61.5% of phones are isolated and get
-  no help from the PageRank prior.
+* The graph has no purchase links: the phone data has no "bought together" field. Co-review
+  links leave 61.5% of phones isolated. Semantic kNN edges connect every phone, but they are
+  built from the same listing text the retrievers already use, and they did not help (8.5.4).
+  The kNN neighbourhood size (8) was not tuned.
 * The trust score can only learn about reviewers who wrote more than one review. With 88.4% of
   reviewers writing once, most reliabilities stay near the 0.5 prior, which limits how much the
   score can differ from a Bayesian average.
@@ -111,9 +115,8 @@ builds a normal-looking history removes even that.
 
 ## Future work
 
-The most direct improvements are to add the semantic kNN edges so that every phone joins the
-graph, to give the trust score more signal through account age and purchase verification, to
+The most direct improvements are to build graph edges from evidence the text does not contain,
+such as co-purchase or browsing data (kNN edges over the same text did not help), to give the trust score more signal through account age and purchase verification, to
 weigh reliability by account history rather than agreement alone (camouflage defeats agreement),
 to keep the score scale wide enough that small shifts do not cross many phones, and to evaluate
-the attacks
-end to end on search results instead of on reputation rank alone.
+the attacks end to end on search results instead of on reputation rank alone.
