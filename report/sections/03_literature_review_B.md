@@ -1,9 +1,9 @@
 # Literature Review
 
-> **Status: full draft (owner: B).** Citation details marked ✔ were checked against the
-> publisher, ACL Anthology, arXiv, dblp or the authors' page in November 2026. Items marked
-> **(not re-checked)** are from memory and must be verified before the final report. Hand the
-> final list to C for `10_references_C.md` (reference format).
+> **Status: final text (owner: B).** Every citation below was checked against the publisher, ACL
+> Anthology, arXiv, dblp or the authors' page in November 2026 (✔). Two papers are only cited from
+> their arXiv version: Jedidi and Lin (venue not confirmed) and, for the LLM-judge claim, Thomas et
+> al. (the abstract was read; the full paper was not). The list is also in `10_references_C.md`.
 
 ## 1. Lexical retrieval
 
@@ -52,7 +52,7 @@ random surfer on a link graph, with damping and a teleport step so that dead end
 not break it. We apply it to a co-review phone graph, which links two phones rated by the same reviewers, and use it as a ranking prior. Star
 ratings are a second signal that is easy to manipulate with a few fake reviews; our
 reviewer-trust score lets phone quality and reviewer reliability reinforce each other, in the
-spirit of hubs and authorities (Kleinberg, 1999, **not re-checked**). Its design and the attack
+spirit of hubs and authorities (Kleinberg, 1999). Its design and the attack
 simulation belong to the Methodology and Experiments sections.
 
 ## 6. Evaluating with LLM judges
@@ -86,7 +86,7 @@ claim a new retrieval model.
 ## References (to pass to C)
 
 1. Manning, C. D., Raghavan, P. and Schuetze, H. (2008). *Introduction to Information Retrieval*.
-   Cambridge University Press. **(not re-checked)**
+   Cambridge University Press, July 2008, 506 pp., ISBN 978-0-521-86571-5. ✔
 2. Robertson, S. and Zaragoza, H. (2009). The Probabilistic Relevance Framework: BM25 and
    Beyond. *Foundations and Trends in Information Retrieval* 3(4), 333-389.
    doi:10.1561/1500000019. ✔
@@ -94,8 +94,8 @@ claim a new retrieval model.
    SMART Retrieval System: Experiments in Automatic Document Processing*, Prentice-Hall,
    313-323. ✔
 4. Gao, L., Ma, X., Lin, J. and Callan, J. (2023). Precise Zero-Shot Dense Retrieval without
-   Relevance Labels. *Proc. ACL 2023* (long papers), paper 2023.acl-long.99; arXiv:2212.10496.
-   ✔ (page numbers not checked)
+   Relevance Labels. *Proc. ACL 2023* (Volume 1: Long Papers), 1762-1777, Toronto.
+   doi:10.18653/v1/2023.acl-long.99; arXiv:2212.10496. ✔
 5. Jedidi, N. and Lin, J. (2025). Revisiting Feedback Models for HyDE. arXiv:2511.19349. ✔
    (published venue not confirmed; one page lists SIGIR 2026)
 6. Reimers, N. and Gurevych, I. (2019). Sentence-BERT: Sentence Embeddings using Siamese
@@ -106,7 +106,7 @@ claim a new retrieval model.
 8. Page, L., Brin, S., Motwani, R. and Winograd, T. (1999). The PageRank Citation Ranking:
    Bringing Order to the Web. Stanford InfoLab Technical Report 1999-66. ✔
 9. Kleinberg, J. M. (1999). Authoritative sources in a hyperlinked environment. *Journal of the
-   ACM* 46(5), 604-632. **(not re-checked)**
+   ACM* 46(5), 604-632. ✔
 10. Thomas, P., Spielman, S., Craswell, N. and Mitra, B. (2024). Large Language Models Can
-    Accurately Predict Searcher Preferences. *Proc. SIGIR 2024*; arXiv:2309.10621. ✔ (page
-    numbers not checked)
+    Accurately Predict Searcher Preferences. *Proc. SIGIR 2024*, 1930-1940.
+    doi:10.1145/3626772.3657707; arXiv:2309.10621. ✔

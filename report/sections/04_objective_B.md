@@ -1,7 +1,7 @@
 # Objective
 
-> **Status: draft (owner: B).** Targets that depend on results are left open on purpose; we
-> report what we measure instead of promising a number in advance.
+> **Status: final text (owner: B).** The objectives were fixed before the experiments and no
+> numeric target was promised in advance; the closing table gives what we measured.
 
 ## Overall objective
 
@@ -47,3 +47,17 @@ says so.
 Training a ranker, fine-tuning an encoder, live prices, real attackers (the attacks are
 simulated), and non-phone products. Phones are picked from the dataset by a heuristic filter,
 so some accessories may remain and some phones may be missed.
+
+## Answers in brief
+
+Numbers are nDCG@10 on the 16 of 18 test queries that have a relevant phone, settings tuned on dev
+(details and significance tests in the Experiments sections).
+
+| Question | Answer |
+|---|---|
+| RQ1 dense vs BM25 | No. Dense 0.417 against 0.663 for tuned BM25 (and 0.544 for TF-IDF). |
+| RQ2 feedback and HyDE | Rocchio feedback did not help (0.526 against 0.544 for its TF-IDF base; the tuned weight was the smallest tried). HyDE used on its own, without feedback, gave 0.564, a gain over TF-IDF that is not significant. |
+| RQ3 fusion | RRF of BM25 and dense reaches 0.677 and weighted fusion 0.681 against 0.663 for tuned BM25 (+0.014 and +0.018; +0.042 and +0.021 on dev), not significant; the published RRF constant k = 60 was much worse than the tuned k = 5. |
+| RQ4 graph and trust priors | They change nDCG@10 by -0.003 (PageRank), +0.008 (personalized PageRank) and +0.011 (reviewer trust); none is significant. |
+| RQ5 fake reviews | Reviewer trust shrinks the star shift against plain fake accounts, but against accounts that first copy the consensus it is worse than the raw average (Experiments, graph and attacks). |
+| RQ6 judge vs humans | Cohen's kappa 0.26 over four grades (0.49 weighted, 0.39 for relevant versus not) on 89 pairs: fair, not strong. The order of the systems does not change when the human grades are used. |
