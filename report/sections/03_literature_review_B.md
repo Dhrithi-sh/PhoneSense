@@ -49,7 +49,7 @@ development queries.
 
 PageRank (Page, Brin, Motwani and Winograd, 1999) scores a node by the stationary behaviour of a
 random surfer on a link graph, with damping and a teleport step so that dead ends and cycles do
-not break it. We apply it to a "bought together" phone graph and use it as a ranking prior. Star
+not break it. We apply it to a co-review phone graph, which links two phones rated by the same reviewers, and use it as a ranking prior. Star
 ratings are a second signal that is easy to manipulate with a few fake reviews; our
 reviewer-trust score lets phone quality and reviewer reliability reinforce each other, in the
 spirit of hubs and authorities (Kleinberg, 1999, **not re-checked**). Its design and the attack

@@ -30,7 +30,7 @@ PhoneSense is a hybrid pipeline. A classic first stage (TF-IDF lnc.ltc and BM25 
 inverted index, with Boolean spec filters and phrase search) is combined with neural retrieval
 (sentence-embedding search, Rocchio pseudo-relevance feedback, and a HyDE-style expansion in
 which an LLM writes a hypothetical listing for the query). Rankings are merged by rank fusion.
-A graph signal (PageRank over the "bought together" graph) and a reviewer-trust score
+A graph signal (PageRank over a co-review graph, which links phones rated by the same reviewers) and a reviewer-trust score
 (compared against raw, Bayesian and helpful-vote averages) feed the final ranking, and a
 simulator measures how far fake reviews move a phone under each score. An LLM judge, checked
 against human labels, supplies the relevance judgements we evaluate with.
