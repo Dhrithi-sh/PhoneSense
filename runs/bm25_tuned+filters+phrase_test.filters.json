@@ -1,0 +1,175 @@
+{
+  "q08": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "price",
+          "op": "<",
+          "value": 150
+        },
+        {
+          "field": "storage_gb",
+          "op": ">=",
+          "value": 64
+        }
+      ]
+    },
+    "ranker_text": "cheap phone under $150 with 64GB storage",
+    "n_allowed": 199
+  },
+  "q09": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "ram_gb",
+          "op": ">=",
+          "value": 12
+        },
+        {
+          "field": "storage_gb",
+          "op": ">=",
+          "value": 512
+        }
+      ]
+    },
+    "ranker_text": "flagship phone with 12GB RAM and 512GB storage",
+    "n_allowed": 20
+  },
+  "q10": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "release_year",
+          "op": "==",
+          "value": 2023
+        },
+        {
+          "field": "has_5g",
+          "op": "==",
+          "value": true
+        }
+      ]
+    },
+    "ranker_text": "2023 phone with 5G support",
+    "n_allowed": 15
+  },
+  "q11": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "avg_rating",
+          "op": ">=",
+          "value": 4.5
+        },
+        {
+          "field": "price",
+          "op": "<",
+          "value": 250
+        }
+      ]
+    },
+    "ranker_text": "phone rated 4.5 stars or higher under $250",
+    "n_allowed": 36
+  },
+  "q12": {
+    "source": "queries.jsonl",
+    "filter": {
+      "and": [
+        {
+          "field": "brand",
+          "op": "==",
+          "value": "Motorola"
+        },
+        {
+          "field": "battery_mah",
+          "op": ">=",
+          "value": 5000
+        }
+      ]
+    },
+    "ranker_text": "motorola phone with 5000mAh battery",
+    "n_allowed": 82
+  },
+  "q20": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "easy phone for seniors with large text and loud speaker",
+    "n_allowed": 7166
+  },
+  "q21": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone with smooth performance for mobile gaming",
+    "n_allowed": 7166
+  },
+  "q22": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone with strong signal reception and clear call quality",
+    "n_allowed": 7166
+  },
+  "q23": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone that gets long software update support",
+    "n_allowed": 7166
+  },
+  "q24": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone with a good selfie camera for video calls",
+    "n_allowed": 7166
+  },
+  "q32": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "Google Pixel 6",
+    "n_allowed": 7166
+  },
+  "q33": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "Samsung Galaxy A14",
+    "n_allowed": 7166
+  },
+  "q34": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "Motorola Edge",
+    "n_allowed": 7166
+  },
+  "q35": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "Samsung Galaxy Z Flip",
+    "n_allowed": 7166
+  },
+  "q42": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone that does everything well",
+    "n_allowed": 7166
+  },
+  "q43": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone for content creators",
+    "n_allowed": 7166
+  },
+  "q44": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "good backup phone",
+    "n_allowed": 7166
+  },
+  "q45": {
+    "source": "none",
+    "filter": null,
+    "ranker_text": "phone that will not break the bank and lasts for years",
+    "n_allowed": 7166
+  }
+}

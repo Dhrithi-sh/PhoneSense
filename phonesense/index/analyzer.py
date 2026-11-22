@@ -29,9 +29,9 @@ in the token stream *before* stopword removal, so a removed stopword leaves a ga
 (T07) then treat documents and queries the same way. :meth:`Analyzer.analyze` returns just
 the terms in order.
 
-The overall structure (normalize -> tokenize -> optional stemmer variant, one analyzer for
-documents and queries) is adapted from our midterm project Dhvani-lingual
-(``text/analyzer.py``); the Hindi/Hinglish normalization and stemmers were replaced.
+Adapted from our midterm project Dhvani-lingual (``text/analyzer.py``): the overall structure
+(normalize -> tokenize -> optional stemmer variant, one analyzer for documents and queries) is
+kept; the Hindi/Hinglish normalization and stemmers were replaced.
 """
 
 from __future__ import annotations

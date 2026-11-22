@@ -2,8 +2,8 @@
 
 * :class:`Posting` ``(doc, tf, positions)`` is the in-memory posting used by every retriever.
 * :func:`skip_pointers` / :func:`intersect` give sqrt(n)-spaced skip pointers and a skip-aware
-  AND of two postings lists (for Boolean / phrase search in T07). Adapted from our midterm
-  project Dhvani-lingual (``index/search.py``: ``build_skip_pointers``,
+  AND of two postings lists (for Boolean / phrase search in T07).
+  Adapted from our midterm project Dhvani-lingual (``index/search.py``: ``build_skip_pointers``,
   ``intersect_postings``); now typed, on int doc ids and on :class:`Posting`.
 * :func:`vb_encode` / :func:`vb_decode` implement variable-byte (VB) encoding as in Manning,
   Raghavan & Schuetze, *Introduction to IR*, section 5.3.1: 7 payload bits per byte, most

@@ -45,6 +45,31 @@ def pool_runs(
     return {qid: dict(sorted(docs.items())) for qid, docs in sorted(pool.items())}
 
 
+def queries_without_relevant(
+    qrels: Mapping[str, Mapping[str, int]], threshold: int = 2
+) -> list[str]:
+    """Judged queries in which no phone reached ``threshold`` (default: grade 2 = relevant).
+
+    Such a query is either unanswerable in the collection or its relevant phones sit below the
+    pooling depth. Both look the same in the metrics (the query is dropped), so we pool these
+    queries deeper (:func:`deepen_pool`) to tell them apart. Queries missing from ``qrels`` are
+    not judged yet and are not listed.
+    """
+    return sorted(q for q, docs in qrels.items() if docs and max(docs.values()) < threshold)
+
+
+def deepen_pool(
+    pool: Pool, runs: Mapping[str, Mapping[str, Ranking]], depth: int, qids: Iterable[str]
+) -> Pool:
+    """Return ``pool`` with the queries in ``qids`` re-pooled to ``depth`` (a superset of their
+    old entries, since a deeper top-k contains the shallower one). Other queries are unchanged."""
+    deeper = pool_runs(runs, depth, qids)
+    merged = {qid: dict(docs) for qid, docs in pool.items()}
+    for qid, docs in deeper.items():
+        merged[qid] = docs
+    return dict(sorted(merged.items()))
+
+
 def write_pool(path: str | Path, pool: Pool) -> Path:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

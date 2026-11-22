@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from phonesense.llm.client import LLMClient
@@ -25,25 +26,24 @@ from phonesense.schemas import VALID_GRADES, Phone, Query
 
 PURPOSE = "judge"
 
+# The fixed instructions come FIRST and the query and phone LAST, so every prompt starts with the
+# same text. Providers that cache prompt prefixes (Groq does, and does not count cached tokens
+# against the rate limit) then only charge for the part that changes.
 RUBRIC = """\
-You are a careful relevance assessor for a smartphone search engine.
+Rate how well a phone answers a shopper's search, from 0 to 3.
 
-Shopper's search: "{query}"
-{notes}{filters}
-Candidate product:
+3 = perfect: clearly what they want, every stated requirement is confirmed in the listing
+2 = relevant: a good fit; at most minor requirements are unconfirmed or roughly met
+1 = marginal: related, but a key requirement is unconfirmed or only partly met
+0 = not relevant: not a phone (case, charger, cable, accessory), the wrong model, or the listing \
+clearly breaks a requirement (it states the opposite, for example 4G only for a 5G search)
+Judge only from the text given. A spec the listing does not state is unconfirmed, not wrong: \
+never give 0 for that alone, but do not give 3 either.
+Reply with JSON only: {{"grade": <0|1|2|3>, "reason": "<at most 12 words>"}}
+
+Search: "{query}"
+{notes}{filters}Phone:
 {phone}
-
-Grade how well this product answers the search:
-3 = perfect: clearly what the shopper wants, and every stated requirement is met
-2 = relevant: a good answer; minor requirements are unverified or only roughly met
-1 = marginal: related (same kind of phone, or only one requirement met) but a poor answer
-0 = not relevant: not a phone (case, charger, screen protector, cable, accessory), the wrong \
-model, or it clearly breaks a stated requirement
-
-Rules: judge only from the product text above. A spec shown as unknown cannot be assumed to \
-satisfy a requirement. Do not reward a product for being popular or expensive.
-
-Answer with JSON only, no other text: {{"grade": <0|1|2|3>, "reason": "<one short sentence>"}}
 """
 
 RETRY_SUFFIX = '\nYour last answer was not valid. Reply with exactly: {"grade": N, "reason": "..."}'
@@ -72,11 +72,13 @@ def _query_filters(query: Query) -> str:
     return f"Hard requirements (as JSON): {json.dumps(query.filters, sort_keys=True)}\n"
 
 
-def phone_summary(phone: Phone, max_desc_chars: int = 600, max_features: int = 8) -> str:
-    """Compact text view of a phone for the judge (no reviews, no ratings)."""
-    specs = ", ".join(
-        f"{k}={'unknown' if v is None else v}" for k, v in phone.specs.to_dict().items()
-    )
+def phone_summary(phone: Phone, max_desc_chars: int = 300, max_features: int = 5) -> str:
+    """Compact text view of a phone for the judge (no reviews, no ratings). Known specs are
+    written out; unknown ones are listed by name so the judge knows they are not stated."""
+    spec_items = phone.specs.to_dict().items()
+    known = ", ".join(f"{k}={v}" for k, v in spec_items if v is not None)
+    unknown = ", ".join(k for k, v in spec_items if v is None)
+    specs = (known or "none") + (f"; unknown: {unknown}" if unknown else "")
     price = "unknown" if phone.price is None else f"{phone.price:g} {phone.currency}"
     lines = [
         f"Title: {phone.title}",
@@ -87,7 +89,7 @@ def phone_summary(phone: Phone, max_desc_chars: int = 600, max_features: int = 8
     features = [f for f in phone.fields.features if f.strip()][:max_features]
     if features:
         lines.append("Features:")
-        lines += [f"- {f.strip()[:200]}" for f in features]
+        lines += [f"- {f.strip()[:120]}" for f in features]
     desc = " ".join(phone.fields.description.split())
     if desc:
         lines.append(f"Description: {desc[:max_desc_chars]}")
@@ -125,6 +127,26 @@ def parse_grade(response: str) -> tuple[int, str]:
     if loose and loose.group(1) in {str(g) for g in VALID_GRADES}:
         return int(loose.group(1)), ""
     raise JudgeError(f"no valid grade in answer: {text[:120]!r}")
+
+
+def assign_models(qids: Sequence[str], models: Sequence[str]) -> dict[str, str]:
+    """Give every query to ONE judge model (round robin over the sorted query ids).
+
+    Free plans cap tokens per model per day, so the work is split across models. A query is
+    never judged by two models, so all systems are compared under the same judge within a query.
+    """
+    if not models:
+        raise ValueError("need at least one model")
+    return {qid: models[i % len(models)] for i, qid in enumerate(sorted(set(qids)))}
+
+
+def interleave(groups: Sequence[Sequence]) -> list:
+    """Round-robin merge of lists (a1, b1, a2, b2, ...): consecutive calls then go to different
+    models, so each model's per-minute limit is respected while both run in parallel."""
+    out = []
+    for i in range(max((len(g) for g in groups), default=0)):
+        out.extend(g[i] for g in groups if i < len(g))
+    return out
 
 
 class LLMJudge:

@@ -1,0 +1,7 @@
+{
+  "run": "bm25_tuned_dev",
+  "N": 7166,
+  "queries": 27,
+  "mean_ms": 5.3546,
+  "p95_ms": 9.6404
+}
