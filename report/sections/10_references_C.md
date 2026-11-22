@@ -3,8 +3,8 @@
 > Report section R-C3 (owner C). Format follows the assignment's example
 > (Authors, Year, Month. Title. In *Venue* (pp. x-y).), sorted by first author. Ten entries come
 > from the literature review (owner B), which records how each was checked; HippoRAG and Hou et
-> al. are added because Methodology and Experiments cite them. Before submission: confirm the
-> two items marked **[check]**, and delete any entry the final text no longer cites.
+> al. are added because Methodology and Experiments cite them. Page numbers checked against the
+> ACL Anthology and DBLP. Before submission: delete any entry the final text no longer cites.
 
 1. Cormack, G.V., Clarke, C.L.A. and Buettcher, S., 2009, July. Reciprocal rank fusion outperforms
    Condorcet and individual rank learning methods. In *Proceedings of the 32nd International ACM
@@ -12,7 +12,7 @@
 
 2. Gao, L., Ma, X., Lin, J. and Callan, J., 2023, July. Precise zero-shot dense retrieval without
    relevance labels. In *Proceedings of the 61st Annual Meeting of the Association for
-   Computational Linguistics (Volume 1: Long Papers)*. **[check: page numbers]**
+   Computational Linguistics (Volume 1: Long Papers)* (pp. 1762-1777).
 
 3. Gutiérrez, B.J., Shu, Y., Gu, Y., Yasunaga, M. and Su, Y., 2024, December. HippoRAG:
    Neurobiologically inspired long-term memory for large language models. In *Advances in
@@ -48,4 +48,4 @@
 
 12. Thomas, P., Spielman, S., Craswell, N. and Mitra, B., 2024, July. Large language models can
     accurately predict searcher preferences. In *Proceedings of the 47th International ACM SIGIR
-    Conference on Research and Development in Information Retrieval*. **[check: page numbers]**
+    Conference on Research and Development in Information Retrieval* (pp. 1930-1940).
