@@ -32,6 +32,14 @@ retrieval:
 # ---- B: rank fusion (T13). Tune on dev queries only; test is used once per final setting. ----
 fusion:
   method: rrf        # rrf | linear (min-max normalised weighted sum)
-  rrf_k: 60          # RRF constant; 60 is the published default, swept on dev in T13
+  rrf_k: 5           # RRF constant, tuned on dev for BM25 tuned + dense (60 is the published default)
   depth: 100         # documents taken from each system before fusing (<= 100)
-  weights: null      # per-system weights, null = equal (linear: tuned on dev, T13)
+  weights: null      # per-system weights, null = equal; tuned linear weights are under tuned.linear
+  # Tuned on the 27 DEV queries with scripts/tune_fusion.py (nDCG@10, gain 2^g-1, the tuner's own
+  # computation over queries with any graded phone). Test was not used. Written by hand from
+  # results/fusion_dev.json; re-tune if the systems or the qrels change.
+  tuned:
+    systems: [bm25_tuned, dense_sentence-transformers-all-minilm-l6-v2]   # order of the weights
+    alone_dev_ndcg10: {bm25_tuned: 0.6060, dense: 0.4690}
+    rrf: {k: 5, dev_ndcg10: 0.6422, k60_dev_ndcg10: 0.4390}   # k=60 is much worse here
+    linear: {weights: [0.55, 0.45], dev_ndcg10: 0.6215, equal_weights_dev_ndcg10: 0.6103}
