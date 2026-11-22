@@ -34,6 +34,8 @@ def main() -> None:
     ap.add_argument("--graph", type=Path, default=None, help="default: graph_edges path")
     ap.add_argument("--reviews", type=Path, default=None, help="default: reviews path")
     ap.add_argument("--out-dir", type=Path, default=None, help="default: runs_dir")
+    ap.add_argument("--damping", type=float, default=None,
+                    help="PageRank damping for pagerank/ppr (default: graph.damping)")
     ap.add_argument("--tag", default=None,
                     help="run-name tag before lambda (default: the prior name), e.g. knnpr")
     args = ap.parse_args()
@@ -41,6 +43,7 @@ def main() -> None:
     cfg = get_config()
     g, t, r = cfg["graph"], cfg["trust"], cfg["rerank"]
     lambdas = args.lam if args.lam is not None else r["lambdas"]
+    damping = args.damping if args.damping is not None else g["damping"]
     entries = io.read_run_entries(args.run)
     if not entries:
         raise SystemExit(f"{args.run} is empty")
@@ -53,7 +56,7 @@ def main() -> None:
     if args.prior == "pagerank":
         phones = get_path("phones")
         doc_ids = {p.doc_id for p in io.read_phones(phones)} if phones.exists() else candidates
-        prior = pagerank_scores(doc_ids, damping=g["damping"], tol=g["tol"], path=args.graph)
+        prior = pagerank_scores(doc_ids, damping=damping, tol=g["tol"], path=args.graph)
     elif args.prior == "ppr":
         graph = load_graph(args.graph)
     else:
@@ -70,7 +73,7 @@ def main() -> None:
     for lam in lambdas:
         if args.prior == "ppr":
             out = ppr_rerank(rankings, graph, lam, n_seeds=r["ppr_seeds"],
-                             damping=g["damping"], tol=g["tol"])
+                             damping=damping, tol=g["tol"])
         else:
             out = rerank_with_prior(rankings, prior, lam)
         name = reranked_run_name(base_name, f"{args.tag or args.prior}{lam:g}")
