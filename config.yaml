@@ -81,6 +81,7 @@ paths:
   handcheck_specs: results/handcheck_specs.csv
   handcheck_filter: results/handcheck_filter.csv
   handcheck_summary: results/handcheck_summary.json
+  llm_logs: runs/llm_logs         # gitignored: the logs hold listing text (team-only data), kept in the private data repo
   dense_cache: .cache/dense
 
 # T03 text analysis (phonesense/index/analyzer.py). Used for documents AND queries; changing
@@ -89,6 +90,29 @@ analyzer:
   stopwords: true     # built-in English list; 5g/4g/pro/max/plus/mini/ultra/lite are never removed
   stem: true          # tokens containing digits are never stemmed
   stemmer: porter     # porter (NLTK algorithm, no download) | light (plural-only S-stemmer)
+
+# ---- B: LLM (T09, T15). Keys live in .env (see .env.example), never here. ----
+# ---- B: query expansion, tuned on the 27 DEV queries with scripts/tune_prf.py (T14, T15) ----
+# nDCG@10 with the harness (queries without a relevant phone excluded). Test was run once with
+# these settings. Both beat or approach their TF-IDF base only partly: see the dev numbers.
+prf:
+  tfidf_dev_ndcg10: 0.5224          # the base both build on (plain TF-IDF lnc.ltc)
+  rocchio:
+    default: {m: 10, beta: 0.75, n_terms: 20, dev_ndcg10: 0.4802}
+    tuned:   {m: 10, beta: 0.1, n_terms: 50, dev_ndcg10: 0.5074}   # best beta is the smallest tried:
+    note: every positive beta scored below plain TF-IDF, so feedback did not help on this collection
+  hyde:
+    default: {m: 10, beta: 0.75, n_terms: 30, delta: 0.75, dev_ndcg10: 0.5328}
+    tuned:   {m: 10, beta: 0.0, n_terms: 30, delta: 0.35, dev_ndcg10: 0.5862}   # no Rocchio feedback
+    llm: {provider: groq, model: openai/gpt-oss-20b}   # hypothetical listings are replayed from logs
+
+llm:
+  provider: gemini                # gemini | openai
+  models:                         # check the names against the provider before the first run
+    gemini: gemini-2.0-flash
+    openai: gpt-4o-mini
+  temperature: 0.0                # deterministic; identical calls are replayed from the logs
+  max_retries: 3
 
 retrieval:
   default_k: 100      # must be <= 100 (max run depth, see CONTRACT.md 4.6)
