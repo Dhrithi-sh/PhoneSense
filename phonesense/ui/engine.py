@@ -41,6 +41,7 @@ from pathlib import Path
 from phonesense.config import get_config, get_path
 from phonesense.index import InvertedIndex, index_path
 from phonesense.io import Ranking, read_phones
+from phonesense.llm.buying_guide import BuyingGuide, GuideResult
 from phonesense.llm.client import LLMClient, LLMError
 from phonesense.retrieval.hyde import HydeGenerator, HydeRetriever
 from phonesense.retrieval.rocchio import RocchioRetriever
@@ -163,6 +164,7 @@ class SearchEngine:
             self.tfidf.fit(phones)
         self.rocchio = RocchioRetriever(self.tfidf)
         self._hyde: HydeRetriever | None = None
+        self._guide: BuyingGuide | None = None
         self._bm25 = None
         self._dense = None
         self._unavailable: dict[str, str] = {}
@@ -249,6 +251,14 @@ class SearchEngine:
                 name="bm25_tuned" if tuned else "bm25_default",
             )
         return self._bm25
+
+    def write_guide(self, query_text: str, results: list[Result]) -> GuideResult:
+        """A grounded buying guide for the top of ``results`` (needs an LLM key, or logged
+        answers). Raises ``LLMError`` when the LLM cannot answer."""
+        if self._guide is None:
+            self._guide = BuyingGuide(LLMClient())
+        phones = [self.phones[r.doc_id] for r in results]
+        return self._guide.write(query_text, phones)
 
     def _get_hyde(self) -> HydeRetriever:
         if self._hyde is None:
