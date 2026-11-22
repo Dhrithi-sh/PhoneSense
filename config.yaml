@@ -81,6 +81,7 @@ paths:
   handcheck_specs: results/handcheck_specs.csv
   handcheck_filter: results/handcheck_filter.csv
   handcheck_summary: results/handcheck_summary.json
+  dense_cache: .cache/dense
 
 # T03 text analysis (phonesense/index/analyzer.py). Used for documents AND queries; changing
 # any of these makes saved indexes stale (rebuild with scripts/build_index.py --force).
@@ -140,3 +141,9 @@ phrase:
   # BEGIN phrase.tuned (written by scripts/tune_phrase.py on dev; do not edit by hand)
   tuned: {weight: 0.5, objective: nDCG@10, dev_score: 0.598, dev_score_w0: 0.6004, n_dev_queries_with_phrases: 2}
   # END phrase.tuned
+
+# ---- B: dense retrieval (T12) ----
+dense:
+  model: sentence-transformers/all-MiniLM-L6-v2
+  batch_size: 64
+  cache_dir: .cache/dense     # git-ignored (.cache/); keyed by model + collection hash
