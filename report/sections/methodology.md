@@ -288,10 +288,12 @@ F_1 = \frac{2PR}{P + R}$$
 $$\mathrm{AP}(q) = \frac{1}{|\mathrm{Rel}_q|}\sum_{k:\ d_k \in \mathrm{Rel}_q} P@k, \qquad
 \mathrm{MAP} = \frac{1}{|Q|}\sum_{q \in Q}\mathrm{AP}(q)$$
 
-$$\mathrm{DCG}@k = \sum_{i=1}^{k}\frac{g_i}{\log_2(i + 1)}, \qquad
+$$\mathrm{DCG}@k = \sum_{i=1}^{k}\frac{2^{g_i} - 1}{\log_2(i + 1)}, \qquad
 \mathrm{nDCG}@k = \frac{\mathrm{DCG}@k}{\mathrm{IDCG}@k}$$
 
-where $g_i$ is the graded relevance of the phone at rank $i$ and IDCG is the DCG of the ideal
+where $g_i \in \{0,1,2,3\}$ is the graded relevance of the phone at rank $i$ (unjudged phones
+count as 0), the exponential gain $2^{g_i} - 1$ rewards highly relevant phones more than
+linear gain would, and IDCG is the DCG of the ideal
 ordering. nDCG@10 is the headline metric because it uses the graded labels and rewards
 putting the best phones first. Accuracy is not reported: almost every phone is irrelevant to
 almost every query, so a system that returns nothing would score close to 100%.
